@@ -1,0 +1,6 @@
+[submodule "Gibby"]
+	path = GBxCart/Gibby
+	url = ./GBxCart/Gibby
+[submodule "ORSSerialPort"]
+	path = Dependencies/ORSSerialPort
+	url = git@github.com:armadsen/ORSSerialPort.git
