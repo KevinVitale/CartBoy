@@ -1,6 +1,0 @@
-import Foundation
-
-extension Data {
-    
-}
-

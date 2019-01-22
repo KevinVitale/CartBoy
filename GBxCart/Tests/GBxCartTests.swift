@@ -3,149 +3,6 @@ import ORSSerial
 import GBxCartKit
 import Gibby
 
-public struct Header {
-}
-
-extension Header {
-    public enum Section: RawRepresentable {
-        public enum HeaderAddress: RawRepresentable, ExpressibleByIntegerLiteral {
-            case zero
-            case cart
-            case address(at: Int)
-            
-            public var rawValue: Int {
-                switch self {
-                case .zero: return 0x00
-                case .cart: return 0x150
-                case .address(let address): return address
-                }
-            }
-            
-            public init(rawValue: Int) {
-                switch rawValue {
-                case 0x00: self = .zero
-                case 0x150: self = .cart
-                default: self = .address(at: rawValue)
-                }
-            }
-            
-            public init(integerLiteral value: Int) {
-                self.init(rawValue: value)
-            }
-        }
-        indirect case beginningAt(HeaderAddress, Section)
-        
-        case boot
-        case logo
-        case title
-        case manufacturer
-        case colorFlag
-        case licensee
-        case superGameboyFlag
-        case memoryController
-        case romSize
-        case ramSize
-        case destination
-        case legacyLicensee
-        case versionMask
-        case headerChecksum
-        case cartChecksum
-        case invalid(Range<Int>)
-
-        private func lowerBound(at address: HeaderAddress = .cart) -> Int {
-            switch self {
-            case .beginningAt(let address, let section): return section.lowerBound(at: address)
-            case .boot:             return 0x00.advanced(by: address.rawValue)
-            case .logo:             return 0x04.advanced(by: address.rawValue)
-            case .title:            return 0x34.advanced(by: address.rawValue)
-            case .manufacturer:     return 0x3F.advanced(by: address.rawValue)
-            case .colorFlag:        return 0x04.advanced(by: address.rawValue)
-            case .licensee:         return 0x34.advanced(by: address.rawValue)
-            case .superGameboyFlag: return 0x46.advanced(by: address.rawValue)
-            case .memoryController: return 0x47.advanced(by: address.rawValue)
-            case .romSize:          return 0x48.advanced(by: address.rawValue)
-            case .ramSize:          return 0x49.advanced(by: address.rawValue)
-            case .destination:      return 0x4A.advanced(by: address.rawValue)
-            case .legacyLicensee:   return 0x4B.advanced(by: address.rawValue)
-            case .versionMask:      return 0x4C.advanced(by: address.rawValue)
-            case .headerChecksum:   return 0x4D.advanced(by: address.rawValue)
-            case .cartChecksum:     return 0x4E.advanced(by: address.rawValue)
-            case .invalid(let range): return range.lowerBound.advanced(by: address.rawValue)
-            }
-        }
-        
-        public var size: Int {
-            switch self {
-            case .beginningAt(_, let section): return section.size
-            case .boot:             return 3
-            case .logo:             return 48
-            case .title:            return 16
-            case .manufacturer:     return 4
-            case .colorFlag:        return 1
-            case .licensee:         return 2
-            case .superGameboyFlag: return 1
-            case .memoryController: return 1
-            case .romSize:          return 1
-            case .ramSize:          return 1
-            case .destination:      return 2
-            case .legacyLicensee:   return 1
-            case .versionMask:      return 1
-            case .headerChecksum:   return 1
-            case .cartChecksum:     return 2
-            case .invalid(let range): return range.count
-            }
-        }
-        
-        public var rawValue: Range<Int> {
-            return lowerBound()..<lowerBound().advanced(by: size)
-        }
-        
-        public init(rawValue: Range<Int>) {
-            self = Section.allSections.filter({ $0.rawValue == rawValue }).first ?? .invalid(rawValue)
-        }
-        
-        public init(rawValue: Range<Int>, headerAddress address: HeaderAddress) {
-            guard address != .cart else {
-                self = Section(rawValue: (rawValue.lowerBound.advanced(by: HeaderAddress.cart.rawValue)..<rawValue.upperBound.advanced(by: HeaderAddress.cart.rawValue)))
-                return
-            }
-            self = Section.allSections
-                .map    ({ .beginningAt(address, $0) })
-                .filter ({ $0.rawValue == rawValue })
-                .first  ?? .beginningAt(address, .invalid(rawValue))
-        }
-
-        public static var allSections: [Section] {
-            return [
-                  .boot
-                , .logo
-                , .title
-                , .manufacturer
-                , .colorFlag
-                , .licensee
-                , .superGameboyFlag
-                , .memoryController
-                , .romSize
-                , .ramSize
-                , .destination
-                , .legacyLicensee
-                , .versionMask
-                , .headerChecksum
-                , .cartChecksum
-            ]
-        }
-    }
-}
-
-extension Data {
-    subscript(section: Header.Section) -> Data? {
-        guard self.indices.overlaps(section.rawValue) else {
-            return nil
-        }
-        return self[section.rawValue]
-    }
-}
-
 class GBxCartReadStream: NSObject, ORSSerialPortDelegate {
     enum Result {
         case closed(port: ORSSerialPort)
@@ -211,6 +68,28 @@ class GBxCartTests: XCTestCase {
     override func tearDown() {
         self.device = nil
     }
+    
+    func testCartWithURL() {
+        var cart = try! Cartridge(contentsOf: URL(string:"file:///Users/kevin/Desktop/cart.gb")!)
+        XCTAssertTrue(cart.isLogoValid)
+        print("Logo Check: \(cart.isLogoValid ? "OK" : "INVALID")")
+        
+        let entryPoint = Data([0x00, 0xC3, 0x50])
+        XCTAssertEqual(cart.entryPoint, entryPoint)
+        XCTAssertEqual(cart.title, "TETRIS")
+
+        XCTAssertTrue(cart.manufacturer.isEmpty)
+        XCTAssertEqual(cart.licensee, "0")
+        XCTAssertTrue(cart.legacyLicensee == .legacy(code: 1))
+        XCTAssertTrue(cart.colorMode == .none)
+        XCTAssertFalse(cart.superGameboySupported)
+        XCTAssertTrue(cart.memoryController == .rom(ram: false, battery: false))
+        XCTAssertTrue(cart.romSize == "0")
+        XCTAssertTrue(cart.ramSize == "0")
+        XCTAssertEqual(cart.region, "Japanese")
+        XCTAssertEqual(cart.headerChecksum, "A")
+        XCTAssertEqual(cart.cartChecksum, "16BF")
+    }
 
     func testDeviceInitWithPath() {
         guard let device = ORSSerialPortManager.GBxCart() else {
@@ -234,14 +113,6 @@ class GBxCartTests: XCTestCase {
         device.open()
         XCTAssertTrue(device.isOpen)
         
-        let d = Data(repeating: 0xFF, count: 0x150)
-        Header.Section.allSections.forEach {
-            XCTAssert(d[$0]?.count == $0.size)
-        }
-
-        let section = Header.Section(rawValue: (0x00..<0x03), headerAddress: .cart)
-        print(d[.beginningAt(.zero, .logo)])
-
         let stream = GBxCartReadStream(responseEvaluator: { data in
             guard let data = data else {
                 return true
@@ -250,7 +121,6 @@ class GBxCartTests: XCTestCase {
         }) { result in
             switch result {
             case .stopped(let stream):
-                // print(stream.buffer.map({ String($0, radix: 16, uppercase: true)}).joined(separator: " "))
                 try? stream.buffer.write(to: self.url)
                 fallthrough
             default:
@@ -258,6 +128,89 @@ class GBxCartTests: XCTestCase {
             }
         }
         stream.start(port: device, address: 0x0)
+        
+        guard case .completed = XCTWaiter.wait(for: [self.expectation!], timeout: 180) else {
+            return XCTFail()
+        }
+
+        var cart = Cartridge(system: .original)
+        cart.colorMode = .none
+        cart.title     = "kevins big game hunter"
+        XCTAssertTrue(cart.isLogoValid)
+        XCTAssertTrue(cart.title == "KEVINS BIG GAME ")
+        
+        // try? cart.write(to: self.url)
+
+        let bytes = stream.buffer[0x100..<0x150]
+        print(bytes.indices)
+        print(Data(bytes).indices)
+        cart.header = bytes
+
+        XCTAssertTrue(cart.isLogoValid)
+        print()
+        print("Entry ASM: ", (cart.entryPoint).map({ data in String(data, radix: 16, uppercase: true) }).joined(separator: " "))
+        print("Logo Check: \(cart.isLogoValid ? "OK" : "INVALID")")
+        print("Title: ", cart.title)
+        print("Manufacturer: ", cart.manufacturer)
+        print("Licensee: ", cart.licensee)
+        print("Legacy Licensee: ", cart.legacyLicensee)
+        print("Color Mode: ", cart.colorMode)
+        print("SGB Support: ", cart.superGameboySupported)
+        print("MBC: ", cart.memoryController)
+        print("ROM Size: ", cart.romSize)
+        print("RAM Size: ", cart.ramSize)
+        print("Region: ", cart.region)
+        print("Version: ", cart.version)
+        print("Header Checksum: ", cart.headerChecksum)
+        print("Cart Checksum: ", cart.cartChecksum)
+        print()
+        
+        /*
+        self.expectation = XCTestExpectation(description: "again")
+        device.open()
+        XCTAssertTrue(device.isOpen)
+        headerData = Data(count: 80)
+        stream = GBxCartReadStream(responseEvaluator: { data in
+            guard let data = data else {
+                return true
+            }
+            return data.count >= 0x80
+        }) { result in
+            switch result {
+            case .stopped(let stream):
+                headerData = stream.buffer[headerData.indices]
+                try? stream.buffer.write(to: self.url)
+                fallthrough
+            default:
+                self.expectation.fulfill()
+            }
+        }
+        stream.start(port: device, address: 0x100)
+        
+        guard case .completed = XCTWaiter.wait(for: [self.expectation!], timeout: 180) else {
+            return XCTFail()
+        }
+        
+        XCTAssert(headerData.count == 80)
+        header = Header(bytes: headerData)
+        print()
+        print("Entry ASM: ", header.entryPoint.map({ data in String(data, radix: 16, uppercase: true) }).joined(separator: " "))
+        print("Logo Check: \(headerData[.logo] == GameBoy.original.logo ? "OK" : "INVALID")")
+        print("Title: ", header.title)
+        print("Manufacturer: ", header.manufacturer)
+        print("Licensee: ", header.licensee)
+        print("Legacy Licensee: ", header.legacyLicensee)
+        print("Color Mode: ", header.colorMode)
+        print("SGB Support: ", header.superGameboySupported)
+        print("MBC: ", header.memoryController)
+        print("ROM Size: ", header.romSize)
+        print("RAM Size: ", header.ramSize)
+        print("Region: ", header.region)
+        print("Version: ", header.version)
+        print("Header Checksum: ", header.headerChecksum)
+        print("Cart Checksum: ", header.cartChecksum)
+        print()
+         */
 
         /*
         var bytesRead = Data()
@@ -347,9 +300,6 @@ class GBxCartTests: XCTestCase {
         XCTAssertTrue(device.send("R".data(using: .ascii)!))
          */
 
-        guard case .completed = XCTWaiter.wait(for: [self.expectation!], timeout: 180) else {
-            return XCTFail()
-        }
     }
 }
 

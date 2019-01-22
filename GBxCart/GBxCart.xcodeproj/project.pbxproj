@@ -7,31 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A1381B621F685D50071E293 /* Data+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1381B521F685D50071E293 /* Data+Ext.swift */; };
 		0A1381BB21F6865C0071E293 /* GBxCartReadRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1381BA21F6865C0071E293 /* GBxCartReadRequest.swift */; };
 		0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */; };
 		0AAD80F921F3815B00D548C8 /* GBxCartTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AAD80F821F3815B00D548C8 /* GBxCartTests.swift */; };
-		0AAD80FE21F3817800D548C8 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A3DD51B21F2AC7300BCC6D4 /* Gibby.framework */; };
-		0AAD80FF21F3817800D548C8 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
 		0AAD811521F381AF00D548C8 /* GBxCartKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AAD810721F381AF00D548C8 /* GBxCartKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0AAD811F21F3826D00D548C8 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
+		0AC92F8821F95FB200605C82 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AC92F8521F95F8D00605C82 /* Gibby.framework */; };
+		0AC92F8921F95FC400605C82 /* GBxCartKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD810521F381AF00D548C8 /* GBxCartKit.framework */; };
+		0AC92F8A21F95FD100605C82 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		0A3DD51A21F2AC7300BCC6D4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0A3DD4D921F2A9D600BCC6D4 /* Gibby.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0A3DD4FD21F2AA3100BCC6D4;
-			remoteInfo = "Gibby-macOS";
-		};
-		0A3DD51C21F2AC7300BCC6D4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0A3DD4D921F2A9D600BCC6D4 /* Gibby.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0A3DD50621F2AA3100BCC6D4;
-			remoteInfo = "Gibby-macOSTests";
-		};
 		0AAD80EE21F380F900D548C8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0AAD80E721F380F900D548C8 /* ORSSerialPort.xcodeproj */;
@@ -46,13 +32,25 @@
 			remoteGlobalIDString = 9D7472131B6D7767002D8B10;
 			remoteInfo = "ORSSerialPort Tests";
 		};
+		0AC92F8421F95F8D00605C82 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0A3DD4FD21F2AA3100BCC6D4;
+			remoteInfo = "Gibby-macOS";
+		};
+		0AC92F8621F95F8D00605C82 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0A3DD50621F2AA3100BCC6D4;
+			remoteInfo = "Gibby-macOSTests";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0A1381B521F685D50071E293 /* Data+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Ext.swift"; sourceTree = "<group>"; };
 		0A1381BA21F6865C0071E293 /* GBxCartReadRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GBxCartReadRequest.swift; sourceTree = "<group>"; };
 		0A3DD4D021F2A64800BCC6D4 /* ORSSerial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ORSSerial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		0A3DD4D921F2A9D600BCC6D4 /* Gibby.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gibby.xcodeproj; path = Gibby/Gibby.xcodeproj; sourceTree = "<group>"; };
 		0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+Ext.swift"; sourceTree = "<group>"; };
 		0AAD80E721F380F900D548C8 /* ORSSerialPort.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ORSSerialPort.xcodeproj; path = "../Dependencies/ORSSerialPort/Framework Project/ORSSerialPort.xcodeproj"; sourceTree = "<group>"; };
 		0AAD80F621F3815B00D548C8 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -60,6 +58,7 @@
 		0AAD80FA21F3815B00D548C8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0AAD810521F381AF00D548C8 /* GBxCartKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GBxCartKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AAD810721F381AF00D548C8 /* GBxCartKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GBxCartKit.h; sourceTree = "<group>"; };
+		0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gibby.xcodeproj; path = ../Dependencies/Gibby/Gibby.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,8 +66,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0AAD80FE21F3817800D548C8 /* Gibby.framework in Frameworks */,
-				0AAD80FF21F3817800D548C8 /* ORSSerial.framework in Frameworks */,
+				0AC92F8A21F95FD100605C82 /* ORSSerial.framework in Frameworks */,
+				0AC92F8921F95FC400605C82 /* GBxCartKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +76,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0AAD811F21F3826D00D548C8 /* ORSSerial.framework in Frameworks */,
+				0AC92F8821F95FB200605C82 /* Gibby.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,7 +86,6 @@
 		0A1381B421F685C00071E293 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				0A1381B521F685D50071E293 /* Data+Ext.swift */,
 				0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */,
 			);
 			path = Utils;
@@ -104,7 +103,7 @@
 			isa = PBXGroup;
 			children = (
 				0AAD80E721F380F900D548C8 /* ORSSerialPort.xcodeproj */,
-				0A3DD4D921F2A9D600BCC6D4 /* Gibby.xcodeproj */,
+				0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */,
 				0AAD810621F381AF00D548C8 /* Kit */,
 				0AAD80F721F3815B00D548C8 /* Tests */,
 				0A3DD4C721F2A62100BCC6D4 /* Products */,
@@ -127,15 +126,6 @@
 				0A3DD4D021F2A64800BCC6D4 /* ORSSerial.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		0A3DD4DA21F2A9D600BCC6D4 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				0A3DD51B21F2AC7300BCC6D4 /* Gibby.framework */,
-				0A3DD51D21F2AC7300BCC6D4 /* Gibby-macOSTests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		0AAD80E821F380F900D548C8 /* Products */ = {
@@ -172,6 +162,15 @@
 				0A1381B421F685C00071E293 /* Utils */,
 			);
 			path = Sources;
+			sourceTree = "<group>";
+		};
+		0AC92F8021F95F8D00605C82 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0AC92F8521F95F8D00605C82 /* Gibby.framework */,
+				0AC92F8721F95F8D00605C82 /* Gibby-macOSTests.xctest */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -253,8 +252,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 0A3DD4DA21F2A9D600BCC6D4 /* Products */;
-					ProjectRef = 0A3DD4D921F2A9D600BCC6D4 /* Gibby.xcodeproj */;
+					ProductGroup = 0AC92F8021F95F8D00605C82 /* Products */;
+					ProjectRef = 0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */;
 				},
 				{
 					ProductGroup = 0AAD80E821F380F900D548C8 /* Products */;
@@ -270,20 +269,6 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		0A3DD51B21F2AC7300BCC6D4 /* Gibby.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Gibby.framework;
-			remoteRef = 0A3DD51A21F2AC7300BCC6D4 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		0A3DD51D21F2AC7300BCC6D4 /* Gibby-macOSTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = "Gibby-macOSTests.xctest";
-			remoteRef = 0A3DD51C21F2AC7300BCC6D4 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		0AAD80EF21F380F900D548C8 /* ORSSerial.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -296,6 +281,20 @@
 			fileType = wrapper.cfbundle;
 			path = "ORSSerialPort Tests.xctest";
 			remoteRef = 0AAD80F021F380F900D548C8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		0AC92F8521F95F8D00605C82 /* Gibby.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Gibby.framework;
+			remoteRef = 0AC92F8421F95F8D00605C82 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		0AC92F8721F95F8D00605C82 /* Gibby-macOSTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "Gibby-macOSTests.xctest";
+			remoteRef = 0AC92F8621F95F8D00605C82 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -331,7 +330,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */,
-				0A1381B621F685D50071E293 /* Data+Ext.swift in Sources */,
 				0A1381BB21F6865C0071E293 /* GBxCartReadRequest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
