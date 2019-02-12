@@ -1,6 +1,19 @@
 import ORSSerial
 
 extension ORSSerialPortManager {
+    public enum PortMatchingError: Error, CustomDebugStringConvertible {
+        case noMatching(profile: PortProfile)
+        
+        public var debugDescription: String {
+            switch self {
+            case .noMatching(let profile):
+                return "No ports found matching \(profile)."
+            }
+        }
+    }
+}
+
+extension ORSSerialPortManager {
     public enum PortProfile {
         case prefix(String)
 
@@ -12,22 +25,29 @@ extension ORSSerialPortManager {
         }
     }
     
-    private static func port(matching profile: PortProfile) -> ORSSerialPort? {
+    private static func match(_ profile: PortProfile) -> ORSSerialPort? {
         return shared()
             .availablePorts
             .filter(profile.matcher())
             .first
     }
     
-    public static func GBxCart(_ profile: PortProfile = .prefix("/dev/cu.usbserial-14")) -> ORSSerialPort? {
-        let port = ORSSerialPortManager.port(matching: profile)
-        port?.allowsNonStandardBaudRates = true
-        port?.baudRate = 1000000
-        port?.dtr = true
-        port?.rts = true
-        port?.numberOfDataBits = 8
-        port?.numberOfStopBits = 1
-        port?.parity = .none
+    public static func port(matching profile: PortProfile) throws -> ORSSerialPort {
+        guard let port = ORSSerialPortManager.match(profile) else {
+            throw PortMatchingError.noMatching(profile: profile)
+        }
         return port
+    }
+    
+    public static func GBxCart(_ profile: PortProfile = .prefix("/dev/cu.usbserial-14")) throws -> ORSSerialPort {
+        let cart = try port(matching: profile)
+        cart.allowsNonStandardBaudRates = true
+        cart.baudRate = 1000000
+        cart.dtr = true
+        cart.rts = true
+        cart.numberOfDataBits = 8
+        cart.numberOfStopBits = 1
+        cart.parity = .none
+        return cart
     }
 }
