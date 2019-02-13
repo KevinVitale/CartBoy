@@ -8,11 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11DB6122127E1600C7DD13 /* Data+Ext.swift */; };
-		0A1381BB21F6865C0071E293 /* GBxCartReadRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1381BA21F6865C0071E293 /* GBxCartReadRequest.swift */; };
 		0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */; };
-		0AAD80F921F3815B00D548C8 /* GBxCartTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AAD80F821F3815B00D548C8 /* GBxCartTests.swift */; };
 		0AAD811521F381AF00D548C8 /* GBxCartKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AAD810721F381AF00D548C8 /* GBxCartKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0AAD811F21F3826D00D548C8 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
+		0AC0FE15221283BD002E69C2 /* ReadROMOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE14221283BD002E69C2 /* ReadROMOperation.swift */; };
+		0AC0FE17221289D7002E69C2 /* ReadROMOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE16221289D7002E69C2 /* ReadROMOperationTests.swift */; };
+		0AC0FE1B22132981002E69C2 /* ReadROMOperation+ORSSerialProtDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE1A22132981002E69C2 /* ReadROMOperation+ORSSerialProtDelegate.swift */; };
+		0AC0FE1D2213314A002E69C2 /* ReadROMOperation+ReadInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE1C2213314A002E69C2 /* ReadROMOperation+ReadInstruction.swift */; };
+		0AC0FE1F2213317C002E69C2 /* ORSSerialPort+SerialDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE1E2213317C002E69C2 /* ORSSerialPort+SerialDevice.swift */; };
 		0AC92F8821F95FB200605C82 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AC92F8521F95F8D00605C82 /* Gibby.framework */; };
 		0AC92F8921F95FC400605C82 /* GBxCartKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD810521F381AF00D548C8 /* GBxCartKit.framework */; };
 		0AC92F8A21F95FD100605C82 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
@@ -59,6 +62,11 @@
 		0AAD80F821F3815B00D548C8 /* GBxCartTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxCartTests.swift; sourceTree = "<group>"; };
 		0AAD810521F381AF00D548C8 /* GBxCartKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GBxCartKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AAD810721F381AF00D548C8 /* GBxCartKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GBxCartKit.h; sourceTree = "<group>"; };
+		0AC0FE14221283BD002E69C2 /* ReadROMOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadROMOperation.swift; sourceTree = "<group>"; };
+		0AC0FE16221289D7002E69C2 /* ReadROMOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadROMOperationTests.swift; sourceTree = "<group>"; };
+		0AC0FE1A22132981002E69C2 /* ReadROMOperation+ORSSerialProtDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReadROMOperation+ORSSerialProtDelegate.swift"; sourceTree = "<group>"; };
+		0AC0FE1C2213314A002E69C2 /* ReadROMOperation+ReadInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReadROMOperation+ReadInstruction.swift"; sourceTree = "<group>"; };
+		0AC0FE1E2213317C002E69C2 /* ORSSerialPort+SerialDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+SerialDevice.swift"; sourceTree = "<group>"; };
 		0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gibby.xcodeproj; path = ../Dependencies/Gibby/Gibby.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -89,6 +97,7 @@
 			children = (
 				0A11DB6122127E1600C7DD13 /* Data+Ext.swift */,
 				0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */,
+				0AC0FE1E2213317C002E69C2 /* ORSSerialPort+SerialDevice.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -96,6 +105,7 @@
 		0A1381B721F685E50071E293 /* GBxCart */ = {
 			isa = PBXGroup;
 			children = (
+				0AC0FE182213294D002E69C2 /* Operations */,
 				0A1381BA21F6865C0071E293 /* GBxCartReadRequest.swift */,
 			);
 			path = GBxCart;
@@ -143,6 +153,7 @@
 			isa = PBXGroup;
 			children = (
 				0AAD80F821F3815B00D548C8 /* GBxCartTests.swift */,
+				0AC0FE16221289D7002E69C2 /* ReadROMOperationTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -163,6 +174,24 @@
 				0A1381B421F685C00071E293 /* Utils */,
 			);
 			path = Sources;
+			sourceTree = "<group>";
+		};
+		0AC0FE182213294D002E69C2 /* Operations */ = {
+			isa = PBXGroup;
+			children = (
+				0AC0FE192213296D002E69C2 /* Read ROM */,
+			);
+			path = Operations;
+			sourceTree = "<group>";
+		};
+		0AC0FE192213296D002E69C2 /* Read ROM */ = {
+			isa = PBXGroup;
+			children = (
+				0AC0FE14221283BD002E69C2 /* ReadROMOperation.swift */,
+				0AC0FE1A22132981002E69C2 /* ReadROMOperation+ORSSerialProtDelegate.swift */,
+				0AC0FE1C2213314A002E69C2 /* ReadROMOperation+ReadInstruction.swift */,
+			);
+			path = "Read ROM";
 			sourceTree = "<group>";
 		};
 		0AC92F8021F95F8D00605C82 /* Products */ = {
@@ -234,6 +263,7 @@
 				TargetAttributes = {
 					0AAD80F521F3815B00D548C8 = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1010;
 					};
 					0AAD810421F381AF00D548C8 = {
 						CreatedOnToolsVersion = 10.1;
@@ -322,7 +352,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0AAD80F921F3815B00D548C8 /* GBxCartTests.swift in Sources */,
+				0AC0FE17221289D7002E69C2 /* ReadROMOperationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,9 +360,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0AC0FE1D2213314A002E69C2 /* ReadROMOperation+ReadInstruction.swift in Sources */,
+				0AC0FE1F2213317C002E69C2 /* ORSSerialPort+SerialDevice.swift in Sources */,
 				0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */,
+				0AC0FE1B22132981002E69C2 /* ReadROMOperation+ORSSerialProtDelegate.swift in Sources */,
+				0AC0FE15221283BD002E69C2 /* ReadROMOperation.swift in Sources */,
 				0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */,
-				0A1381BB21F6865C0071E293 /* GBxCartReadRequest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
