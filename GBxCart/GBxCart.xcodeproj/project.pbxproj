@@ -14,7 +14,6 @@
 		0AC0FE15221283BD002E69C2 /* ReadROMOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE14221283BD002E69C2 /* ReadROMOperation.swift */; };
 		0AC0FE17221289D7002E69C2 /* ReadROMOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE16221289D7002E69C2 /* ReadROMOperationTests.swift */; };
 		0AC0FE1D2213314A002E69C2 /* ReadROMOperation+ReadInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE1C2213314A002E69C2 /* ReadROMOperation+ReadInstruction.swift */; };
-		0AC0FE1F2213317C002E69C2 /* ORSSerialPort+SerialDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE1E2213317C002E69C2 /* ORSSerialPort+SerialDevice.swift */; };
 		0AC92F8821F95FB200605C82 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AC92F8521F95F8D00605C82 /* Gibby.framework */; };
 		0AC92F8921F95FC400605C82 /* GBxCartKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD810521F381AF00D548C8 /* GBxCartKit.framework */; };
 		0AC92F8A21F95FD100605C82 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
@@ -62,7 +61,6 @@
 		0AC0FE14221283BD002E69C2 /* ReadROMOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadROMOperation.swift; sourceTree = "<group>"; };
 		0AC0FE16221289D7002E69C2 /* ReadROMOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadROMOperationTests.swift; sourceTree = "<group>"; };
 		0AC0FE1C2213314A002E69C2 /* ReadROMOperation+ReadInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReadROMOperation+ReadInstruction.swift"; sourceTree = "<group>"; };
-		0AC0FE1E2213317C002E69C2 /* ORSSerialPort+SerialDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+SerialDevice.swift"; sourceTree = "<group>"; };
 		0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gibby.xcodeproj; path = ../Dependencies/Gibby/Gibby.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -93,7 +91,6 @@
 			children = (
 				0A11DB6122127E1600C7DD13 /* Data+Ext.swift */,
 				0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */,
-				0AC0FE1E2213317C002E69C2 /* ORSSerialPort+SerialDevice.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -354,7 +351,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0AC0FE1D2213314A002E69C2 /* ReadROMOperation+ReadInstruction.swift in Sources */,
-				0AC0FE1F2213317C002E69C2 /* ORSSerialPort+SerialDevice.swift in Sources */,
 				0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */,
 				0AC0FE15221283BD002E69C2 /* ReadROMOperation.swift in Sources */,
 				0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */,

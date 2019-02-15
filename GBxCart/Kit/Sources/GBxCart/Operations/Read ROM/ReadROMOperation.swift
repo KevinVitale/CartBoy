@@ -2,7 +2,7 @@ import Foundation
 import ORSSerial
 import Gibby
 
-public final class ReadROMOperation<SerialDevice: ORSSerialPort, Gameboy: Platform>: Operation, ORSSerialPortDelegate {
+public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPortDelegate {
     public required init<Result: PlatformMemory>(device: ORSSerialPort, memoryRange: MemoryRange, cleanup completion: ((Result) -> ())? = nil) where Result.Platform == Gameboy {
         self.memoryRange = memoryRange
         super.init()
@@ -57,7 +57,10 @@ public final class ReadROMOperation<SerialDevice: ORSSerialPort, Gameboy: Platfo
     }
     
     public override func main() {
-        try? self.device?.readBytes(at: self.memoryRange.startingAddress)
+        /* FIXME: These 'sends' are too specific to GBxCart. */
+        device?.send("0\0".data(using: .ascii)!)
+        device?.send("A\(String(self.memoryRange.startingAddress, radix: 16, uppercase: true))\0".data(using: .ascii)!)
+        device?.send("R".data(using: .ascii)!)
     }
     
     public override func cancel() {
@@ -102,34 +105,16 @@ public final class ReadROMOperation<SerialDevice: ORSSerialPort, Gameboy: Platfo
             return
         }
         
-        self.buffer(data)
+        self.buffer.append(data)
         
-        if self.shouldAppendBuffer {
-            self.appendAndResetBuffer()
-            
-            if self.shouldContinueToRead {
-                serialPort.continueToRead()
+        if (64 - self.buffer.count) <= 0 {
+            self.bytes.append(self.buffer)
+            self.buffer = Data()
+
+            if self.bytes.count < self.memoryRange.bytesToRead {
+                serialPort.send("1".data(using: .ascii)!)
             }
         }
-    }
-}
-
-extension ReadROMOperation {
-    func buffer(_ bytes: Data) {
-        self.buffer.append(bytes)
-    }
-    
-    func appendAndResetBuffer() {
-        self.bytes.append(self.buffer)
-        self.buffer = Data()
-    }
-    
-    var shouldAppendBuffer: Bool {
-        return (SerialDevice.pageSize - self.buffer.count) <= 0
-    }
-    
-    var shouldContinueToRead: Bool {
-        return self.bytes.count < self.memoryRange.bytesToRead
     }
 }
 

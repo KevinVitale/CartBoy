@@ -4,7 +4,7 @@ import Gibby
 import ORSSerial
 
 class ReadROMOperationTests: XCTestCase {
-    fileprivate typealias GameboyClassicROM = ReadROMOperation<ORSSerialPort, GameboyClassic>
+    fileprivate typealias GameboyClassicROM = ReadROMOperation<GameboyClassic>
     
     private var cart: ORSSerialPort?
     private let queue = OperationQueue()
