@@ -3,8 +3,6 @@ import ORSSerial
 import Gibby
 
 public final class ReadROMOperation<SerialDevice: ORSSerialPort, Gameboy: Platform>: Operation, ORSSerialPortDelegate {
-    public typealias Cartridge = Gameboy.Cartridge
-
     public required init<Result: PlatformMemory>(device: ORSSerialPort, memoryRange: MemoryRange, cleanup completion: ((Result) -> ())? = nil) where Result.Platform == Gameboy {
         self.memoryRange = memoryRange
         super.init()
@@ -24,6 +22,11 @@ public final class ReadROMOperation<SerialDevice: ORSSerialPort, Gameboy: Platfo
         self.device = device
         self.device?.delegate = self
     }
+    
+    // Typealiases
+    //--------------------------------------------------------------------------
+    public typealias Cartridge = Gameboy.Cartridge
+
 
     // Properties
     //--------------------------------------------------------------------------
