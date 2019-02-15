@@ -58,7 +58,6 @@
 		0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+Ext.swift"; sourceTree = "<group>"; };
 		0AAD80E721F380F900D548C8 /* ORSSerialPort.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ORSSerialPort.xcodeproj; path = "../Dependencies/ORSSerialPort/Framework Project/ORSSerialPort.xcodeproj"; sourceTree = "<group>"; };
 		0AAD80F621F3815B00D548C8 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0AAD80F821F3815B00D548C8 /* GBxCartTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxCartTests.swift; sourceTree = "<group>"; };
 		0AAD810521F381AF00D548C8 /* GBxCartKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GBxCartKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AAD810721F381AF00D548C8 /* GBxCartKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GBxCartKit.h; sourceTree = "<group>"; };
 		0AC0FE14221283BD002E69C2 /* ReadROMOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadROMOperation.swift; sourceTree = "<group>"; };
@@ -150,7 +149,6 @@
 		0AAD80F721F3815B00D548C8 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				0AAD80F821F3815B00D548C8 /* GBxCartTests.swift */,
 				0AC0FE16221289D7002E69C2 /* ReadROMOperationTests.swift */,
 			);
 			path = Tests;
