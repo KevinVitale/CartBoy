@@ -25,6 +25,10 @@ struct ReadROMData<Gameboy: Platform> {
         return (64 - cache.count) <= 0
     }
     
+    mutating func erase() {
+        self.bytes = Data()
+    }
+    
     mutating func append(next data: Data, stop: inout Bool) {
         self.cache.append(data)
         if self.isCacheFilled {

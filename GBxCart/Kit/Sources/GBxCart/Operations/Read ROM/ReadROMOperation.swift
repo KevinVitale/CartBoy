@@ -9,6 +9,9 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
         self.romData = ReadROMData(operation: self, memoryRange: memoryRange)
         self.completionBlock = { [weak self] in
             device.delegate = nil
+            if self?.isCancelled ?? false {
+                self?.romData.erase()
+            }
             
             DispatchQueue.main.async {
                 completion?(self?.romData.result())
@@ -58,12 +61,7 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
         self.device?.send("A\(String(self.romData.startingAddress, radix: 16, uppercase: true))\0".data(using: .ascii)!)
         self.device?.send("R".data(using: .ascii)!)
     }
-    
-    public override func cancel() {
-        super.cancel()
-        self.romData = nil
-    }
-    
+
     public override var isReady: Bool {
         return super.isReady && self.device?.isOpen ?? false
     }
