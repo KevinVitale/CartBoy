@@ -3,19 +3,15 @@ import ORSSerial
 import Gibby
 
 public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPortDelegate {
-    public required init<Result: PlatformMemory>(device: ORSSerialPort, memoryRange: MemoryRange, cleanup completion: ((Result) -> ())? = nil) where Result.Platform == Gameboy {
-        self.memoryRange = memoryRange
+    public required init<Result: PlatformMemory>(device: ORSSerialPort, memoryRange: MemoryRange, cleanup completion: ((Result?) -> ())? = nil) where Result.Platform == Gameboy {
         super.init()
         
+        self.romData = ReadROMData(operation: self, memoryRange: memoryRange)
         self.completionBlock = { [weak self] in
             device.delegate = nil
-
-            if let strongSelf = self, strongSelf.bytes.indices.overlaps(memoryRange.indices) {
-                strongSelf.bytes = strongSelf.bytes[memoryRange.indices]
-            }
             
             DispatchQueue.main.async {
-                completion?(Result(bytes: self?.bytes ?? Data()))
+                completion?(self?.romData?.result())
             }
         }
         
@@ -30,22 +26,22 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
 
     // Properties
     //--------------------------------------------------------------------------
-    public private(set) var memoryRange: MemoryRange
-    private private(set) var bytes = Data() {
-        didSet {
-            if isFinished || isCancelled {
-                self.willChangeValue(forKey: "isExecuting")
-                self.willChangeValue(forKey: "isFinished")
-                self._isExecuting = false
-                self.didChangeValue(forKey: "isFinished")
-                self.didChangeValue(forKey: "isExecuting")
-            }
+    private var _isExecuting = false
+    private weak var device: ORSSerialPort?
+    private var romData: ReadROMData<Gameboy>?
+
+    private func notifyExecutionStateChangeIfNecessary() {
+        if isFinished || isCancelled {
+            self.willChangeValue(forKey: "isExecuting")
+            self.willChangeValue(forKey: "isFinished")
+            self._isExecuting = false
+            self.didChangeValue(forKey: "isFinished")
+            self.didChangeValue(forKey: "isExecuting")
         }
     }
-    private var _isExecuting = false
-    private var buffer = Data()
-    private weak var device: ORSSerialPort?
     
+    // Operation
+    //--------------------------------------------------------------------------
     public override func start() {
         guard self.isReady else {
             return
@@ -57,16 +53,20 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
     }
     
     public override func main() {
+        guard let romData = self.romData else {
+            cancel()
+            return
+        }
+        
         /* FIXME: These 'sends' are too specific to GBxCart. */
         device?.send("0\0".data(using: .ascii)!)
-        device?.send("A\(String(self.memoryRange.startingAddress, radix: 16, uppercase: true))\0".data(using: .ascii)!)
+        device?.send("A\(String(romData.startingAddress, radix: 16, uppercase: true))\0".data(using: .ascii)!)
         device?.send("R".data(using: .ascii)!)
     }
     
     public override func cancel() {
         super.cancel()
-        self.buffer = Data()
-        self.bytes  = Data()
+        self.romData = nil
     }
     
     public override var isReady: Bool {
@@ -78,13 +78,15 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
     }
     
     public override var isFinished: Bool {
-        return bytes.count >= memoryRange.bytesToRead || isCancelled
+        return (romData?.isCompleted ?? false) || isCancelled
     }
     
     public override var isAsynchronous: Bool {
         return true
     }
     
+    // ORSSerialDelegate
+    //--------------------------------------------------------------------------
     public func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
         print(#function)
         cancel()
@@ -99,21 +101,18 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
         print(#function)
     }
     
-    
     public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
         guard self.isCancelled == false else {
             return
         }
         
-        self.buffer.append(data)
-        
-        if (64 - self.buffer.count) <= 0 {
-            self.bytes.append(self.buffer)
-            self.buffer = Data()
-
-            if self.bytes.count < self.memoryRange.bytesToRead {
-                serialPort.send("1".data(using: .ascii)!)
-            }
+        var stop: Bool = false
+        self.romData?.append(next: data, stop: &stop)
+        if !stop {
+            serialPort.send("1".data(using: .ascii)!)
+        }
+        else {
+            self.notifyExecutionStateChangeIfNecessary()
         }
     }
 }

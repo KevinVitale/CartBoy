@@ -38,19 +38,20 @@ class ReadROMOperationTests: XCTestCase {
         }
         //----------------------------------------------------------------------
         
-        var header: GameboyClassicROM.Cartridge.Header = .init(bytes: Data())
+        var header: GameboyClassicROM.Cartridge.Header!
         let expectation = XCTestExpectation(description: "")
-        let readROM = GameboyClassicROM(device: cart, memoryRange: .header) { (result: GameboyClassicROM.Cartridge.Header) in
+        let readROM = GameboyClassicROM(device: cart, memoryRange: .header) { (result: GameboyClassicROM.Cartridge.Header?) in
             header = result
             expectation.fulfill()
         }
         
         self.queue.addOperation(readROM)
         
-        guard case .completed = XCTWaiter.wait(for: [expectation], timeout: 5) else {
-            return XCTFail()
+        guard case .completed = XCTWaiter.wait(for: [expectation], timeout: 5)
+            , header != nil else {
+                return XCTFail("\n.: Header is 'nil' :.")
         }
-        
+
         print("Entry Point:\(header.bootInstructions.map { String($0, radix: 16, uppercase: true) }.joined())")
         print("Logo Check:\t\(header.isLogoValid ? "Valid" : "Invalid")")
         print("Title:\t\t\(header.title)")
@@ -81,8 +82,10 @@ class ReadROMOperationTests: XCTestCase {
         var rom: GameboyClassicROM.Cartridge = .init(bytes: Data())
         
         let expectation = XCTestExpectation(description: "")
-        let readROM = GameboyClassicROM(device: cart, memoryRange: .range(0x0000..<0x8000)) { (result: GameboyClassicROM.Cartridge) in
-            rom = result
+        let readROM = GameboyClassicROM(device: cart, memoryRange: .range(0x0000..<0x8000)) { (result: GameboyClassicROM.Cartridge?) in
+            if let result = result {
+                rom = result
+            }
             expectation.fulfill()
         }
         
