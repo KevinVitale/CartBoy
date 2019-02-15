@@ -26,7 +26,7 @@ public final class ReadROMOperation<SerialDevice: ORSSerialPort, Gameboy: Platfo
     }
 
     // Properties
-    //-------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     public private(set) var memoryRange: MemoryRange
     private private(set) var bytes = Data() {
         didSet {
