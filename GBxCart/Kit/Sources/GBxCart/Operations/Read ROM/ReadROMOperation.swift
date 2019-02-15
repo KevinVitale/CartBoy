@@ -1,8 +1,11 @@
 import Foundation
 import ORSSerial
+import Gibby
 
-public final class ReadROMOperation: Operation {
-    public required init(device: ORSSerialPort, memoryRange: MemoryRange, cleanup completion: (() -> Void)? = nil) {
+public final class ReadROMOperation<SerialDevice: ORSSerialPort, Gameboy: Platform>: Operation, ORSSerialPortDelegate {
+    public typealias Cartridge = Gameboy.Cartridge
+
+    public required init<Result: PlatformMemory>(device: ORSSerialPort, memoryRange: MemoryRange, cleanup completion: ((Result) -> ())? = nil) where Result.Platform == Gameboy {
         self.memoryRange = memoryRange
         super.init()
         
@@ -12,8 +15,9 @@ public final class ReadROMOperation: Operation {
             if let strongSelf = self, strongSelf.bytes.indices.overlaps(memoryRange.indices) {
                 strongSelf.bytes = strongSelf.bytes[memoryRange.indices]
             }
+            
             DispatchQueue.main.async {
-                completion?()
+                completion?(Result(bytes: self?.bytes ?? Data()))
             }
         }
         
@@ -24,7 +28,7 @@ public final class ReadROMOperation: Operation {
     // Properties
     //-------------------------------------------------------------------------
     public private(set) var memoryRange: MemoryRange
-    public private(set) var bytes = Data() {
+    private private(set) var bytes = Data() {
         didSet {
             if isFinished || isCancelled {
                 self.willChangeValue(forKey: "isExecuting")
@@ -38,28 +42,7 @@ public final class ReadROMOperation: Operation {
     private var _isExecuting = false
     private var buffer = Data()
     private weak var device: ORSSerialPort?
-}
-
-extension ReadROMOperation {
-    func buffer(_ bytes: Data) {
-        self.buffer.append(bytes)
-    }
     
-    func appendAndResetBuffer() {
-        self.bytes.append(self.buffer)
-        self.buffer = Data()
-    }
-    
-    var shouldAppendBuffer: Bool {
-        return (64 - self.buffer.count) <= 0
-    }
-    
-    var shouldContinueToRead: Bool {
-        return self.bytes.count < self.memoryRange.bytesToRead
-    }
-}
-
-extension ReadROMOperation {
     public override func start() {
         guard self.isReady else {
             return
@@ -94,6 +77,56 @@ extension ReadROMOperation {
     
     public override var isAsynchronous: Bool {
         return true
+    }
+    
+    public func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
+        print(#function)
+        cancel()
+    }
+    
+    public func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+        print(#function)
+        cancel()
+    }
+    
+    public func serialPortWasOpened(_ serialPort: ORSSerialPort) {
+        print(#function)
+    }
+    
+    
+    public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+        guard self.isCancelled == false else {
+            return
+        }
+        
+        self.buffer(data)
+        
+        if self.shouldAppendBuffer {
+            self.appendAndResetBuffer()
+            
+            if self.shouldContinueToRead {
+                serialPort.continueToRead()
+            }
+        }
+    }
+}
+
+extension ReadROMOperation {
+    func buffer(_ bytes: Data) {
+        self.buffer.append(bytes)
+    }
+    
+    func appendAndResetBuffer() {
+        self.bytes.append(self.buffer)
+        self.buffer = Data()
+    }
+    
+    var shouldAppendBuffer: Bool {
+        return (SerialDevice.pageSize - self.buffer.count) <= 0
+    }
+    
+    var shouldContinueToRead: Bool {
+        return self.bytes.count < self.memoryRange.bytesToRead
     }
 }
 

@@ -4,6 +4,8 @@ protocol SerialDevice: class, NSObjectProtocol {
     func readBytes(at address: Int) throws
     func continueToRead()
     func stopSending()
+    
+    static var pageSize: Int { get }
 }
 
 extension ORSSerialPort: SerialDevice {
@@ -19,5 +21,9 @@ extension ORSSerialPort: SerialDevice {
     
     func stopSending() {
         send("0\0".data(using: .ascii)!)
+    }
+    
+    static var pageSize: Int {
+        return 64
     }
 }

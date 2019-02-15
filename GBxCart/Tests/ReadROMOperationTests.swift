@@ -4,6 +4,8 @@ import Gibby
 import ORSSerial
 
 class ReadROMOperationTests: XCTestCase {
+    fileprivate typealias GameboyClassicROM = ReadROMOperation<ORSSerialPort, GameboyClassic>
+    
     private var cart: ORSSerialPort?
     private let queue = OperationQueue()
 
@@ -36,8 +38,10 @@ class ReadROMOperationTests: XCTestCase {
         }
         //----------------------------------------------------------------------
         
+        var header: GameboyClassicROM.Cartridge.Header = .init(bytes: Data())
         let expectation = XCTestExpectation(description: "")
-        let readROM = ReadROMOperation(device: cart, memoryRange: .header(.original)) {
+        let readROM = GameboyClassicROM(device: cart, memoryRange: .header) { (result: GameboyClassicROM.Cartridge.Header) in
+            header = result
             expectation.fulfill()
         }
         
@@ -47,30 +51,25 @@ class ReadROMOperationTests: XCTestCase {
             return XCTFail()
         }
         
-        if let header = ROMHeader(gameBoy: .original, bytes: readROM.bytes) {
-            print("Entry Point:\(header.bootInstructions.map { String($0, radix: 16, uppercase: true) }.joined())")
-            print("Logo Check:\t\(header.isLogoValid ? "Valid" : "Invalid")")
-            print("Title:\t\t\(header.title)")
-            print("Manu.:\t\t\(header.manufacturer ?? "")")
-            print("CBC:\t\t\(header.isColorOnly ?? false)")
-            print("Licensee:\t\(header.licensee)")
-            print("SGB:\t\t\(header.supportsSuperGameBoy ?? false)")
-            print("MBC Type:\t\(header.config)")
-            print("ROM Size:\t\(header.romSize)")
-            print("ROM Size ID:\(header.romSizeID)")
-            print("RAM Size:\t\(header.ramSize)")
-            print("RAM Size ID:\(header.ramSizeID)")
-            print("Region:\t\t\(header.region)")
-            print("Old Code:\t\(header.legacyLicensee ?? 0)")
-            print("Version:\t\(header.version)")
-            print("H.Checksum:\t\(header.headerChecksum)")
-            print("C.Checksum:\t\(header.cartChecksum)")
-        }
-        else {
-            XCTFail("Could not construct ROM header")
-        }
+        print("Entry Point:\(header.bootInstructions.map { String($0, radix: 16, uppercase: true) }.joined())")
+        print("Logo Check:\t\(header.isLogoValid ? "Valid" : "Invalid")")
+        print("Title:\t\t\(header.title)")
+        print("Manu.:\t\t\(header.manufacturer)")
+        print("CBC:\t\t\(header.colorMode)")
+        print("Licensee:\t\(header.licensee)")
+        print("SGB:\t\t\(header.superGameboySupported)")
+        print("MBC Type:\t\(header.configuration)")
+        print("ROM Size:\t\(header.romSize)")
+        print("ROM Size ID:\(header.romSizeID)")
+        print("RAM Size:\t\(header.ramSize)")
+        print("RAM Size ID:\(header.ramSizeID)")
+        print("Region:\t\t\(header.region)")
+        print("Old Code:\t\(header.legacyLicensee)")
+        print("Version:\t\(header.version)")
+        print("H.Checksum:\t\(header.headerChecksum)")
+        print("C.Checksum:\t\(header.romChecksum)")
 
-        XCTAssertEqual(readROM.bytes[0x4..<0x34], GameBoy.original.logo)
+        XCTAssertTrue(header.isLogoValid)
     }
     
     func testOperation() {
@@ -78,8 +77,12 @@ class ReadROMOperationTests: XCTestCase {
             return XCTFail("Serial port missing or is not open.")
         }
         //----------------------------------------------------------------------
+        
+        var rom: GameboyClassicROM.Cartridge = .init(bytes: Data())
+        
         let expectation = XCTestExpectation(description: "")
-        let readROM = ReadROMOperation(device: cart, memoryRange: .range(0x0000..<0x8000)) {
+        let readROM = GameboyClassicROM(device: cart, memoryRange: .range(0x0000..<0x8000)) { (result: GameboyClassicROM.Cartridge) in
+            rom = result
             expectation.fulfill()
         }
         
@@ -96,7 +99,7 @@ class ReadROMOperationTests: XCTestCase {
             return XCTFail()
         }
         
-        print(readROM.bytes)
-        try? readROM.bytes.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/cart.gb"))
+        print(rom)
+        // try? readROM.bytes.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/cart.gb"))
     }
 }
