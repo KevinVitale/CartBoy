@@ -11,7 +11,7 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
             device.delegate = nil
             
             DispatchQueue.main.async {
-                completion?(self?.romData?.result())
+                completion?(self?.romData.result())
             }
         }
         
@@ -28,7 +28,7 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
     //--------------------------------------------------------------------------
     private var _isExecuting = false
     private weak var device: ORSSerialPort?
-    private var romData: ReadROMData<Gameboy>?
+    private var romData: ReadROMData<Gameboy>!
 
     private func notifyExecutionStateChangeIfNecessary() {
         if isFinished || isCancelled {
@@ -53,15 +53,10 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
     }
     
     public override func main() {
-        guard let romData = self.romData else {
-            cancel()
-            return
-        }
-        
         /* FIXME: These 'sends' are too specific to GBxCart. */
-        device?.send("0\0".data(using: .ascii)!)
-        device?.send("A\(String(romData.startingAddress, radix: 16, uppercase: true))\0".data(using: .ascii)!)
-        device?.send("R".data(using: .ascii)!)
+        self.device?.send("0\0".data(using: .ascii)!)
+        self.device?.send("A\(String(self.romData.startingAddress, radix: 16, uppercase: true))\0".data(using: .ascii)!)
+        self.device?.send("R".data(using: .ascii)!)
     }
     
     public override func cancel() {
@@ -78,7 +73,7 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
     }
     
     public override var isFinished: Bool {
-        return (romData?.isCompleted ?? false) || isCancelled
+        return romData.isCompleted || isCancelled
     }
     
     public override var isAsynchronous: Bool {
@@ -107,7 +102,7 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
         }
         
         var stop: Bool = false
-        self.romData?.append(next: data, stop: &stop)
+        self.romData.append(next: data, stop: &stop)
         if !stop {
             serialPort.send("1".data(using: .ascii)!)
         }
