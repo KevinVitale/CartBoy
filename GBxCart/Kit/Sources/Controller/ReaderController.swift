@@ -16,3 +16,7 @@ extension ReaderController {
     }
 }
 
+
+public enum ReaderControllerError: Error {
+    case failedToOpen(ORSSerialPort)
+}

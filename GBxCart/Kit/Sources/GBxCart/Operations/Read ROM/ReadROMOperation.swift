@@ -9,12 +9,17 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
         self.romData = ReadROMData(operation: self, memoryRange: memoryRange)
         self.completionBlock = { [weak self] in
             device.delegate = nil
-            if self?.isCancelled ?? false {
-                self?.romData.erase()
+            
+            guard let strongSelf = self else {
+                return
+            }
+            
+            if strongSelf.isCancelled {
+                strongSelf.romData.erase()
             }
             
             DispatchQueue.main.async {
-                completion?(self?.romData.result())
+                completion?(strongSelf.romData.result())
             }
         }
         

@@ -3,16 +3,23 @@ import ORSSerial
 import Gibby
 import GBxCartKit
 
-open class BaseReadROMTest<Gameboy: Platform>: XCTestCase, ReaderController {
+final class TestReaderController<Gameboy: Platform>: NSObject, ReaderController {
     public private(set) var reader: ORSSerialPort!
     private let queue = OperationQueue()
     
+    typealias Header = Gameboy.Cartridge.Header
+
     public final func openReader(matching profile: ORSSerialPortManager.PortProfile) throws {
-        guard reader.isOpen == false else {
+        guard reader == nil else {
             return
         }
-        self.reader = try ORSSerialPortManager.port(matching: profile)
         
+        self.reader = try ORSSerialPortManager.port(matching: profile)
+        self.reader.open()
+        guard self.reader.isOpen else {
+            throw ReaderControllerError.failedToOpen(self.reader)
+        }
+
         switch profile {
         case .GBxCart:
             self.reader = self.reader.configuredAsGBxCart()
