@@ -29,14 +29,7 @@ extension ReadROMOperation {
         }
         
         var indices: Range<Int> {
-            switch self {
-            case .header:
-                return 0..<bytesToRead
-            case .range(let range):
-                return range.indices
-            case .rom(let header):
-                return 0..<header.romSize
-            }
+            return 0..<bytesToRead
         }
     }
 }
