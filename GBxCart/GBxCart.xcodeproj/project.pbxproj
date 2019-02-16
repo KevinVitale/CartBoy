@@ -66,7 +66,6 @@
 		0AAD810721F381AF00D548C8 /* GBxCartKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GBxCartKit.h; sourceTree = "<group>"; };
 		0AB2319322174B06005E76E0 /* ReadROMData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadROMData.swift; sourceTree = "<group>"; };
 		0AC0FE14221283BD002E69C2 /* ReadROMOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadROMOperation.swift; sourceTree = "<group>"; };
-		0AC0FE16221289D7002E69C2 /* ReadROMOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadROMOperationTests.swift; sourceTree = "<group>"; };
 		0AC0FE1C2213314A002E69C2 /* ReadROMOperation+MemoryRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReadROMOperation+MemoryRange.swift"; sourceTree = "<group>"; };
 		0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gibby.xcodeproj; path = ../Dependencies/Gibby/Gibby.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -177,7 +176,6 @@
 			children = (
 				0A108BBA2217929900A12FA1 /* Util */,
 				0A108BB32217927100A12FA1 /* ClassicTests */,
-				0AC0FE16221289D7002E69C2 /* ReadROMOperationTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
