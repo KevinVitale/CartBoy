@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0A108BB92217929300A12FA1 /* GameboyClassicReadROMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BB82217929300A12FA1 /* GameboyClassicReadROMTests.swift */; };
 		0A108BBC221792C000A12FA1 /* BaseReadROMTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BBB221792C000A12FA1 /* BaseReadROMTest.swift */; };
+		0A108BBF22179F1400A12FA1 /* ReaderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BBE22179F1400A12FA1 /* ReaderController.swift */; };
 		0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11DB6122127E1600C7DD13 /* Data+Ext.swift */; };
 		0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */; };
 		0AAD811521F381AF00D548C8 /* GBxCartKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AAD810721F381AF00D548C8 /* GBxCartKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -56,6 +57,7 @@
 /* Begin PBXFileReference section */
 		0A108BB82217929300A12FA1 /* GameboyClassicReadROMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameboyClassicReadROMTests.swift; sourceTree = "<group>"; };
 		0A108BBB221792C000A12FA1 /* BaseReadROMTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseReadROMTest.swift; sourceTree = "<group>"; };
+		0A108BBE22179F1400A12FA1 /* ReaderController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderController.swift; sourceTree = "<group>"; };
 		0A11DB6122127E1600C7DD13 /* Data+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Ext.swift"; sourceTree = "<group>"; };
 		0A3DD4D021F2A64800BCC6D4 /* ORSSerial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ORSSerial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+Ext.swift"; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 		0A108BBD22179EC000A12FA1 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				0A108BBE22179F1400A12FA1 /* ReaderController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -387,6 +390,7 @@
 			files = (
 				0AC0FE1D2213314A002E69C2 /* ReadROMOperation+MemoryRange.swift in Sources */,
 				0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */,
+				0A108BBF22179F1400A12FA1 /* ReaderController.swift in Sources */,
 				0AB2319A22175765005E76E0 /* ReadROMData.swift in Sources */,
 				0AC0FE15221283BD002E69C2 /* ReadROMOperation.swift in Sources */,
 				0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */,
