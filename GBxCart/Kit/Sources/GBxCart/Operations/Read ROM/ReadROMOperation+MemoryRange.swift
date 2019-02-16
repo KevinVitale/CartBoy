@@ -4,7 +4,7 @@ extension ReadROMOperation {
     public enum MemoryRange {
         case header
         case range(Range<Int>)
-        case rom(header: Cartridge.Header)
+        case cartridge(Cartridge.Header)
 
         var bytesToRead: Int {
             switch self {
@@ -12,7 +12,7 @@ extension ReadROMOperation {
                 return Int(Gameboy.headerSize)
             case .range(let range):
                 return range.count
-            case .rom(let header):
+            case .cartridge(let header):
                 return header.romSize
             }
         }
@@ -23,7 +23,7 @@ extension ReadROMOperation {
                 return Int(Gameboy.headerOffset)
             case .range(let range):
                 return range.lowerBound
-            case .rom:
+            case .cartridge:
                 return 0
             }
         }

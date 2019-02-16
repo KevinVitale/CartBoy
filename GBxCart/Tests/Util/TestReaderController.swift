@@ -28,6 +28,6 @@ final class TestReaderController<Gameboy: Platform>: NSObject, ReaderController 
     }
 
     public final func read<Result: PlatformMemory>(rom memoryRange: ReadROMOperation<Gameboy>.MemoryRange, result: @escaping ((Result?) -> ())) where Result.Platform == Gameboy {
-        queue.addOperation(operation(for: memoryRange, result: result))
+        self.queue.addOperation(operation(for: memoryRange, result: result))
     }
 }

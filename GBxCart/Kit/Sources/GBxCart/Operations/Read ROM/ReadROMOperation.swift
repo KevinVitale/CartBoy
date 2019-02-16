@@ -37,6 +37,7 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
     private var _isExecuting = false
     private weak var device: ORSSerialPort?
     private var romData: ReadROMData<Gameboy>!
+    private var thread: Thread? = nil
 
     private func notifyExecutionStateChangeIfNecessary() {
         if isFinished || isCancelled {
@@ -48,6 +49,11 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
         }
     }
     
+    public override func cancel() {
+        super.cancel()
+        self.notifyExecutionStateChangeIfNecessary()
+    }
+    
     // Operation
     //--------------------------------------------------------------------------
     public override func start() {
@@ -55,9 +61,10 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
             return
         }
         self.willChangeValue(forKey: "isExecuting")
-        Thread(target: self, selector: #selector(main), object: nil).start()
+        self.thread = Thread(target: self, selector: #selector(main), object: nil)
         self._isExecuting = true
         self.didChangeValue(forKey: "isExecuting")
+
     }
     
     public override func main() {
@@ -97,6 +104,11 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
     
     public func serialPortWasOpened(_ serialPort: ORSSerialPort) {
         print(#function)
+        guard let thread = self.thread else {
+            cancel()
+            return
+        }
+        thread.start()
     }
     
     public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
