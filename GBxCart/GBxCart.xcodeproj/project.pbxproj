@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A108BBC221792C000A12FA1 /* BaseReadROMTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BBB221792C000A12FA1 /* BaseReadROMTest.swift */; };
 		0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11DB6122127E1600C7DD13 /* Data+Ext.swift */; };
 		0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */; };
 		0AAD811521F381AF00D548C8 /* GBxCartKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AAD810721F381AF00D548C8 /* GBxCartKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -52,6 +53,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A108BBB221792C000A12FA1 /* BaseReadROMTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseReadROMTest.swift; sourceTree = "<group>"; };
 		0A11DB6122127E1600C7DD13 /* Data+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Ext.swift"; sourceTree = "<group>"; };
 		0A3DD4D021F2A64800BCC6D4 /* ORSSerial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ORSSerial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+Ext.swift"; sourceTree = "<group>"; };
@@ -88,6 +90,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0A108BBA2217929900A12FA1 /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				0A108BBB221792C000A12FA1 /* BaseReadROMTest.swift */,
+			);
+			path = Util;
+			sourceTree = "<group>";
+		};
 		0A1381B421F685C00071E293 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -146,6 +156,7 @@
 		0AAD80F721F3815B00D548C8 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				0A108BBA2217929900A12FA1 /* Util */,
 				0AC0FE16221289D7002E69C2 /* ReadROMOperationTests.swift */,
 			);
 			path = Tests;
@@ -345,6 +356,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A108BBC221792C000A12FA1 /* BaseReadROMTest.swift in Sources */,
 				0AC0FE17221289D7002E69C2 /* ReadROMOperationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
