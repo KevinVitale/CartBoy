@@ -49,14 +49,19 @@ extension ORSSerialPortManager {
     }
     
     public static func GBxCart(_ profile: PortProfile = .prefix("/dev/cu.usbserial-14")) throws -> ORSSerialPort {
-        let cart = try port(matching: profile)
-        cart.allowsNonStandardBaudRates = true
-        cart.baudRate = 1000000
-        cart.dtr = true
-        cart.rts = true
-        cart.numberOfDataBits = 8
-        cart.numberOfStopBits = 1
-        cart.parity = .none
-        return cart
+        return try port(matching: profile).configuredAsGBxCart()
+    }
+}
+
+extension ORSSerialPort {
+    public final func configuredAsGBxCart() -> ORSSerialPort {
+        self.allowsNonStandardBaudRates = true
+        self.baudRate = 1000000
+        self.dtr = true
+        self.rts = true
+        self.numberOfDataBits = 8
+        self.numberOfStopBits = 1
+        self.parity = .none
+        return self
     }
 }
