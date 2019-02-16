@@ -1,10 +1,18 @@
 import Gibby
 
 extension ReadROMOperation {
-    public enum MemoryRange {
+    public enum MemoryRange: CustomDebugStringConvertible {
         case header
         case range(Range<Int>)
         case cartridge(Cartridge.Header)
+        
+        public var debugDescription: String {
+            switch self {
+            case .header: return "MemoryRange.Header"
+            case .range: return "MemoryRange.Range"
+            case .cartridge: return "MemoryRange.Cartridge"
+            }
+        }
 
         var bytesToRead: Int {
             switch self {
