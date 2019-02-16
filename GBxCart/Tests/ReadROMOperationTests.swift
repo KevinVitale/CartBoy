@@ -51,8 +51,8 @@ class ReadROMOperationTests: XCTestCase {
             , header != nil else {
                 return XCTFail("\n.: Header is 'nil' :.")
         }
-
-        print("Entry Point:\(header.bootInstructions.map { String($0, radix: 16, uppercase: true) }.joined())")
+        
+        print("Entry Point:\(header.entryPoint.map { String($0, radix: 16, uppercase: true) }.joined())")
         print("Logo Check:\t\(header.isLogoValid ? "Valid" : "Invalid")")
         print("Title:\t\t\(header.title)")
         print("Manu.:\t\t\(header.manufacturer)")
