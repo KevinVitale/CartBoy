@@ -14,8 +14,15 @@ extension ORSSerialPortManager {
 }
 
 extension ORSSerialPortManager {
-    public enum PortProfile {
+    public enum PortProfile: Equatable {
         case prefix(String)
+        
+        public static func ==(lhs: PortProfile, rhs: PortProfile) -> Bool {
+            switch (lhs, rhs) {
+            case (.prefix(let lhsPrefix), .prefix(let rhsPrefix)):
+                return lhsPrefix == rhsPrefix
+            }
+        }
 
         fileprivate func matcher() -> ((ORSSerialPort) -> Bool) {
             switch self {
