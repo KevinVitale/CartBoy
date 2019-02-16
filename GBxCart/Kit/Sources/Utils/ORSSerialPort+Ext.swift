@@ -30,6 +30,8 @@ extension ORSSerialPortManager {
                 return { $0.path.hasPrefix(prefix) }
             }
         }
+        
+        public static let GBxCart: PortProfile = .prefix("/dev/cu.usbserial-14")
     }
     
     private static func match(_ profile: PortProfile) -> ORSSerialPort? {
