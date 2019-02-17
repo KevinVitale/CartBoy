@@ -16,6 +16,15 @@ public protocol ReaderController: class {
         - profile: The profile to match against.
      */
     func openReader(matching profile: ORSSerialPortManager.PortProfile) throws
+    
+    func sendBeginReading()
+    func sendContinueReading()
+    func sendGo(to address: Platform.AddressSpace)
+    func sendStopBreak()
+    
+    // var firmwareVersion: String { get }
+    // var pcbVersion
+    // var cartridgeMode
 }
 
 extension ReaderController {

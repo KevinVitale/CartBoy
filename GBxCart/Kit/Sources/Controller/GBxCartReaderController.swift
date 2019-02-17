@@ -24,4 +24,31 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
         default: ()
         }
     }
+    
+    public func sendStopBreak() {
+        self.reader.send("0\0".data(using: .ascii)!)
+    }
+    
+    public func sendBeginReading() {
+        switch Platform.self {
+        case is GameboyClassic.Type:
+            self.reader.send("R".data(using: .ascii)!)
+        case is GameboyAdvance.Type:
+            self.reader.send("r".data(using: .ascii)!)
+        default: ()
+        }
+    }
+
+    public func sendContinueReading() {
+        self.reader.send("1".data(using: .ascii)!)
+    }
+
+    public func sendGo(to address: Platform.AddressSpace) {
+        switch Platform.self {
+        case is GameboyClassic.Type:
+            self.reader.send("A\(String(address, radix: 16, uppercase: true))\0".data(using: .ascii)!)
+        case is GameboyAdvance.Type: ()
+        default: ()
+        }
+    }
 }
