@@ -35,6 +35,9 @@ struct ReadROMData<Platform: Gibby.Platform> {
     }
 
     func result<Result: PlatformMemory>() -> Result? where Result.Platform == Platform {
+        guard bytes.count >= bytesToRead else {
+            return nil
+        }
         return Result(bytes: bytes[0..<bytesToRead])
     }
 }

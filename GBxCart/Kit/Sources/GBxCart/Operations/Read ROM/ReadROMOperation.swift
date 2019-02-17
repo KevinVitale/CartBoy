@@ -11,7 +11,7 @@ public final class ReadROMOperation<Controller: ReaderController>: Operation, OR
         super.init()
         
         self.completionBlock = { [weak self] in
-            controller.reader.delegate = nil
+            controller.reader?.delegate = nil
             
             guard let strongSelf = self else {
                 return
@@ -26,8 +26,8 @@ public final class ReadROMOperation<Controller: ReaderController>: Operation, OR
             }
         }
         
-        self.device = controller.reader
-        self.device?.delegate = self
+        self.controller = controller
+        self.controller.reader?.delegate = self
     }
     
     // Typealiases
@@ -38,7 +38,7 @@ public final class ReadROMOperation<Controller: ReaderController>: Operation, OR
     // Properties
     //--------------------------------------------------------------------------
     private var _isExecuting = false
-    private weak var device: ORSSerialPort?
+    private weak var controller: Controller!
     private var romData: ReadROMData<Controller.Platform>
     private var thread: Thread? = nil
 
@@ -72,13 +72,13 @@ public final class ReadROMOperation<Controller: ReaderController>: Operation, OR
     
     public override func main() {
         /* FIXME: These 'sends' are too specific to GBxCart. */
-        self.device?.send("0\0".data(using: .ascii)!)
-        self.device?.send("A\(String(self.romData.startingAddress, radix: 16, uppercase: true))\0".data(using: .ascii)!)
-        self.device?.send("R".data(using: .ascii)!)
+        self.controller.sendStopBreak()
+        self.controller.sendGo(to: self.romData.startingAddress)
+        self.controller.sendBeginReading()
     }
 
     public override var isReady: Bool {
-        return super.isReady && self.device?.isOpen ?? false
+        return super.isReady && self.controller.reader?.isOpen ?? false
     }
     
     public override var isExecuting: Bool {
@@ -115,6 +115,11 @@ public final class ReadROMOperation<Controller: ReaderController>: Operation, OR
     }
     
     public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+        guard serialPort == self.controller.reader else {
+            cancel()
+            return
+        }
+
         guard self.isCancelled == false else {
             return
         }
@@ -122,8 +127,7 @@ public final class ReadROMOperation<Controller: ReaderController>: Operation, OR
         var stop: Bool = false
         self.romData.append(next: data, stop: &stop)
         if !stop {
-            
-            serialPort.send("1".data(using: .ascii)!)
+            self.controller.sendContinueReading()
         }
         else {
             self.notifyExecutionStateChangeIfNecessary()

@@ -6,7 +6,7 @@ public protocol ReaderController: class {
     associatedtype Platform: Gibby.Platform
     
     /// The cartridge reader that this adopter is controlling.
-    var reader: ORSSerialPort! { get }
+    var reader: ORSSerialPort? { get }
     var queue: OperationQueue { get }
 
     /**
@@ -59,5 +59,5 @@ extension ReaderController {
 
 
 public enum ReaderControllerError: Error {
-    case failedToOpen(ORSSerialPort)
+    case failedToOpen(ORSSerialPort?)
 }
