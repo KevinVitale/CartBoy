@@ -4,9 +4,12 @@ import Gibby
 
 public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPortDelegate {
     public required init<Result: PlatformMemory>(device: ORSSerialPort, memoryRange: MemoryRange, cleanup completion: ((Result?) -> ())? = nil) where Result.Platform == Gameboy {
+        self.romData = ReadROMData<Gameboy>(
+            startingAddress: Gameboy.AddressSpace(memoryRange.startingAddress)
+              , bytesToRead: memoryRange.bytesToRead
+        )
         super.init()
         
-        self.romData = ReadROMData(operation: self, memoryRange: memoryRange)
         self.completionBlock = { [weak self] in
             device.delegate = nil
             
@@ -36,7 +39,7 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
     //--------------------------------------------------------------------------
     private var _isExecuting = false
     private weak var device: ORSSerialPort?
-    private var romData: ReadROMData<Gameboy>!
+    private var romData: ReadROMData<Gameboy>
     private var thread: Thread? = nil
 
     private func notifyExecutionStateChangeIfNecessary() {

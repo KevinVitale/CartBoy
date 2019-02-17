@@ -1,24 +1,19 @@
 import ORSSerial
 import Gibby
 
-struct ReadROMData<Gameboy: Platform> {
-    init(operation: ReadROMOperation<Gameboy>, memoryRange: ReadROMOperation<Gameboy>.MemoryRange) {
-        self.operation = operation
-        self.memoryRange = memoryRange
+struct ReadROMData<Platform: Gibby.Platform> {
+    init(startingAddress: Platform.AddressSpace, bytesToRead: Int) {
+        self.startingAddress = startingAddress
+        self.bytesToRead     = bytesToRead
     }
     
-    private var bytes: Data = Data()
-    private let memoryRange: ReadROMOperation<Gameboy>.MemoryRange
-    
-    private weak var operation: ReadROMOperation<Gameboy>!
+    public  let startingAddress: Platform.AddressSpace
+    private let bytesToRead: Int
     private var cache: Data = Data()
-    
-    var startingAddress: Int {
-        return memoryRange.startingAddress
-    }
-    
+    private var bytes: Data = Data()
+
     var isCompleted: Bool {
-        return bytes.count >= memoryRange.bytesToRead
+        return bytes.count >= bytesToRead
     }
     
     private var isCacheFilled: Bool {
@@ -39,10 +34,7 @@ struct ReadROMData<Gameboy: Platform> {
         stop = self.isCompleted
     }
 
-    func result<Result: PlatformMemory>() -> Result? where Result.Platform == Gameboy {
-        guard self.bytes.indices.overlaps(memoryRange.indices) else {
-            return nil
-        }
-        return Result(bytes: bytes[memoryRange.indices])
+    func result<Result: PlatformMemory>() -> Result? where Result.Platform == Platform {
+        return Result(bytes: bytes[0..<bytesToRead])
     }
 }
