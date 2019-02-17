@@ -25,12 +25,12 @@ extension ReadROMOperation {
             }
         }
         
-        var startingAddress: Int {
+        var startingAddress: Controller.Platform.AddressSpace {
             switch self {
             case .header:
-                return Int(Controller.Platform.headerOffset)
+                return Controller.Platform.headerOffset
             case .range(let range):
-                return range.lowerBound
+                return Controller.Platform.AddressSpace(range.lowerBound)
             case .cartridge:
                 return 0
             }

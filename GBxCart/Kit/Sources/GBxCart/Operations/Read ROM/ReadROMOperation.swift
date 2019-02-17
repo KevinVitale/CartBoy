@@ -5,7 +5,7 @@ import Gibby
 public final class ReadROMOperation<Controller: ReaderController>: Operation, ORSSerialPortDelegate {
     public required init<Result: PlatformMemory>(controller: Controller, memoryRange: MemoryRange, cleanup completion: ((Result?) -> ())? = nil) where Result.Platform == Controller.Platform {
         self.romData = ReadROMData<Controller.Platform>(
-            startingAddress: Controller.Platform.AddressSpace(memoryRange.startingAddress)
+            startingAddress: memoryRange.startingAddress
               , bytesToRead: memoryRange.bytesToRead
         )
         super.init()
@@ -122,6 +122,7 @@ public final class ReadROMOperation<Controller: ReaderController>: Operation, OR
         var stop: Bool = false
         self.romData.append(next: data, stop: &stop)
         if !stop {
+            
             serialPort.send("1".data(using: .ascii)!)
         }
         else {
