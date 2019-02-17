@@ -1,13 +1,14 @@
 import XCTest
 import ORSSerial
 import Gibby
+import GBxCartKit
 
 fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     private typealias Platform  = GameboyClassic
     private typealias Cartridge = Platform.Cartridge
     private typealias Header    = Platform.Header
     
-    private let controller = TestReaderController<Platform>()
+    private let controller = GBxCartReaderController<Platform>()
     
     func testReadROM() {
         XCTAssertNoThrow(try controller.openReader(matching: .GBxCart))

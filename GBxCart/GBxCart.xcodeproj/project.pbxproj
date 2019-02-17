@@ -8,13 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		0A108BB92217929300A12FA1 /* GameboyClassicReadROMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BB82217929300A12FA1 /* GameboyClassicReadROMTests.swift */; };
-		0A108BBC221792C000A12FA1 /* TestReaderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BBB221792C000A12FA1 /* TestReaderController.swift */; };
 		0A108BBF22179F1400A12FA1 /* ReaderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BBE22179F1400A12FA1 /* ReaderController.swift */; };
 		0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11DB6122127E1600C7DD13 /* Data+Ext.swift */; };
 		0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */; };
 		0AAD811521F381AF00D548C8 /* GBxCartKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AAD810721F381AF00D548C8 /* GBxCartKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0AAD811F21F3826D00D548C8 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
 		0AB2319A22175765005E76E0 /* ReadROMData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB2319322174B06005E76E0 /* ReadROMData.swift */; };
+		0ABD40E2221A10D000C6F656 /* GBxCartReaderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BBB221792C000A12FA1 /* GBxCartReaderController.swift */; };
 		0AC0FE15221283BD002E69C2 /* ReadROMOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE14221283BD002E69C2 /* ReadROMOperation.swift */; };
 		0AC0FE1D2213314A002E69C2 /* ReadROMOperation+MemoryRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC0FE1C2213314A002E69C2 /* ReadROMOperation+MemoryRange.swift */; };
 		0AC92F8821F95FB200605C82 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AC92F8521F95F8D00605C82 /* Gibby.framework */; };
@@ -55,7 +55,7 @@
 
 /* Begin PBXFileReference section */
 		0A108BB82217929300A12FA1 /* GameboyClassicReadROMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameboyClassicReadROMTests.swift; sourceTree = "<group>"; };
-		0A108BBB221792C000A12FA1 /* TestReaderController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestReaderController.swift; sourceTree = "<group>"; };
+		0A108BBB221792C000A12FA1 /* GBxCartReaderController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxCartReaderController.swift; sourceTree = "<group>"; };
 		0A108BBE22179F1400A12FA1 /* ReaderController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderController.swift; sourceTree = "<group>"; };
 		0A11DB6122127E1600C7DD13 /* Data+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Ext.swift"; sourceTree = "<group>"; };
 		0A3DD4D021F2A64800BCC6D4 /* ORSSerial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ORSSerial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -103,7 +103,6 @@
 		0A108BBA2217929900A12FA1 /* Util */ = {
 			isa = PBXGroup;
 			children = (
-				0A108BBB221792C000A12FA1 /* TestReaderController.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -112,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				0A108BBE22179F1400A12FA1 /* ReaderController.swift */,
+				0A108BBB221792C000A12FA1 /* GBxCartReaderController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -375,7 +375,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A108BBC221792C000A12FA1 /* TestReaderController.swift in Sources */,
 				0A108BB92217929300A12FA1 /* GameboyClassicReadROMTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -384,6 +383,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0ABD40E2221A10D000C6F656 /* GBxCartReaderController.swift in Sources */,
 				0AC0FE1D2213314A002E69C2 /* ReadROMOperation+MemoryRange.swift in Sources */,
 				0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */,
 				0A108BBF22179F1400A12FA1 /* ReaderController.swift in Sources */,
