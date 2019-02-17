@@ -1,12 +1,13 @@
 import ORSSerial
 import Gibby
 
-public protocol ReaderController {
+public protocol ReaderController: class {
     /// The associated platform that the adopter relates to.
-    associatedtype Platform = Gibby.Platform
+    associatedtype Platform: Gibby.Platform
     
     /// The cartridge reader that this adopter is controlling.
     var reader: ORSSerialPort! { get }
+    var queue: OperationQueue { get }
 
     /**
      Locate a serial port matching `profile`, and then attempt to open it.
@@ -15,7 +16,9 @@ public protocol ReaderController {
         - profile: The profile to match against.
      */
     func openReader(matching profile: ORSSerialPortManager.PortProfile) throws
-    
+}
+
+extension ReaderController {
     /**
      Reads a memory range within the rom from the `reader`.
      
@@ -23,10 +26,10 @@ public protocol ReaderController {
      - memoryRange: An enum describing what is to be read.
      - result: A callback returning the result of the read operation.
      */
-    func read<Result: PlatformMemory>(rom memoryRange: ReadROMOperation<Platform>.MemoryRange, result: @escaping ((Result?) -> ())) where Result.Platform == Platform
-}
-
-extension ReaderController {
+    public func read<Result: PlatformMemory>(rom memoryRange: ReadROMOperation<Self>.MemoryRange, result: @escaping ((Result?) -> ())) where Result.Platform == Platform {
+        self.queue.addOperation(operation(for: memoryRange, result: result))
+    }
+    
     /**
      A convenience method for constructing new read operations.
      
@@ -39,8 +42,8 @@ extension ReaderController {
          - memoryRange: An enum describing what is to be read.
          - result: A callback returning the result of the read operation.
      */
-    public func operation<Result: PlatformMemory>(for memoryRange: ReadROMOperation<Platform>.MemoryRange, result: @escaping ((Result?) -> ())) -> ReadROMOperation<Platform> where Result.Platform == Platform {
-        return ReadROMOperation(device: reader, memoryRange: memoryRange, cleanup: result)
+    private func operation<Result: PlatformMemory>(for memoryRange: ReadROMOperation<Self>.MemoryRange, result: @escaping ((Result?) -> ())) -> ReadROMOperation<Self> where Result.Platform == Platform {
+        return ReadROMOperation(controller: self, memoryRange: memoryRange, cleanup: result)
     }
 }
 

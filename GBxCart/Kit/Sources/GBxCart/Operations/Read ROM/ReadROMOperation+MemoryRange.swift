@@ -17,7 +17,7 @@ extension ReadROMOperation {
         var bytesToRead: Int {
             switch self {
             case .header:
-                return Int(Gameboy.headerSize)
+                return Int(Controller.Platform.headerSize)
             case .range(let range):
                 return range.count
             case .cartridge(let header):
@@ -28,7 +28,7 @@ extension ReadROMOperation {
         var startingAddress: Int {
             switch self {
             case .header:
-                return Int(Gameboy.headerOffset)
+                return Int(Controller.Platform.headerOffset)
             case .range(let range):
                 return range.lowerBound
             case .cartridge:

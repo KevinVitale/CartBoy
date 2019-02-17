@@ -2,16 +2,16 @@ import Foundation
 import ORSSerial
 import Gibby
 
-public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPortDelegate {
-    public required init<Result: PlatformMemory>(device: ORSSerialPort, memoryRange: MemoryRange, cleanup completion: ((Result?) -> ())? = nil) where Result.Platform == Gameboy {
-        self.romData = ReadROMData<Gameboy>(
-            startingAddress: Gameboy.AddressSpace(memoryRange.startingAddress)
+public final class ReadROMOperation<Controller: ReaderController>: Operation, ORSSerialPortDelegate {
+    public required init<Result: PlatformMemory>(controller: Controller, memoryRange: MemoryRange, cleanup completion: ((Result?) -> ())? = nil) where Result.Platform == Controller.Platform {
+        self.romData = ReadROMData<Controller.Platform>(
+            startingAddress: Controller.Platform.AddressSpace(memoryRange.startingAddress)
               , bytesToRead: memoryRange.bytesToRead
         )
         super.init()
         
         self.completionBlock = { [weak self] in
-            device.delegate = nil
+            controller.reader.delegate = nil
             
             guard let strongSelf = self else {
                 return
@@ -26,20 +26,20 @@ public final class ReadROMOperation<Gameboy: Platform>: Operation, ORSSerialPort
             }
         }
         
-        self.device = device
+        self.device = controller.reader
         self.device?.delegate = self
     }
     
     // Typealiases
     //--------------------------------------------------------------------------
-    public typealias Cartridge = Gameboy.Cartridge
+    public typealias Cartridge = Controller.Platform.Cartridge
 
 
     // Properties
     //--------------------------------------------------------------------------
     private var _isExecuting = false
     private weak var device: ORSSerialPort?
-    private var romData: ReadROMData<Gameboy>
+    private var romData: ReadROMData<Controller.Platform>
     private var thread: Thread? = nil
 
     private func notifyExecutionStateChangeIfNecessary() {
