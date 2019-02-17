@@ -35,9 +35,5 @@ extension ReadROMOperation {
                 return 0
             }
         }
-        
-        var indices: Range<Int> {
-            return 0..<bytesToRead
-        }
     }
 }
