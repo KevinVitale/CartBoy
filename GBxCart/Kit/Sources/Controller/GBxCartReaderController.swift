@@ -51,4 +51,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
         default: ()
         }
     }
+    
+    public func sendSwitch(bank: Platform.AddressSpace) {
+    }
 }

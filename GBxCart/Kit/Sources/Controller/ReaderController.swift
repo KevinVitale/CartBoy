@@ -21,6 +21,7 @@ public protocol ReaderController: class {
     func sendContinueReading()
     func sendGo(to address: Platform.AddressSpace)
     func sendStopBreak()
+    func sendSwitch(bank: Platform.AddressSpace)
     
     // var firmwareVersion: String { get }
     // var pcbVersion
