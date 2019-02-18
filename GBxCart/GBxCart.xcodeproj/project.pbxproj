@@ -111,7 +111,6 @@
 			isa = PBXGroup;
 			children = (
 				0A108BBE22179F1400A12FA1 /* ReaderController.swift */,
-				0A108BBB221792C000A12FA1 /* GBxCartReaderController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -128,6 +127,7 @@
 		0A1381B721F685E50071E293 /* GBxCart */ = {
 			isa = PBXGroup;
 			children = (
+				0A108BBB221792C000A12FA1 /* GBxCartReaderController.swift */,
 				0AC0FE182213294D002E69C2 /* Operations */,
 			);
 			path = GBxCart;
