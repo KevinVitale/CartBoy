@@ -9,6 +9,39 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     private typealias Header    = Platform.Header
     
     private let controller = GBxCartReaderController<Platform>()
+    private var closePort = false
+
+    override func tearDown() {
+        if closePort {
+            controller.reader?.close()
+        }
+    }
+    
+    func testReadHeader() {
+        XCTAssertNoThrow(try controller.openReader(matching: .GBxCart))
+        
+        let expectiation = expectation(description: "Header was read")
+        
+        var romHeader: Header! {
+            didSet {
+                expectiation.fulfill()
+            }
+        }
+        
+        controller.readHeader { (header: Header?) in
+            guard let header = header, header.isLogoValid else {
+                return
+            }
+            
+            print("|-------------------------------------|")
+            print("|  CONFIGURATION: \(header.configuration)")
+            print(header)
+            romHeader = header
+        }
+        
+        waitForExpectations(timeout: 5)
+        XCTAssertNotNil(romHeader)
+    }
     
     func testReadROM() {
         XCTAssertNoThrow(try controller.openReader(matching: .GBxCart))
@@ -21,17 +54,9 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             }
         }
 
-        controller.read(rom: .header) { (header: Header?) in
-            guard let header = header, header.isLogoValid else {
-                return
-            }
-            
-            print("|-------------------------------------|")
-            print("|  CONFIGURATION: \(header.configuration)")
-            print(header)
-            
-            self.controller.read(rom: .range(0x000..<0x8000)) {
-                rom = $0
+        controller.readCartridge { (cartridge: Cartridge?) in
+            if let cartridge = cartridge {
+                rom = cartridge
             }
         }
         
@@ -42,5 +67,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         if let rom = rom {
             print(rom)
         }
+        
+        self.closePort = true
     }
 }

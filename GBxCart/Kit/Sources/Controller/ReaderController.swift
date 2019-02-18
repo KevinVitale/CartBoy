@@ -29,31 +29,19 @@ public protocol ReaderController: class {
 }
 
 extension ReaderController {
-    /**
-     Reads a memory range within the rom from the `reader`.
-     
-     - parameters:
-     - memoryRange: An enum describing what is to be read.
-     - result: A callback returning the result of the read operation.
-     */
-    public func read<Result: PlatformMemory>(rom memoryRange: ReadROMOperation<Self>.MemoryRange, result: @escaping ((Result?) -> ())) where Result.Platform == Platform {
-        self.queue.addOperation(operation(for: memoryRange, result: result))
+    public func readHeader(result: @escaping ((Self.Platform.Cartridge.Header?) -> ())) {
+        self.queue.addOperation(ReadHeaderOperation<Self>(controller: self, result: result))
     }
     
-    /**
-     A convenience method for constructing new read operations.
-     
-     - note:
-         Adopters can
-         use this method to easily create new operations and then submit them to
-         an internal queue to implement the `read(for:result:)` function.
-
-     - parameters:
-         - memoryRange: An enum describing what is to be read.
-         - result: A callback returning the result of the read operation.
-     */
-    private func operation<Result: PlatformMemory>(for memoryRange: ReadROMOperation<Self>.MemoryRange, result: @escaping ((Result?) -> ())) -> ReadROMOperation<Self> where Result.Platform == Platform {
-        return ReadROMOperation(controller: self, memoryRange: memoryRange, cleanup: result)
+    public func readCartridge(header: Self.Platform.Cartridge.Header? = nil, result: @escaping ((Self.Platform.Cartridge?) -> ())) {
+        if let header = header {
+            self.queue.addOperation(ReadCartridgeOperation<Self>(controller: self, header: header, result: result))
+        }
+        else {
+            self.readHeader {
+                self.readCartridge(header: $0, result: result)
+            }
+        }
     }
 }
 
