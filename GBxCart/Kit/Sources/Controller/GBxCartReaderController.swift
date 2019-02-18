@@ -52,6 +52,13 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
         }
     }
     
-    public func sendSwitch(bank: Platform.AddressSpace) {
+    public func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace) {
+        switch Platform.self {
+        case is GameboyClassic.Type:
+            self.reader?.send("B\(String(address, radix: 16, uppercase: true))\0".data(using: .ascii)!)
+            self.reader?.send("B\(String(bank, radix: 16, uppercase: true))\0".data(using: .ascii)!)
+        case is GameboyAdvance.Type: ()
+        default: ()
+        }
     }
 }

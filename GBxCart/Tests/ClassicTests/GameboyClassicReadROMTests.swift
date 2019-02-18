@@ -30,7 +30,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             print("|  CONFIGURATION: \(header.configuration)")
             print(header)
             
-            self.controller.read(rom: .cartridge(header)) {
+            self.controller.read(rom: .range(0x000..<0x8000)) {
                 rom = $0
             }
         }
