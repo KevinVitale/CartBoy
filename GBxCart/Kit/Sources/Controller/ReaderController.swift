@@ -7,7 +7,9 @@ public protocol ReaderController: class {
     
     /// The cartridge reader that this adopter is controlling.
     var reader: ORSSerialPort? { get }
-    var queue: OperationQueue { get }
+    var  queue: OperationQueue { get }
+    
+    static var portProfile: ORSSerialPortManager.PortProfile { get }
 
     /**
      Locate a serial port matching `profile`, and then attempt to open it.
@@ -15,17 +17,13 @@ public protocol ReaderController: class {
      - parameters:
         - profile: The profile to match against.
      */
-    func openReader(matching profile: ORSSerialPortManager.PortProfile) throws
+    func openReader(delegate: ORSSerialPortDelegate?) throws
     
     func sendBeginReading()
     func sendContinueReading()
     func sendGo(to address: Platform.AddressSpace)
     func sendStopBreak()
     func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace)
-    
-    // var firmwareVersion: String { get }
-    // var pcbVersion
-    // var cartridgeMode
 }
 
 extension ReaderController {
@@ -44,7 +42,6 @@ extension ReaderController {
         }
     }
 }
-
 
 public enum ReaderControllerError: Error {
     case failedToOpen(ORSSerialPort?)

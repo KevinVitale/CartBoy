@@ -18,8 +18,6 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     }
     
     func testReadHeader() {
-        XCTAssertNoThrow(try controller.openReader(matching: .GBxCart))
-        
         let expectiation = expectation(description: "Header was read")
         
         var romHeader: Header! {
@@ -44,8 +42,6 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     }
     
     func testReadROM() {
-        XCTAssertNoThrow(try controller.openReader(matching: .GBxCart))
-        
         let expectiation = expectation(description: "ROM file was read")
         
         var rom: Cartridge! {

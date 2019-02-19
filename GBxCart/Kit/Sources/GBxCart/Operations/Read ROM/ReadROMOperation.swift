@@ -3,20 +3,14 @@ import ORSSerial
 import Gibby
 
 public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSerialPortDelegate {
-    deinit {
-        print(#function)
-    }
     public init(controller: Controller, numberOfBytesToRead bytesToRead: Int = 0, result: @escaping ((Data) -> ())) {
         self.bytesToRead = bytesToRead
-        print("Bytes to read ", bytesToRead)
         super.init()
         
         self.completionBlock = { [weak self] in
-            print("Returning results...")
             controller.reader?.delegate = nil
 
             guard let strongSelf = self else {
-                print("Self?")
                 return
             }
             
@@ -30,7 +24,6 @@ public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSeri
         }
         
         self.controller = controller
-        self.controller.reader?.delegate = self
     }
     
     private(set) weak var controller: Controller!
@@ -39,21 +32,12 @@ public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSeri
     private var       bytesRead: Data = Data()
     private var      bytesCache: Data = Data()
     private var     bytesToRead: Int
+    private let isOpenCondition: NSCondition = NSCondition()
 
     private var isCacheFilled: Bool {
         return (64 - bytesCache.count) <= 0
     }
-    
-    private func notifyExecutionStateChangeIfNecessary() {
-        if (isFinished || isCancelled) {
-            self.willChangeValue(forKey: "isExecuting")
-            self.willChangeValue(forKey: "isFinished")
-            self._isExecuting = false
-            self.didChangeValue(forKey: "isFinished")
-            self.didChangeValue(forKey: "isExecuting")
-        }
-    }
-    
+
     func append(next data: Data) {
         self.bytesCache.append(data)
         if self.isCacheFilled {
@@ -62,78 +46,62 @@ public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSeri
         }
     }
     
-    public override func cancel() {
-        super.cancel()
-        self.notifyExecutionStateChangeIfNecessary()
-    }
-    
-    public override func start() {
-        guard self.isReady else {
-            return
-        }
-        self.willChangeValue(forKey: "isExecuting")
-        self.executionThread = Thread(target: self, selector: #selector(main), object: nil)
-        self.executionThread?.name = "\(self)"
-        self._isExecuting = true
-        self.didChangeValue(forKey: "isExecuting")
-    }
-    
     public override func main() {
-        print(#function)
-    }
-    
-    public override var isReady: Bool {
-        return super.isReady && self.controller.reader?.isOpen ?? false
+        self.isOpenCondition.whileLocked {
+            do {
+                try self.controller.openReader(delegate: self)
+            }
+            catch {
+                cancel()
+                return
+            }
+            
+            while self.controller.reader?.isOpen == false {
+                self.isOpenCondition.wait() // self.isOpenCondition.wait(until: Date().addingTimeInterval(5))
+            }
+            
+            // Begin...
+            self.willChangeValue(forKey: "isExecuting")
+            self.didChangeValue(forKey: "isExecuting")
+        }
     }
     
     public override var isExecuting: Bool {
-        return self._isExecuting
+        return self.controller.reader?.isOpen ?? false
     }
-    
+
     public override var isFinished: Bool {
         return bytesRead.count >= bytesToRead || isCancelled
     }
-    
+
     public override var isAsynchronous: Bool {
         return true
     }
-    
+
     public func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
-        print(#function)
         cancel()
+        self.willChangeValue(forKey: "isFinished")
+        self.didChangeValue(forKey: "isFinished")
     }
     
     public func serialPortWasClosed(_ serialPort: ORSSerialPort) {
-        print(#function)
-        self.notifyExecutionStateChangeIfNecessary()
     }
     
     public func serialPortWasOpened(_ serialPort: ORSSerialPort) {
-        guard let thread = self.executionThread else {
-            cancel()
-            return
+        self.isOpenCondition.whileLocked {
+            self.isOpenCondition.signal()
         }
-        thread.start()
-        print(#function)
     }
     
     public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
-        guard serialPort == self.controller.reader else {
-            cancel()
-            return
-        }
-        
-        guard self.isCancelled == false else {
-            return
-        }
-        
         self.append(next: data)
-        
-        if !self.isFinished {
+
+        if (self.bytesCache.isEmpty && !self.isFinished) {
             self.controller.sendContinueReading()
         }
         else {
-            self.notifyExecutionStateChangeIfNecessary()
+            self.willChangeValue(forKey: "isFinished")
+            self.didChangeValue(forKey: "isFinished")
         }
     }
 }
@@ -148,6 +116,7 @@ public final class ReadHeaderOperation<Controller: ReaderController>: BaseReadOp
     public typealias Header = Controller.Platform.Cartridge.Header
 
     public override func main() {
+        super.main()
         self.controller.sendStopBreak()
         self.controller.sendGo(to: Controller.Platform.headerRange.lowerBound)
         self.controller.sendBeginReading()
@@ -165,15 +134,21 @@ public final class ReadCartridgeOperation<Controller: ReaderController>: BaseRea
     private let header: Cartridge.Header
     
     public typealias Cartridge = Controller.Platform.Cartridge
-    
-    public override var isReady: Bool {
-        return !header.isLogoValid && super.isReady
-    }
-    
+
     public override func main() {
-        print(#function)
+        super.main()
         self.controller.sendStopBreak()
         self.controller.sendGo(to: 0)
         self.controller.sendBeginReading()
+    }
+}
+
+extension NSCondition {
+    fileprivate func whileLocked<T>(_ body: () throws -> T) rethrows -> T {
+        defer {
+            unlock()
+        }
+        lock()
+        return try body()
     }
 }
