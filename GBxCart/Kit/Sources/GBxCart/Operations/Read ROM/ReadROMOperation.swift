@@ -5,6 +5,7 @@ import Gibby
 public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSerialPortDelegate {
     public init(controller: Controller, numberOfBytesToRead bytesToRead: Int = 0, result: @escaping ((Data) -> ())) {
         self.bytesToRead = bytesToRead
+        self.progress = Progress(totalUnitCount: Int64(bytesToRead))
         super.init()
         
         self.completionBlock = { [weak self] in
@@ -29,9 +30,14 @@ public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSeri
     private(set) weak var controller: Controller!
     private var executionThread: Thread?
     private var    _isExecuting: Bool = false
-    private var       bytesRead: Data = Data()
+    private(set) var  bytesRead: Data = Data() {
+        didSet {
+            self.progress.completedUnitCount = Int64(bytesRead.count)
+        }
+    }
     private var      bytesCache: Data = Data()
     private var     bytesToRead: Int
+    private let        progress: Progress
     private let isOpenCondition: NSCondition = NSCondition()
 
     private var isCacheFilled: Bool {
