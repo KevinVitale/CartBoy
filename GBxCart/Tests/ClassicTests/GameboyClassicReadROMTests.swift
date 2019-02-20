@@ -3,6 +3,7 @@ import ORSSerial
 import Gibby
 import GBxCartKit
 
+@objc(GameboyClassicReadROMTests)
 fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     private typealias Platform  = GameboyClassic
     private typealias Cartridge = Platform.Cartridge
@@ -53,7 +54,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         waitForExpectations(timeout: 5)
     }
-    
+
     func testReadROM() {
         let expectiation = expectation(description: "ROM file was read")
         
