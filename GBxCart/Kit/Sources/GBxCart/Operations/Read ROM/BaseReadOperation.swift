@@ -7,7 +7,7 @@ public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSeri
         super.init()
         
         self.completionBlock = { [weak self] in
-            controller.reader?.delegate = nil
+            controller.reader.delegate = nil
             
             guard let strongSelf = self else {
                 return
@@ -59,7 +59,7 @@ public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSeri
                 return
             }
             
-            while self.controller.reader?.isOpen == false {
+            while self.controller.reader.isOpen == false {
                 self.isOpenCondition.wait() // self.isOpenCondition.wait(until: Date().addingTimeInterval(5))
             }
             
@@ -69,8 +69,14 @@ public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSeri
         }
     }
     
+    public override func cancel() {
+        super.cancel()
+        self.willChangeValue(forKey: "isFinished")
+        self.didChangeValue(forKey: "isFinished")
+    }
+    
     public override var isExecuting: Bool {
-        return self.controller.reader?.isOpen ?? false
+        return self.controller.reader.isOpen
     }
     
     public override var isFinished: Bool {
@@ -79,11 +85,6 @@ public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSeri
 
     public func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
         cancel()
-        self.willChangeValue(forKey: "isFinished")
-        self.didChangeValue(forKey: "isFinished")
-    }
-    
-    public func serialPortWasClosed(_ serialPort: ORSSerialPort) {
     }
     
     public func serialPortWasOpened(_ serialPort: ORSSerialPort) {

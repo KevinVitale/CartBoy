@@ -8,10 +8,8 @@ public protocol ReaderController: class {
     init(matching portProfile: ORSSerialPortManager.PortProfile) throws
     
     /// The cartridge reader that this adopter is controlling.
-    var reader: ORSSerialPort? { get }
+    var reader: ORSSerialPort  { get }
     var  queue: OperationQueue { get }
-    
-    static var portProfile: ORSSerialPortManager.PortProfile { get }
 
     /**
      Locate a serial port matching `profile`, and then attempt to open it.
@@ -20,7 +18,7 @@ public protocol ReaderController: class {
         - profile: The profile to match against.
      */
     func openReader(delegate: ORSSerialPortDelegate?) throws
-    
+
     func sendBeginReading()
     func sendContinueReading()
     func sendGo(to address: Platform.AddressSpace)

@@ -24,7 +24,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
 
     override func tearDown() {
         if closePort {
-            controller.reader?.close()
+            controller.reader.close()
         }
     }
     
@@ -33,23 +33,25 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         var romHeader: Header! {
             didSet {
+                XCTAssertNotNil(romHeader)
+                
+                if let header = romHeader {
+                    XCTAssertTrue(romHeader.isLogoValid)
+                    
+                    print("|-------------------------------------|")
+                    print("|  CONFIGURATION: \(header.configuration)")
+                    print(header)
+                }
+
                 expectiation.fulfill()
             }
         }
         
         controller.readHeader { (header: Header?) in
-            guard let header = header, header.isLogoValid else {
-                return
-            }
-            
-            print("|-------------------------------------|")
-            print("|  CONFIGURATION: \(header.configuration)")
-            print(header)
             romHeader = header
         }
         
         waitForExpectations(timeout: 5)
-        XCTAssertNotNil(romHeader)
     }
     
     func testReadROM() {
@@ -57,24 +59,22 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         var rom: Cartridge! {
             didSet {
+                XCTAssertNotNil(rom)
+
+                if let rom = rom {
+                    print(rom)
+                }
+                
                 expectiation.fulfill()
             }
         }
 
         controller.readCartridge { (cartridge: Cartridge?) in
-            if let cartridge = cartridge {
-                rom = cartridge
-            }
+            rom = cartridge
         }
         
         waitForExpectations(timeout: 5)
-        
-        XCTAssertNotNil(rom)
-        
-        if let rom = rom {
-            print(rom)
-        }
-        
+
         self.closePort = true
     }
 }
