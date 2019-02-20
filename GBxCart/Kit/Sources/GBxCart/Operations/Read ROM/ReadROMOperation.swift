@@ -5,7 +5,7 @@ import Gibby
 public final class ReadHeaderOperation<Controller: ReaderController>: BaseReadOperation<Controller> {
     public required init(controller: Controller, result: ((Header?) -> ())? = nil) {
         super.init(controller: controller, numberOfBytesToRead: Controller.Platform.headerRange.count) { data in
-            result?(Header(bytes: data))
+            result?(data.isEmpty ? nil : Header(bytes: data))
         }
     }
     
@@ -23,7 +23,7 @@ public final class ReadCartridgeOperation<Controller: ReaderController>: BaseRea
     public required init(controller: Controller, header: Cartridge.Header, result: ((Cartridge?) -> ())? = nil) {
         self.header = header
         super.init(controller: controller, numberOfBytesToRead: header.romSize) { data in
-            result?(Cartridge(bytes: data))
+            result?(data.isEmpty ? nil : Cartridge(bytes: data))
         }
     }
     
