@@ -18,6 +18,8 @@
 		0AC92F8821F95FB200605C82 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AC92F8521F95F8D00605C82 /* Gibby.framework */; };
 		0AC92F8921F95FC400605C82 /* GBxCartKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD810521F381AF00D548C8 /* GBxCartKit.framework */; };
 		0AC92F8A21F95FD100605C82 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
+		0AE7F26A221D93F900D86827 /* BaseReadOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE7F269221D93F900D86827 /* BaseReadOperation.swift */; };
+		0AE7F270221D942A00D86827 /* NSCondition+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE7F26F221D942A00D86827 /* NSCondition+Ext.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +66,8 @@
 		0AAD810721F381AF00D548C8 /* GBxCartKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GBxCartKit.h; sourceTree = "<group>"; };
 		0AC0FE14221283BD002E69C2 /* ReadROMOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadROMOperation.swift; sourceTree = "<group>"; };
 		0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gibby.xcodeproj; path = ../Dependencies/Gibby/Gibby.xcodeproj; sourceTree = "<group>"; };
+		0AE7F269221D93F900D86827 /* BaseReadOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseReadOperation.swift; sourceTree = "<group>"; };
+		0AE7F26F221D942A00D86827 /* NSCondition+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSCondition+Ext.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,6 +120,7 @@
 			children = (
 				0A11DB6122127E1600C7DD13 /* Data+Ext.swift */,
 				0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */,
+				0AE7F26F221D942A00D86827 /* NSCondition+Ext.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -206,6 +211,7 @@
 		0AC0FE192213296D002E69C2 /* Read ROM */ = {
 			isa = PBXGroup;
 			children = (
+				0AE7F269221D93F900D86827 /* BaseReadOperation.swift */,
 				0AC0FE14221283BD002E69C2 /* ReadROMOperation.swift */,
 			);
 			path = "Read ROM";
@@ -377,10 +383,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0AE7F26A221D93F900D86827 /* BaseReadOperation.swift in Sources */,
 				0ABD40E2221A10D000C6F656 /* GBxCartReaderController.swift in Sources */,
 				0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */,
 				0A108BBF22179F1400A12FA1 /* ReaderController.swift in Sources */,
 				0AC0FE15221283BD002E69C2 /* ReadROMOperation.swift in Sources */,
+				0AE7F270221D942A00D86827 /* NSCondition+Ext.swift in Sources */,
 				0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
