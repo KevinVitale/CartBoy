@@ -2,8 +2,13 @@ import ORSSerial
 import Gibby
 
 public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, ReaderController {
+    public init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
+        self.reader = try ORSSerialPortManager.port(matching: GBxCartReaderController.portProfile)
+    }
+    
     public private(set) var reader: ORSSerialPort?
     public let queue = OperationQueue()
+    
     public static var portProfile: ORSSerialPortManager.PortProfile {
         return .GBxCart
     }
@@ -11,7 +16,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
     public typealias Header = Platform.Cartridge.Header
 
     public final func openReader(delegate: ORSSerialPortDelegate?) throws {
-        guard reader == nil else {
+        guard reader?.isOpen == false else {
             self.reader?.delegate = delegate
             return
         }

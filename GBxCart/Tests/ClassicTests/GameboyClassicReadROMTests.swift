@@ -8,8 +8,19 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     private typealias Cartridge = Platform.Cartridge
     private typealias Header    = Platform.Header
     
-    private let controller = GBxCartReaderController<Platform>()
+    private private(set) var controller: GBxCartReaderController<Platform>!
     private var closePort = false
+    
+    override func setUp() {
+        do {
+            if controller == nil {
+                controller = try GBxCartReaderController()
+            }
+        }
+        catch {
+            fatalError("GBxCart reader was not found. Please connect it to your computer and try again.")
+        }
+    }
 
     override func tearDown() {
         if closePort {
