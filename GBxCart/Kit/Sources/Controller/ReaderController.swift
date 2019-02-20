@@ -12,10 +12,10 @@ public protocol ReaderController: class {
     var  queue: OperationQueue { get }
 
     /**
-     Locate a serial port matching `profile`, and then attempt to open it.
+     Attempts to open `reader`.
      
      - parameters:
-        - profile: The profile to match against.
+        - delegate: The receiver to send delegate updates to, including `wasOpened`.
      */
     func openReader(delegate: ORSSerialPortDelegate?) throws
 
