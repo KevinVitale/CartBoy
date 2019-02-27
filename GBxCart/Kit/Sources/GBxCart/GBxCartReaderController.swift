@@ -43,6 +43,55 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
     public func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace) {
         GBxCartCommand.send(to: self, commands: .bank(address: address), .set(bank: bank))
     }
+    
+    public func readCartridgeStrategy() -> (ReadCartridgeOperation<GBxCartReaderController<Platform>>) -> () {
+        switch Platform.self {
+        case is GameboyClassic.Type:
+            return GBxCartCartridgeReadStrategy.classic as! (ReadCartridgeOperation<GBxCartReaderController<Platform>>) -> ()
+        case is GameboyAdvance.Type:
+            return GBxCartCartridgeReadStrategy.advance as! (ReadCartridgeOperation<GBxCartReaderController<Platform>>) -> ()
+        default: return { _ in
+            fatalError("No 'read' strategy provided for \(Platform.self)")
+            }
+        }
+    }
+}
+
+fileprivate enum GBxCartCartridgeReadStrategy {
+    fileprivate static func classic(_ operation: ReadCartridgeOperation<GBxCartReaderController<GameboyClassic>>) {
+        operation.controller.sendHaltReading()
+        
+        for currentBank in 1..<GameboyClassic.AddressSpace(operation.header.romBanks) {
+            print("Bank: \(currentBank)")
+            
+            let bankByteCount = currentBank > 1 ? 0x4000 : 0x8000
+            let address       = GameboyClassic.AddressSpace(currentBank > 1 ? 0x4000 : 0x0000)
+            operation.bankByteCount = (bankByteCount, bankByteCount)
+            
+            if case .one = operation.header.configuration {
+                operation.controller.sendSwitch(bank: 0, at: 0x6000)
+                operation.controller.sendSwitch(bank: GameboyClassic.AddressSpace(currentBank >> 5), at: 0x4000)
+                operation.controller.sendSwitch(bank: GameboyClassic.AddressSpace(currentBank & 0x1F), at: 0x2000)
+            }
+            else {
+                operation.controller.sendSwitch(bank: GameboyClassic.AddressSpace(currentBank), at: 0x2100)
+                if currentBank >= 0x100 {
+                    operation.controller.sendSwitch(bank: 1, at: 0x3000)
+                }
+            }
+            
+            operation.controller.sendGo(to: GameboyClassic.AddressSpace(address))
+            operation.controller.sendBeginReading()
+            
+            operation.readCondition.wait()
+            operation.controller.sendHaltReading()
+            let prefix = operation.bytesRead.suffix(from: operation.bytesRead.count - 0x4000).map { String($0, radix: 16, uppercase: true)}.joined(separator: " ")
+            print(#function, operation.bytesRead, prefix.prefix(0x40))
+        }
+    }
+    
+    fileprivate static func advance(_ operation: ReadCartridgeOperation<GBxCartReaderController<GameboyClassic>>) {
+    }
 }
 
 fileprivate enum GBxCartCommand<Platform: Gibby.Platform> {
@@ -52,7 +101,7 @@ fileprivate enum GBxCartCommand<Platform: Gibby.Platform> {
     case halt
     case proceed
     case read
-
+    
     private var encodedData: Data {
         var asciiCommand: UInt8 {
             switch self {
@@ -96,7 +145,7 @@ fileprivate enum GBxCartCommand<Platform: Gibby.Platform> {
     
     private func dataToSend() -> [Data] {
         switch self {
-        case .halt:  return [encodedData]
+        case .halt:     return [encodedData]
         case .proceed:  return [encodedData]
         case .read:     return [encodedData]
         default:        return [encodedData, Data([0x0])]

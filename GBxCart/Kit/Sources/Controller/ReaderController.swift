@@ -12,10 +12,6 @@ public protocol ReaderController: class {
     var  queue: OperationQueue { get }
 
     /**
-     Attempts to open `reader`.
-     
-     - parameters:
-        - delegate: The receiver to send delegate updates to, including `wasOpened`.
      */
     func openReader(delegate: ORSSerialPortDelegate?) throws
 
@@ -24,6 +20,10 @@ public protocol ReaderController: class {
     func sendHaltReading()
     func sendGo(to address: Platform.AddressSpace)
     func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace)
+    
+    /**
+     */
+    func readCartridgeStrategy() -> (ReadCartridgeOperation<Self>) -> ()
 }
 
 extension ReaderController {

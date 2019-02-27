@@ -28,19 +28,16 @@ public final class ReadCartridgeOperation<Controller: ReaderController>: BaseRea
     }
     
     public typealias Cartridge = Controller.Platform.Cartridge
-    private typealias Platform = Controller.Platform
-    private typealias AddressSpace = Platform.AddressSpace
-    
-    fileprivate let header: Cartridge.Header
-    fileprivate let readCondition = NSCondition()
-    fileprivate var bankByteCount: (total: Int, remaining: Int) = (0, 0)
-    private var readROMStrategy: ReadROMStrategy<Platform> = Platform.self is GameboyClassic.Type ? .classic : .advance
+
+    public let header: Cartridge.Header
+    public let readCondition = NSCondition()
+    public var bankByteCount: (total: Int, remaining: Int) = (0, 0)
 
     public override func main() {
         super.main()
         
         self.readCondition.whileLocked {
-            self.readROMStrategy.execute(self)
+            controller.readCartridgeStrategy()(self)
         }
     }
 
@@ -51,43 +48,6 @@ public final class ReadCartridgeOperation<Controller: ReaderController>: BaseRea
         if self.bankByteCount.remaining == 0 {
             self.controller.sendHaltReading()
             self.readCondition.signal()
-        }
-    }
-}
-
-fileprivate enum ReadROMStrategy<Platform: Gibby.Platform> {
-    case classic
-    case advance
-    
-    func execute<Controller: ReaderController>(_ operation: ReadCartridgeOperation<Controller>) where Controller.Platform == Platform {
-        operation.controller.sendHaltReading()
-        
-        for currentBank in 1..<Platform.AddressSpace(operation.header.romBanks) {
-            print("Bank: \(currentBank)")
-            
-            let bankByteCount = currentBank > 1 ? 0x4000 : 0x8000
-            let address       = Platform.AddressSpace(currentBank > 1 ? 0x4000 : 0x0000)
-            operation.bankByteCount = (bankByteCount, bankByteCount)
-
-            if case .one = (operation.header as! GameboyClassic.Cartridge.Header).configuration {
-                operation.controller.sendSwitch(bank: 0, at: 0x6000)
-                operation.controller.sendSwitch(bank: currentBank >> 5, at: 0x4000)
-                operation.controller.sendSwitch(bank: currentBank & 0x1F, at: 0x2000)
-            }
-            else {
-                operation.controller.sendSwitch(bank: currentBank, at: 0x2100)
-                if currentBank >= 0x100 {
-                    operation.controller.sendSwitch(bank: 1, at: 0x3000)
-                }
-            }
-            
-            operation.controller.sendGo(to: address)
-            operation.controller.sendBeginReading()
-            
-            operation.readCondition.wait()
-            operation.controller.sendHaltReading()
-            let prefix = operation.bytesRead.suffix(from: operation.bytesRead.count - 0x4000).map { String($0, radix: 16, uppercase: true)}.joined(separator: " ")
-            print(#function, operation.bytesRead, prefix.prefix(0x40))
         }
     }
 }
