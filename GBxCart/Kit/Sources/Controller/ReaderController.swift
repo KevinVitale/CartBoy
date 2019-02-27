@@ -21,8 +21,8 @@ public protocol ReaderController: class {
 
     func sendBeginReading()
     func sendContinueReading()
+    func sendHaltReading()
     func sendGo(to address: Platform.AddressSpace)
-    func sendStopBreak()
     func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace)
 }
 

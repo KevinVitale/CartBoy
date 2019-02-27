@@ -64,6 +64,15 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
 
                 if let rom = rom {
                     print(rom)
+                    if rom.header.isLogoValid {
+                        print("|-------------------------------------|")
+                        print("|  CONFIGURATION: \(rom.header.configuration)")
+                        print(rom.header)
+                        try! rom.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(rom.header.title).gb"))
+                    }
+                    else {
+                        XCTFail("Invalid ROM header.")
+                    }
                 }
                 
                 expectiation.fulfill()
@@ -74,7 +83,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             rom = cartridge
         }
         
-        waitForExpectations(timeout: 5)
+        waitForExpectations(timeout: 60)
 
         self.closePort = true
     }
