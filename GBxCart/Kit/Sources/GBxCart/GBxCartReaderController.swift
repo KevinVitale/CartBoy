@@ -60,9 +60,16 @@ fileprivate enum GBxCartCartridgeReadStrategy {
     fileprivate static func classic(_ operation: ReadCartridgeOperation<GBxCartReaderController<GameboyClassic>>) {
         operation.controller.sendHaltReading()
         
+        // Enumerate the each bank-switch, reading memory from it.
         for currentBank in 1..<GameboyClassic.AddressSpace(operation.header.romBanks) {
             print("Bank: \(currentBank)")
             
+            /**
+             The first bank reads 32KB, and 16KB thereafter (`bankBytesToRead`).
+             A starting address is also determined. For the bank being read:
+                 - Bank #1 starts reading at '0'; or,
+                 - Bank #2 and above starts reading at byte '16384' (0x4000).
+             */
             operation.bankBytesToRead = currentBank > 1 ? 0x4000 : 0x8000
 
             if case .one = operation.header.configuration {
