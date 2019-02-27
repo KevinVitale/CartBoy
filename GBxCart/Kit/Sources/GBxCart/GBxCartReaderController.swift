@@ -3,9 +3,7 @@ import Gibby
 
 public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, ReaderController {
     public init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
-        self.reader = try ORSSerialPortManager
-            .port(matching: portProfile)
-            .configuredAsGBxCart()
+        self.reader = try ORSSerialPortManager.port(matching: portProfile)
     }
     
     public let reader: ORSSerialPort
@@ -16,6 +14,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
         
         if reader.isOpen == false {
             self.reader.open()
+            self.reader.configuredAsGBxCart()
         }
 
         guard self.reader.isOpen else {

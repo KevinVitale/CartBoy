@@ -54,6 +54,7 @@ extension ORSSerialPortManager {
 }
 
 extension ORSSerialPort {
+    @discardableResult
     public final func configuredAsGBxCart() -> ORSSerialPort {
         self.allowsNonStandardBaudRates = true
         self.baudRate = 1000000
