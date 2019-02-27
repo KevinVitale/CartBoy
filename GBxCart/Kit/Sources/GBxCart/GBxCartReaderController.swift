@@ -64,10 +64,8 @@ fileprivate enum GBxCartCartridgeReadStrategy {
         for currentBank in 1..<GameboyClassic.AddressSpace(operation.header.romBanks) {
             print("Bank: \(currentBank)")
             
-            let bankByteCount = currentBank > 1 ? 0x4000 : 0x8000
-            let address       = GameboyClassic.AddressSpace(currentBank > 1 ? 0x4000 : 0x0000)
-            operation.bankByteCount = (bankByteCount, bankByteCount)
-            
+            operation.bankBytesToRead = currentBank > 1 ? 0x4000 : 0x8000
+
             if case .one = operation.header.configuration {
                 operation.controller.sendSwitch(bank: 0, at: 0x6000)
                 operation.controller.sendSwitch(bank: GameboyClassic.AddressSpace(currentBank >> 5), at: 0x4000)
@@ -80,6 +78,7 @@ fileprivate enum GBxCartCartridgeReadStrategy {
                 }
             }
             
+            let address = GameboyClassic.AddressSpace(currentBank > 1 ? 0x4000 : 0x0000)
             operation.controller.sendGo(to: GameboyClassic.AddressSpace(address))
             operation.controller.sendBeginReading()
             

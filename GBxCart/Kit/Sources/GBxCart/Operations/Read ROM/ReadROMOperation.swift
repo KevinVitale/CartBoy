@@ -31,7 +31,7 @@ public final class ReadCartridgeOperation<Controller: ReaderController>: BaseRea
 
     public let header: Cartridge.Header
     public let readCondition = NSCondition()
-    public var bankByteCount: (total: Int, remaining: Int) = (0, 0)
+    public var bankBytesToRead: Int = 0
 
     public override func main() {
         super.main()
@@ -44,8 +44,8 @@ public final class ReadCartridgeOperation<Controller: ReaderController>: BaseRea
     public override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
         super.serialPort(serialPort, didReceive: data)
         
-        self.bankByteCount.remaining -= data.count
-        if self.bankByteCount.remaining == 0 {
+        self.bankBytesToRead -= data.count
+        if self.bankBytesToRead == 0 {
             self.controller.sendHaltReading()
             self.readCondition.signal()
         }
