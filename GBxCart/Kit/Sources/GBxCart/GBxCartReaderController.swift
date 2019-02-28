@@ -1,14 +1,38 @@
 import ORSSerial
 import Gibby
 
+/**
+ Cart reader implementation for insideGadgets.com's 'GBxCart'.
+ */
 public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, ReaderController {
+    /**
+     Creates a new instance of the _GBxCart_ controller for the given `Platform`.
+     
+     The expected hardware must be connected prior to attempting to instantiate
+     an instance, or an exception is thrown.
+     
+     - parameters:
+        - portProfile:  The profile which describes the port that the 'GBxCart' hardware
+                        is expected to be connected to.
+    
+     - note: See `ORSSerialPortManager.PortProfile` for potential `portProfile` values.
+     */
     public init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
     }
     
+    /// The reader (e.g., _hardware/serial port_).
     public let reader: ORSSerialPort
+    
+    /// The operation queue upon which the receiever execute submitted requests.
     public let queue = OperationQueue()
 
+    /**
+     Opens the reader, optionally assigning its delegate.
+     - parameters:
+         - delegate: The `reader`'s delegate.
+     -
+     */
     public final func openReader(delegate: ORSSerialPortDelegate?) throws {
         self.reader.delegate = delegate
         
@@ -23,26 +47,52 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
 
     }
     
+    /**
+     Begins reading memory from the reader.
+     */
     public func sendBeginReading() {
         GBxCartCommand.send(to: self, commands: .read)
     }
 
+    /**
+     Memory is read 64KB at a time, then it stalls. Calling this triggers the
+     reader to continue reading another block of memory.
+     */
     public func sendContinueReading() {
         GBxCartCommand.send(to: self, commands: .proceed)
     }
     
+    /**
+     Hals the reader, or breaks out of loops the reader may be in.
+     */
     public func sendHaltReading() {
         GBxCartCommand.send(to: self, commands: .halt)
     }
-
+    
+    /**
+     Configures the address to next reading call will start from.
+     
+     - parameters:
+         - address: The address where the memory begins at.
+     */
     public func sendGo(to address: Platform.AddressSpace) {
         GBxCartCommand.send(to: self, commands: .goto(address: address))
     }
     
+    /**
+     Configures the bank and bank address in the ROM to next reading call will start from.
+     
+     - parameters:
+         - bank: The bank being switch.
+         - address: The address the bank's memory begins at.
+     */
     public func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace) {
         GBxCartCommand.send(to: self, commands: .bank(address: address), .set(bank: bank))
     }
     
+    /**
+     Returns a `Platform` appropriate callback
+     */
     public func readCartridgeStrategy() -> (ReadCartridgeOperation<GBxCartReaderController<Platform>>) -> () {
         switch Platform.self {
         case is GameboyClassic.Type:
