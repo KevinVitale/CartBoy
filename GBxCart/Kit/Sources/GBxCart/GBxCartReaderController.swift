@@ -50,7 +50,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
     /**
      Begins reading memory from the reader.
      */
-    fileprivate func sendBeginReading() {
+    func sendBeginReading() {
         GBxCartCommand.send(to: self, commands: .read)
     }
 
@@ -75,7 +75,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
      - parameters:
          - address: The address where the memory begins at.
      */
-    fileprivate func sendGo(to address: Platform.AddressSpace) {
+    func sendGo(to address: Platform.AddressSpace) {
         GBxCartCommand.send(to: self, commands: .goto(address: address))
     }
     
@@ -86,7 +86,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
          - bank: The bank being switch.
          - address: The address the bank's memory begins at.
      */
-    fileprivate func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace) {
+    func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace) {
         GBxCartCommand.send(to: self, commands: .bank(address: address), .set(bank: bank))
     }
     
@@ -117,59 +117,6 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
             fatalError("No 'read' strategy provided for \(Platform.self)")
             }
         }
-    }
-}
-
-fileprivate enum GBxCartHeaderReadStrategy {
-    fileprivate static func classic(_ operation: ReadHeaderOperation<GBxCartReaderController<GameboyClassic>>) {
-        operation.controller.sendHaltReading()
-        operation.controller.sendGo(to: GameboyClassic.headerRange.lowerBound)
-        operation.controller.sendBeginReading()
-    }
-    fileprivate static func advance(_ operation: ReadHeaderOperation<GBxCartReaderController<GameboyClassic>>) {
-    }
-}
-
-fileprivate enum GBxCartCartridgeReadStrategy {
-    fileprivate static func classic(_ operation: ReadCartridgeOperation<GBxCartReaderController<GameboyClassic>>) {
-        operation.controller.sendHaltReading()
-        
-        // Enumerate the each bank-switch, reading memory from it.
-        for currentBank in 1..<GameboyClassic.AddressSpace(operation.header.romBanks) {
-            print("Bank: \(currentBank)")
-            
-            /**
-             The first bank reads 32KB, and 16KB thereafter (`bankBytesToRead`).
-             A starting address is also determined. For the bank being read:
-                 - Bank #1 starts reading at '0'; or,
-                 - Bank #2 and above starts reading at byte '16384' (0x4000).
-             */
-            operation.bankBytesToRead = currentBank > 1 ? 0x4000 : 0x8000
-
-            if case .one = operation.header.configuration {
-                operation.controller.sendSwitch(bank: 0, at: 0x6000)
-                operation.controller.sendSwitch(bank: GameboyClassic.AddressSpace(currentBank >> 5), at: 0x4000)
-                operation.controller.sendSwitch(bank: GameboyClassic.AddressSpace(currentBank & 0x1F), at: 0x2000)
-            }
-            else {
-                operation.controller.sendSwitch(bank: GameboyClassic.AddressSpace(currentBank), at: 0x2100)
-                if currentBank >= 0x100 {
-                    operation.controller.sendSwitch(bank: 1, at: 0x3000)
-                }
-            }
-            
-            let address = GameboyClassic.AddressSpace(currentBank > 1 ? 0x4000 : 0x0000)
-            operation.controller.sendGo(to: GameboyClassic.AddressSpace(address))
-            operation.controller.sendBeginReading()
-            
-            operation.readCondition.wait()
-            operation.controller.sendHaltReading()
-            let prefix = operation.bytesRead.suffix(from: operation.bytesRead.count - 0x4000).map { String($0, radix: 16, uppercase: true)}.joined(separator: " ")
-            print(#function, operation.bytesRead, prefix.prefix(0x40))
-        }
-    }
-    
-    fileprivate static func advance(_ operation: ReadCartridgeOperation<GBxCartReaderController<GameboyClassic>>) {
     }
 }
 
