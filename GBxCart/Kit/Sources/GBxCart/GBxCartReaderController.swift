@@ -104,6 +104,30 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
             }
         }
     }
+    
+    /**
+     */
+    public func readHeaderStrategy() -> (ReadHeaderOperation<GBxCartReaderController<Platform>>) -> () {
+        switch Platform.self {
+        case is GameboyClassic.Type:
+            return GBxCartHeaderReadStrategy.classic as! (ReadHeaderOperation<GBxCartReaderController<Platform>>) -> ()
+        case is GameboyAdvance.Type:
+            return GBxCartHeaderReadStrategy.advance as! (ReadHeaderOperation<GBxCartReaderController<Platform>>) -> ()
+        default: return { _ in
+            fatalError("No 'read' strategy provided for \(Platform.self)")
+            }
+        }
+    }
+}
+
+fileprivate enum GBxCartHeaderReadStrategy {
+    fileprivate static func classic(_ operation: ReadHeaderOperation<GBxCartReaderController<GameboyClassic>>) {
+        operation.controller.sendHaltReading()
+        operation.controller.sendGo(to: GameboyClassic.headerRange.lowerBound)
+        operation.controller.sendBeginReading()
+    }
+    fileprivate static func advance(_ operation: ReadHeaderOperation<GBxCartReaderController<GameboyClassic>>) {
+    }
 }
 
 fileprivate enum GBxCartCartridgeReadStrategy {

@@ -13,9 +13,7 @@ public final class ReadHeaderOperation<Controller: ReaderController>: BaseReadOp
 
     public override func main() {
         super.main()
-        self.controller.sendHaltReading()
-        self.controller.sendGo(to: Controller.Platform.headerRange.lowerBound)
-        self.controller.sendBeginReading()
+        controller.readHeaderStrategy()(self)
     }
 }
 

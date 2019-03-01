@@ -20,6 +20,10 @@ public protocol ReaderController: class {
 
     /**
      */
+    func readHeaderStrategy() -> (ReadHeaderOperation<Self>) -> ()
+
+    /**
+     */
     func readCartridgeStrategy() -> (ReadCartridgeOperation<Self>) -> ()
 }
 
