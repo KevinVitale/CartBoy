@@ -10,6 +10,9 @@ public protocol ReaderController: class {
     /// The cartridge reader that this adopter is controlling.
     var reader: ORSSerialPort  { get }
     var  queue: OperationQueue { get }
+    
+    /// The number of bytes the controller reads until waiting for a 'continue'.
+    static var cacheSize: Int  { get }
 
     /**
      */
@@ -28,6 +31,11 @@ public protocol ReaderController: class {
 }
 
 extension ReaderController {
+    /// Default cache size.
+    public static var cacheSize: Int {
+        return 64
+    }
+    
     public func readHeader(result: @escaping ((Self.Platform.Cartridge.Header?) -> ())) {
         self.queue.addOperation(ReadHeaderOperation<Self>(controller: self, result: result))
     }

@@ -38,7 +38,7 @@ public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSeri
     private let isOpenCondition: NSCondition = NSCondition()
     
     private var isCacheFilled: Bool {
-        return (64 - bytesCache.count) <= 0
+        return (Controller.cacheSize - bytesCache.count) <= 0
     }
     
     func append(next data: Data) {
