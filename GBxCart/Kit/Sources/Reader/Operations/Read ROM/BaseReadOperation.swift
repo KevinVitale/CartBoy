@@ -41,7 +41,7 @@ public class BaseReadOperation<Controller: ReaderController>: Operation, ORSSeri
         return (Controller.cacheSize - bytesCache.count) <= 0
     }
     
-    func append(next data: Data) {
+    private func append(next data: Data) {
         self.bytesCache.append(data)
         if self.isCacheFilled {
             self.bytesRead.append(self.bytesCache)
