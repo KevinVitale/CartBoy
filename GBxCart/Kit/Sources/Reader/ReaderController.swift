@@ -2,11 +2,11 @@ import ORSSerial
 import Gibby
 
 public protocol ReaderController: class {
-    /// The associated platform that the adopter relates to.
-    associatedtype Platform: Gibby.Platform
-    
     init(matching portProfile: ORSSerialPortManager.PortProfile) throws
     
+    /// The associated platform that the adopter relates to.
+    associatedtype Platform: Gibby.Platform
+
     /// The cartridge reader that this adopter is controlling.
     var reader: ORSSerialPort  { get }
     var  queue: OperationQueue { get }
