@@ -50,7 +50,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
     /**
      Begins reading memory from the reader.
      */
-    public func sendBeginReading() {
+    fileprivate func sendBeginReading() {
         GBxCartCommand.send(to: self, commands: .read)
     }
 
@@ -75,7 +75,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
      - parameters:
          - address: The address where the memory begins at.
      */
-    public func sendGo(to address: Platform.AddressSpace) {
+    fileprivate func sendGo(to address: Platform.AddressSpace) {
         GBxCartCommand.send(to: self, commands: .goto(address: address))
     }
     
@@ -86,7 +86,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
          - bank: The bank being switch.
          - address: The address the bank's memory begins at.
      */
-    public func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace) {
+    fileprivate func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace) {
         GBxCartCommand.send(to: self, commands: .bank(address: address), .set(bank: bank))
     }
     

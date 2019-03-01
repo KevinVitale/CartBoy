@@ -15,12 +15,9 @@ public protocol ReaderController: class {
      */
     func openReader(delegate: ORSSerialPortDelegate?) throws
 
-    func sendBeginReading()
     func sendContinueReading()
     func sendHaltReading()
-    func sendGo(to address: Platform.AddressSpace)
-    func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace)
-    
+
     /**
      */
     func readCartridgeStrategy() -> (ReadCartridgeOperation<Self>) -> ()
