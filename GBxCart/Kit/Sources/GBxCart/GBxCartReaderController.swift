@@ -160,12 +160,12 @@ fileprivate enum GBxCartCommand<Platform: Gibby.Platform> {
         }
 
         switch self {
-        case  .set(let bank):    print("bank (set):"); return String(format: stringFormat, asciiCommand, bank as! CVarArg).data(using: .ascii)!
-        case .bank(let address): print("bank (addr):"); return String(format: stringFormat, asciiCommand, address as! CVarArg).data(using: .ascii)!
-        case .goto(let address): print("goto: \(address)"); return String(format: stringFormat, asciiCommand, address as! CVarArg).data(using: .ascii)!
-        case .halt:              print("halt:"); return String(format: stringFormat, asciiCommand as CVarArg).data(using: .ascii)!
+        case  .set(let bank):    return String(format: stringFormat, asciiCommand, bank as! CVarArg).data(using: .ascii)!
+        case .bank(let address): return String(format: stringFormat, asciiCommand, address as! CVarArg).data(using: .ascii)!
+        case .goto(let address): return String(format: stringFormat, asciiCommand, address as! CVarArg).data(using: .ascii)!
+        case .halt:              return String(format: stringFormat, asciiCommand as CVarArg).data(using: .ascii)!
         case .proceed:           return String(format: stringFormat, asciiCommand as CVarArg).data(using: .ascii)!
-        case .read:              print("read:"); return String(format: stringFormat, asciiCommand as CVarArg).data(using: .ascii)!
+        case .read:              return String(format: stringFormat, asciiCommand as CVarArg).data(using: .ascii)!
         }
     }
     
