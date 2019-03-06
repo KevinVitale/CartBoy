@@ -4,7 +4,7 @@ import Gibby
 /**
  Cart reader implementation for insideGadgets.com's 'GBxCart'.
  */
-public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, ReaderController {
+public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject, ReaderController {
     /**
      Creates a new instance of the _GBxCart_ controller for the given `Platform`.
      
@@ -21,6 +21,8 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
     }
     
+    
+
     /// The reader (e.g., _hardware/serial port_).
     public let reader: ORSSerialPort
     
@@ -40,13 +42,13 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
         func advance() {
         }
         
-        switch Platform.self {
+        switch Cartridge.Platform.self {
         case is GameboyClassic.Type:
             classic()
         case is GameboyAdvance.Type:
             advance()
         default:
-            fatalError("No 'read' strategy provided for \(Platform.self)")
+            fatalError("No 'read' strategy provided for \(Cartridge.Platform.self)")
         }
     }
 
@@ -86,8 +88,8 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
     
     /**
      */
-    public func set(bank: Int, with header: Platform.Cartridge.Header) {
-        func classic(bank: Int, address: Platform.AddressSpace) {
+    public func set<Header>(bank: Int, with header: Header) where Header == Cartridge.Header {
+        func classic(bank: Int, address: Cartridge.Platform.AddressSpace) {
             let bankAddr    = String(address, radix: 16, uppercase: true)
             let addrDataStr = "B\(bankAddr)\0"
             let addrData    = addrDataStr.data(using: .ascii)!
@@ -106,7 +108,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
         func advance() {
         }
         
-        switch Platform.self {
+        switch Cartridge.Platform.self {
         case is GameboyClassic.Type:
             let header = header as! GameboyClassic.Header
             if case .one = header.configuration {
@@ -123,7 +125,7 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
         case is GameboyAdvance.Type:
             advance()
         default:
-            fatalError("No 'read' strategy provided for \(Platform.self)")
+            fatalError("No 'read' strategy provided for \(Cartridge.Platform.self)")
         }
     }
 }

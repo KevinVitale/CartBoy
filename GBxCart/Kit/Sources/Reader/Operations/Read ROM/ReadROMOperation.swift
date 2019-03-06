@@ -4,14 +4,14 @@ import Gibby
 
 final class ReadHeaderOperation<Controller: ReaderController>: BaseReadOperation<Controller> {
     required init(controller: Controller, result: ((Header?) -> ())? = nil) {
-        let startAddress = Int(Controller.Platform.headerRange.lowerBound)
-        let endAddress   = Int(Controller.Platform.headerRange.upperBound)
+        let startAddress = Int(Controller.Cartridge.Platform.headerRange.lowerBound)
+        let endAddress   = Int(Controller.Cartridge.Platform.headerRange.upperBound)
         super.init(controller: controller, bytesToRead: startAddress..<endAddress) { data in
             result?(data.isEmpty ? nil : Header(bytes: data))
         }
     }
     
-    typealias Header = Controller.Platform.Cartridge.Header
+    typealias Header = Controller.Cartridge.Header
 
     override func main() {
         super.main()
@@ -29,7 +29,7 @@ final class ReadCartridgeOperation<Controller: ReaderController>: BaseReadOperat
         }
     }
     
-    typealias Cartridge = Controller.Platform.Cartridge
+    typealias Cartridge = Controller.Cartridge
     
     let header: Cartridge.Header
 
@@ -56,7 +56,7 @@ final class ReadCartridgeOperation<Controller: ReaderController>: BaseReadOperat
 }
 
 fileprivate final class ReadBankOperation<Controller: ReaderController>: BaseReadOperation<Controller> {
-    required init(controller: Controller, header: Cartridge.Header, bank: Int = 1, result: ((Data?) -> ())? = nil) {
+    required init(controller: Controller, header: Controller.Cartridge.Header, bank: Int = 1, result: ((Data?) -> ())? = nil) {
         self.header = header
         self.bank   = bank
         let startAddress = bank > 1 ? 0x4000 : 0x0000
@@ -65,10 +65,9 @@ fileprivate final class ReadBankOperation<Controller: ReaderController>: BaseRea
             result?(data.isEmpty ? nil : data)
         }
     }
-    
-    typealias Cartridge = Controller.Platform.Cartridge
 
-    let header: Cartridge.Header
+    let header: Controller.Cartridge.Header
+    
     private let bank: Int
     
     override func main() {

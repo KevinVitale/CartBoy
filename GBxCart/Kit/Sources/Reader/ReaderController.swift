@@ -5,7 +5,7 @@ public protocol ReaderController: class {
     init(matching portProfile: ORSSerialPortManager.PortProfile) throws
     
     /// The associated platform that the adopter relates to.
-    associatedtype Platform: Gibby.Platform
+    associatedtype Cartridge: Gibby.Cartridge
 
     /// The cartridge reader that this adopter is controlling.
     var reader: ORSSerialPort  { get }
@@ -32,7 +32,7 @@ public protocol ReaderController: class {
     
     /**
      */
-    func set(bank: Int, with header: Platform.Cartridge.Header)
+    func set<Header: Gibby.Header>(bank: Int, with header: Header) where Header == Self.Cartridge.Header
 }
 
 extension ReaderController {
@@ -43,13 +43,13 @@ extension ReaderController {
     
     /**
      */
-    public func readHeader(result: @escaping ((Self.Platform.Cartridge.Header?) -> ())) {
+    public func readHeader(result: @escaping ((Self.Cartridge.Header?) -> ())) {
         self.queue.addOperation(ReadHeaderOperation<Self>(controller: self, result: result))
     }
     
     /**
      */
-    public func readCartridge(header: Self.Platform.Cartridge.Header? = nil, result: @escaping ((Self.Platform.Cartridge?) -> ())) {
+    public func readCartridge(header: Self.Cartridge.Header? = nil, result: @escaping ((Self.Cartridge?) -> ())) {
         if let header = header {
             self.queue.addOperation(ReadCartridgeOperation<Self>(controller: self, header: header, result: result))
         }
