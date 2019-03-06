@@ -26,6 +26,29 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
     
     /// The operation queue upon which the receiever execute submitted requests.
     public let queue = OperationQueue()
+    
+    /**
+     */
+    public func startReading(range: Range<Int>) {
+        func classic() {
+            let addrBase16  = String(range.lowerBound, radix: 16, uppercase: true)
+            let addrDataStr = "\0A\(addrBase16)\0R"
+            let addrData    = addrDataStr.data(using: .ascii)!
+            self.reader.send(addrData)
+        }
+        
+        func advance() {
+        }
+        
+        switch Platform.self {
+        case is GameboyClassic.Type:
+            classic()
+        case is GameboyAdvance.Type:
+            advance()
+        default:
+            fatalError("No 'read' strategy provided for \(Platform.self)")
+        }
+    }
 
     /**
      Opens the reader, optionally assigning its delegate.
@@ -48,144 +71,59 @@ public final class GBxCartReaderController<Platform: Gibby.Platform>: NSObject, 
     }
     
     /**
-     Begins reading memory from the reader.
      */
-    func sendBeginReading() {
-        GBxCartCommand.send(to: self, commands: .read)
-    }
-
-    /**
-     Memory is read 64KB at a time, then it stalls. Calling this triggers the
-     reader to continue reading another block of memory.
-     */
-    public func sendContinueReading() {
-        GBxCartCommand.send(to: self, commands: .proceed)
+    public func continueReading() {
+        let keepReading = "1".data(using: .ascii)!
+        self.reader.send(keepReading)
     }
     
     /**
-     Hals the reader, or breaks out of loops the reader may be in.
      */
-    public func sendHaltReading() {
-        GBxCartCommand.send(to: self, commands: .halt)
+    public func stopReading() {
+        let stopReading = "0".data(using: .ascii)!
+        self.reader.send(stopReading)
     }
     
     /**
-     Configures the address to next reading call will start from.
-     
-     - parameters:
-         - address: The address where the memory begins at.
      */
-    func sendGo(to address: Platform.AddressSpace) {
-        GBxCartCommand.send(to: self, commands: .goto(address: address))
-    }
-    
-    /**
-     Configures the bank and bank address in the ROM to next reading call will start from.
-     
-     - parameters:
-         - bank: The bank being switch.
-         - address: The address the bank's memory begins at.
-     */
-    func sendSwitch(bank: Platform.AddressSpace, at address: Platform.AddressSpace) {
-        GBxCartCommand.send(to: self, commands: .bank(address: address), .set(bank: bank))
-    }
-    
-    /**
-     Returns a `Platform` appropriate callback
-     */
-    public func readCartridgeStrategy() -> (ReadCartridgeOperation<GBxCartReaderController<Platform>>) -> () {
-        switch Platform.self {
-        case is GameboyClassic.Type:
-            return GBxCartCartridgeReadStrategy.classic as! (ReadCartridgeOperation<GBxCartReaderController<Platform>>) -> ()
-        case is GameboyAdvance.Type:
-            return GBxCartCartridgeReadStrategy.advance as! (ReadCartridgeOperation<GBxCartReaderController<Platform>>) -> ()
-        default: return { _ in
-            fatalError("No 'read' strategy provided for \(Platform.self)")
-            }
+    public func set(bank: Int, with header: Platform.Cartridge.Header) {
+        func classic(bank: Int, address: Platform.AddressSpace) {
+            let bankAddr    = String(address, radix: 16, uppercase: true)
+            let addrDataStr = "B\(bankAddr)\0"
+            let addrData    = addrDataStr.data(using: .ascii)!
+            self.reader.send(addrData)
+            
+            // DO NOT DELETE THIS!
+            // Bank switch *will not* work if removed.
+            usleep(250)
+            
+            let bankNumr    = String(bank, radix: 10, uppercase: true)
+            let bankDataStr = "B\(bankNumr)\0"
+            let bankData    = bankDataStr.data(using: .ascii)!
+            self.reader.send(bankData)
         }
-    }
-    
-    /**
-     */
-    public func readHeaderStrategy() -> (ReadHeaderOperation<GBxCartReaderController<Platform>>) -> () {
-        switch Platform.self {
-        case is GameboyClassic.Type:
-            return GBxCartHeaderReadStrategy.classic as! (ReadHeaderOperation<GBxCartReaderController<Platform>>) -> ()
-        case is GameboyAdvance.Type:
-            return GBxCartHeaderReadStrategy.advance as! (ReadHeaderOperation<GBxCartReaderController<Platform>>) -> ()
-        default: return { _ in
-            fatalError("No 'read' strategy provided for \(Platform.self)")
-            }
-        }
-    }
-}
 
-fileprivate enum GBxCartCommand<Platform: Gibby.Platform> {
-    case  set(bank: Platform.AddressSpace)
-    case bank(address: Platform.AddressSpace)
-    case goto(address: Platform.AddressSpace)
-    case halt
-    case proceed
-    case read
-    
-    private var encodedData: Data {
-        var asciiCommand: UInt8 {
-            switch self {
-            case  .set:     return 0x42     // 'B'
-            case .bank:     return 0x42     // 'B'
-            case .goto:     return 0x41     // 'A'
-            case .halt:     return 0x30     // '0'
-            case .proceed:  return 0x31     // '1'
-            case .read:
-                switch Platform.self {
-                case is GameboyClassic.Type:
-                    return 0x52 // 'R'
-                case is GameboyAdvance.Type:
-                    return 0x72 // 'r'
-                default:
-                    fatalError("Unable to deduce command code for invalid platform.")
-                }
-            }
+        func advance() {
         }
         
-        var stringFormat: String {
-            switch self {
-            case  .set:     return "%c%d"
-            case .bank:     return "%c%x"
-            case .goto:     return "%c%x"
-            case .halt:     return "%c"
-            case .proceed:  return "%c"
-            case .read:     return "%c"
+        switch Platform.self {
+        case is GameboyClassic.Type:
+            let header = header as! GameboyClassic.Header
+            if case .one = header.configuration {
+                classic(bank:           0, address: 0x6000)
+                classic(bank:   bank >> 5, address: 0x4000)
+                classic(bank: bank & 0x1F, address: 0x2000)
             }
-        }
-
-        switch self {
-        case  .set(let bank):    return String(format: stringFormat, asciiCommand, bank as! CVarArg).data(using: .ascii)!
-        case .bank(let address): return String(format: stringFormat, asciiCommand, address as! CVarArg).data(using: .ascii)!
-        case .goto(let address): return String(format: stringFormat, asciiCommand, address as! CVarArg).data(using: .ascii)!
-        case .halt:              return String(format: stringFormat, asciiCommand as CVarArg).data(using: .ascii)!
-        case .proceed:           return String(format: stringFormat, asciiCommand as CVarArg).data(using: .ascii)!
-        case .read:              return String(format: stringFormat, asciiCommand as CVarArg).data(using: .ascii)!
-        }
-    }
-    
-    private func dataToSend() -> [Data] {
-        switch self {
-        case .halt:     return [encodedData]
-        case .proceed:  return [encodedData]
-        case .read:     return [encodedData]
-        default:        return [encodedData, Data([0x0])]
-        }
-    }
-    
-    fileprivate static func send(to controller: GBxCartReaderController<Platform>, commands: GBxCartCommand<Platform>...) {
-        commands
-            .flatMap { $0.dataToSend() }
-            .forEach {
-                if !$0.starts(with: [0x31]) {
-                    print($0.map { String($0, radix: 10, uppercase: true)}.joined(separator: " "))
+            else {
+                classic(bank: bank, address: 0x2100)
+                if bank >= 0x100 {
+                    classic(bank: 1, address: 0x2100)
                 }
-                controller.reader.send($0)
+            }
+        case is GameboyAdvance.Type:
+            advance()
+        default:
+            fatalError("No 'read' strategy provided for \(Platform.self)")
         }
     }
 }

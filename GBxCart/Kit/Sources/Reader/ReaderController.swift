@@ -18,16 +18,21 @@ public protocol ReaderController: class {
      */
     func openReader(delegate: ORSSerialPortDelegate?) throws
 
-    func sendContinueReading()
-    func sendHaltReading()
-
     /**
      */
-    func readHeaderStrategy() -> (ReadHeaderOperation<Self>) -> ()
-
+    func startReading(range: Range<Int>)
+    
     /**
      */
-    func readCartridgeStrategy() -> (ReadCartridgeOperation<Self>) -> ()
+    func continueReading()
+    
+    /**
+     */
+    func stopReading()
+    
+    /**
+     */
+    func set(bank: Int, with header: Platform.Cartridge.Header)
 }
 
 extension ReaderController {
@@ -36,10 +41,14 @@ extension ReaderController {
         return 64
     }
     
+    /**
+     */
     public func readHeader(result: @escaping ((Self.Platform.Cartridge.Header?) -> ())) {
         self.queue.addOperation(ReadHeaderOperation<Self>(controller: self, result: result))
     }
     
+    /**
+     */
     public func readCartridge(header: Self.Platform.Cartridge.Header? = nil, result: @escaping ((Self.Platform.Cartridge?) -> ())) {
         if let header = header {
             self.queue.addOperation(ReadCartridgeOperation<Self>(controller: self, header: header, result: result))
@@ -52,6 +61,8 @@ extension ReaderController {
     }
 }
 
+/**
+ */
 public enum ReaderControllerError: Error {
     case failedToOpen(ORSSerialPort?)
 }
