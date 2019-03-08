@@ -100,13 +100,6 @@
 			path = ClassicTests;
 			sourceTree = "<group>";
 		};
-		0A108BBA2217929900A12FA1 /* Util */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Util;
-			sourceTree = "<group>";
-		};
 		0A108BBD22179EC000A12FA1 /* Reader */ = {
 			isa = PBXGroup;
 			children = (
@@ -139,7 +132,7 @@
 			children = (
 				0AAD80E721F380F900D548C8 /* ORSSerialPort.xcodeproj */,
 				0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */,
-				0AAD810621F381AF00D548C8 /* Kit */,
+				0AAD810621F381AF00D548C8 /* Source */,
 				0AAD80F721F3815B00D548C8 /* Tests */,
 				0A3DD4C721F2A62100BCC6D4 /* Products */,
 				0A3DD4CF21F2A64800BCC6D4 /* Frameworks */,
@@ -175,29 +168,20 @@
 		0AAD80F721F3815B00D548C8 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				0A108BBA2217929900A12FA1 /* Util */,
 				0A108BB32217927100A12FA1 /* ClassicTests */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
 		};
-		0AAD810621F381AF00D548C8 /* Kit */ = {
-			isa = PBXGroup;
-			children = (
-				0AAD811C21F3823E00D548C8 /* Sources */,
-				0AAD810721F381AF00D548C8 /* GBxCartKit.h */,
-			);
-			path = Kit;
-			sourceTree = "<group>";
-		};
-		0AAD811C21F3823E00D548C8 /* Sources */ = {
+		0AAD810621F381AF00D548C8 /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				0A108BBD22179EC000A12FA1 /* Reader */,
 				0A1381B721F685E50071E293 /* GBxCart */,
 				0A1381B421F685C00071E293 /* Utils */,
+				0AAD810721F381AF00D548C8 /* GBxCartKit.h */,
 			);
-			path = Sources;
+			path = Source;
 			sourceTree = "<group>";
 		};
 		0AC0FE182213294D002E69C2 /* Operations */ = {
@@ -659,7 +643,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				INFOPLIST_FILE = Kit/Info.plist;
+				INFOPLIST_FILE = Source/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -736,7 +720,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				INFOPLIST_FILE = Kit/Info.plist;
+				INFOPLIST_FILE = Source/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
