@@ -5,7 +5,7 @@ import GBxCartKit
 
 @objc(GameboyClassicReadROMTests)
 fileprivate final class GameboyClassicReadROMTests: XCTestCase {
-    private typealias Cartridge = GameboyClassicCartridge
+    private typealias Cartridge = GameboyClassic.Cartridge
     private typealias Header    = Cartridge.Header
     
     private private(set) var controller: GBxCartReaderController<Cartridge>!
@@ -38,8 +38,8 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 if let header = romHeader {
                     XCTAssertTrue(romHeader.isLogoValid)
                     
-                    print("|-------------------------------------|")
-                    print("|  CONFIGURATION: \(header.configuration)")
+                    // print("|-------------------------------------|")
+                    // print("|  CONFIGURATION: \(header.configuration)")
                     print(header)
                 }
 
@@ -64,8 +64,8 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 if let rom = rom {
                     print(rom)
                     if rom.header.isLogoValid {
-                        print("|-------------------------------------|")
-                        print("|  CONFIGURATION: \(rom.header.configuration)")
+                        // print("|-------------------------------------|")
+                        // print("|  CONFIGURATION: \(rom.header.configuration)")
                         print(rom.header)
                         try! rom.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(rom.header.title).gb"))
                     }

@@ -32,24 +32,20 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     /**
      */
     public func startReading(range: Range<Int>) {
-        func classic() {
-            let addrBase16  = String(range.lowerBound, radix: 16, uppercase: true)
-            let addrDataStr = "\0A\(addrBase16)\0R"
-            let addrData    = addrDataStr.data(using: .ascii)!
-            self.reader.send(addrData)
-        }
-        
-        func advance() {
-        }
+        let addrBase16  = String(range.lowerBound, radix: 16, uppercase: true)
+        var command     = "\0A\(addrBase16)\0"
         
         switch Cartridge.Platform.self {
         case is GameboyClassic.Type:
-            classic()
+            command += "R"
         case is GameboyAdvance.Type:
-            advance()
+            command += "r"
         default:
             fatalError("No 'read' strategy provided for \(Cartridge.Platform.self)")
         }
+        
+        let dataToSend = command.data(using: .ascii)!
+        self.reader.send(dataToSend)
     }
 
     /**
@@ -110,7 +106,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         
         switch Cartridge.Platform.self {
         case is GameboyClassic.Type:
-            let header = header as! GameboyClassic.Header
+            let header = header as! GameboyClassic.Cartridge.Header
             if case .one = header.configuration {
                 classic(bank:           0, address: 0x6000)
                 classic(bank:   bank >> 5, address: 0x4000)
