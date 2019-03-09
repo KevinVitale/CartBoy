@@ -19,15 +19,9 @@ class BaseReadOperation<Controller: ReaderController>: Operation, ORSSerialPortD
                 return
             }
             
-
             DispatchQueue.main.async {
-                if strongSelf.isCancelled {
-                    strongSelf.bytesRead.removeAll()
-                    result(strongSelf.bytesRead)
-                }
-                else {
-                    result(strongSelf.bytesRead.prefix(upTo: bytesToRead.count))
-                }
+                let upToCount = strongSelf.isCancelled ? 0 : bytesToRead.count
+                result(strongSelf.bytesRead.prefix(upTo: upToCount))
             }
         }
         
@@ -89,6 +83,7 @@ class BaseReadOperation<Controller: ReaderController>: Operation, ORSSerialPortD
      */
     override func cancel() {
         super.cancel()
+        self.bytesRead.removeAll()
         self._isExecuting = false
         self.willChangeValue(forKey: "isFinished")
         self.didChangeValue(forKey: "isFinished")
