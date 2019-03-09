@@ -38,8 +38,10 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 if let header = romHeader {
                     XCTAssertTrue(romHeader.isLogoValid)
                     
-                    // print("|-------------------------------------|")
-                    // print("|  CONFIGURATION: \(header.configuration)")
+                    if let header = header as? GameboyClassic.Cartridge.Header {
+                        print("|-------------------------------------|")
+                        print("|  CONFIGURATION: \(header.configuration)")
+                    }
                     print(header)
                 }
 
@@ -64,8 +66,10 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 if let rom = rom {
                     print(rom)
                     if rom.header.isLogoValid {
-                        // print("|-------------------------------------|")
-                        // print("|  CONFIGURATION: \(rom.header.configuration)")
+                        if let header = rom.header.self as? GameboyClassic.Cartridge.Header {
+                            print("|-------------------------------------|")
+                            print("|  CONFIGURATION: \(header.configuration)")
+                        }
                         print(rom.header)
                         try! rom.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(rom.header.title).gb"))
                     }
