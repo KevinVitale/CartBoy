@@ -5,32 +5,13 @@ import Gibby
  Cart reader implementation for insideGadgets.com's 'GBxCart'.
  */
 public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject, ReaderController {
-    /**
-     Creates a new instance of the _GBxCart_ controller for the given `Platform`.
-     
-     The expected hardware must be connected prior to attempting to instantiate
-     an instance, or an exception is thrown.
-     
-     - parameters:
-        - portProfile:  The profile which describes the port that the 'GBxCart' hardware
-                        is expected to be connected to.
-    
-     - note: See `ORSSerialPortManager.PortProfile` for potential `portProfile` values.
-     */
     public init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
     }
     
-    
-
-    /// The reader (e.g., _hardware/serial port_).
     public let reader: ORSSerialPort
-    
-    /// The operation queue upon which the receiever execute submitted requests.
     public let queue = OperationQueue()
     
-    /**
-     */
     public func startReading(range: Range<Int>) {
         let addrBase16  = String(range.lowerBound, radix: 16, uppercase: true)
         var command     = "\0A\(addrBase16)\0"
@@ -48,12 +29,6 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         self.reader.send(dataToSend)
     }
 
-    /**
-     Opens the reader, optionally assigning its delegate.
-     - parameters:
-         - delegate: The `reader`'s delegate.
-     -
-     */
     public final func openReader(delegate: ORSSerialPortDelegate?) throws {
         self.reader.delegate = delegate
         
@@ -68,22 +43,16 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
 
     }
     
-    /**
-     */
     public func continueReading() {
         let keepReading = "1".data(using: .ascii)!
         self.reader.send(keepReading)
     }
     
-    /**
-     */
     public func stopReading() {
         let stopReading = "0".data(using: .ascii)!
         self.reader.send(stopReading)
     }
     
-    /**
-     */
     public func set<Header>(bank: Int, with header: Header) where Header == Cartridge.Header {
         func classic(bank: Int, address: Cartridge.Platform.AddressSpace) {
             let bankAddr    = String(address, radix: 16, uppercase: true)
