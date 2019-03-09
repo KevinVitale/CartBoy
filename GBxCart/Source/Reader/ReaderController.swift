@@ -6,13 +6,16 @@ public protocol ReaderController: class {
     
     /// The associated platform that the adopter relates to.
     associatedtype Cartridge: Gibby.Cartridge
-
-    /// The cartridge reader that this adopter is controlling.
-    var reader: ORSSerialPort  { get }
-    var  queue: OperationQueue { get }
     
-    /// The number of bytes the controller reads until waiting for a 'continue'.
+    var isOpen: Bool { get }
+    var delegate: ORSSerialPortDelegate? { get set }
+    
+    @discardableResult
+    func closePort() -> Bool
+
     static var cacheSize: Int  { get }
+    
+    func addOperation(_ operation: Operation)
 
     /**
      */
@@ -44,14 +47,14 @@ extension ReaderController {
     /**
      */
     public func readHeader(result: @escaping ((Self.Cartridge.Header?) -> ())) {
-        self.queue.addOperation(ReadHeaderOperation<Self>(controller: self, result: result))
+        self.addOperation(ReadHeaderOperation<Self>(controller: self, result: result))
     }
     
     /**
      */
     public func readCartridge(header: Self.Cartridge.Header? = nil, result: @escaping ((Self.Cartridge?) -> ())) {
         if let header = header {
-            self.queue.addOperation(ReadCartridgeOperation<Self>(controller: self, header: header, result: result))
+            self.addOperation(ReadCartridgeOperation<Self>(controller: self, header: header, result: result))
         }
         else {
             self.readHeader {

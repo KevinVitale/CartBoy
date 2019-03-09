@@ -24,7 +24,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
 
     override func tearDown() {
         if closePort {
-            controller.reader.close()
+            controller.closePort()
         }
     }
     

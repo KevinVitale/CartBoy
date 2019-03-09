@@ -11,9 +11,9 @@ class BaseReadOperation<Controller: ReaderController>: Operation, ORSSerialPortD
         
         super.init()
         
-        let previousDelegate = controller.reader.delegate
+        let previousDelegate = controller.delegate
         self.completionBlock = { [weak self] in
-            controller.reader.delegate = previousDelegate
+            controller.delegate = previousDelegate
             
             guard let strongSelf = self else {
                 return
@@ -72,7 +72,7 @@ class BaseReadOperation<Controller: ReaderController>: Operation, ORSSerialPortD
                 return
             }
             
-            while self.controller.reader.isOpen == false {
+            while self.controller.isOpen == false {
                 self.isOpenCondition.wait() // self.isOpenCondition.wait(until: Date().addingTimeInterval(5))
             }
         }

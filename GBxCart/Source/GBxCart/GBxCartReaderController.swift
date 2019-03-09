@@ -9,8 +9,30 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
     }
     
-    public let reader: ORSSerialPort
-    public let queue = OperationQueue()
+    private let reader: ORSSerialPort
+    private let queue = OperationQueue()
+    
+    public var isOpen: Bool {
+        return self.reader.isOpen
+    }
+    
+    @discardableResult
+    public func closePort() -> Bool {
+        return self.reader.close()
+    }
+    
+    public var delegate: ORSSerialPortDelegate? {
+        get {
+            return reader.delegate
+        }
+        set {
+            reader.delegate = newValue
+        }
+    }
+    
+    public func addOperation(_ operation: Operation) {
+        self.queue.addOperation(operation)
+    }
     
     public func startReading(range: Range<Int>) {
         let addrBase16  = String(range.lowerBound, radix: 16, uppercase: true)
@@ -32,7 +54,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     public final func openReader(delegate: ORSSerialPortDelegate?) throws {
         self.reader.delegate = delegate
         
-        if reader.isOpen == false {
+        if self.reader.isOpen == false {
             self.reader.open()
             self.reader.configuredAsGBxCart()
         }
