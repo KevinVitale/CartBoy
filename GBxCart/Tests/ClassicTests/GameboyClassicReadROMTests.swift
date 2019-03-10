@@ -87,7 +87,35 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         }
         
         waitForExpectations(timeout: 60)
-
+    }
+    
+    func testReadSaveFile() {
+        let expectiation = expectation(description: "ROM file was read")
+        
+        var saveFile: (Data?, Header?) {
+            didSet {
+                XCTAssertNotNil(saveFile)
+                
+                if case let (saveFile?, header?) = saveFile {
+                    if saveFile.isEmpty == false {
+                        print(saveFile)
+                        try! saveFile.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav"))
+                    }
+                    else {
+                        XCTFail("Invalid save data.")
+                    }
+                }
+                
+                expectiation.fulfill()
+            }
+        }
+        
+        controller.readSaveFile { (data: Data?, header: Header) in
+            saveFile = (data, header)
+        }
+        
+        waitForExpectations(timeout: 60)
+        
         self.closePort = true
     }
 }

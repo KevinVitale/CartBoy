@@ -58,6 +58,25 @@ extension ReaderController {
             }
         }
     }
+    
+    /**
+     */
+    public func readSaveFile(header: Self.Cartridge.Header? = nil, result: @escaping ((Data?, Self.Cartridge.Header) -> ())) {
+        if let header = header {
+            self.addOperation(ReadPortOperation(controller: self, context: .saveBackup(header), length: header.ramSize) {
+                guard let data = $0 else {
+                    result(nil, header)
+                    return
+                }
+                result(data, header)
+            })
+        }
+        else {
+            self.readHeader {
+                self.readSaveFile(header: $0, result: result)
+            }
+        }
+    }
 }
 
 /**

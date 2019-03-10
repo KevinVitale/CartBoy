@@ -111,7 +111,16 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     public func addOperation(_ operation: Operation) {
         self.queue.addOperation(operation)
     }
-
+    
+    public func romBankSize(for bank: Int) -> Int {
+        switch Cartridge.Platform.self {
+        case is GameboyClassic.Type:
+            return bank > 1 ? 0x4000 : 0x8000
+        default:
+            fatalError("No 'romBankSize' provided for \(Cartridge.Platform.self)")
+        }
+    }
+    
     /**
      */
     public func readOperationWillBegin(_ operation: Operation) {
@@ -125,9 +134,38 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
             let address = Int(Cartridge.Platform.headerRange.lowerBound)
             self.send(.address("\0A", radix: 16, address: address))
         case .bank(let bank, let header):
-            self.send(.stop)
-            self.set(bank: bank, with: header)
-            self.send(.address("\0A", radix: 16, address: bank > 1 ? 0x4000 : 0x0000))
+            if let _ = header as? GameboyClassic.Cartridge.Header {
+                self.send(.stop)
+                self.set(bank: bank, with: header)
+                self.send(.address("\0A", radix: 16, address: bank > 1 ? 0x4000 : 0x0000))
+            }
+        case .saveBackup(let header):
+            if let header = header as? GameboyClassic.Cartridge.Header {
+                /* mbc2_fix??? */
+                if case .one = header.configuration {
+                    self.send(
+                          .address("B", radix: 16, address: 0x6000)
+                        , .sleep(150)
+                        , .address("B", radix: 10, address: 1)
+                    )
+                }
+                
+                self.send(
+                      .address("B", radix: 16, address: 0x0000)
+                    , .sleep(150)
+                    , .address("B", radix: 10, address: 0x0A)
+                )
+            }
+        case .ram(let bank, let header):
+            if let _ = header as? GameboyClassic.Cartridge.Header {
+                self.send(.stop)
+                self.send(
+                    .address("B", radix: 16, address: 0x4000)
+                    , .sleep(150)
+                    , .address("B", radix: 10, address: bank)
+                    , .address("\0A", radix: 16, address: 0xA000)
+                )
+            }
         default: ()
         }
     }
@@ -142,8 +180,10 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
 
         switch readOp.context {
         case .header:
-            self.send(.start)
+            fallthrough
         case .bank:
+            fallthrough
+        case .ram:
             self.send(.start)
         default: ()
         }
@@ -158,12 +198,10 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         }
         
         let pageSize = 64
-        _ = readOp.context
 
         switch readOp.context {
-        case .cartridge:
-            // print(progress.fractionCompleted)
-            ()
+        case .cartridge: fallthrough
+        case .saveBackup: ()
         default:
             if (Int(progress.completedUnitCount) % pageSize) == 0 {
                 self.send(.continue)
