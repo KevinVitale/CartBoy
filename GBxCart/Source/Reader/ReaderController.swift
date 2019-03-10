@@ -63,6 +63,10 @@ extension ReaderController {
      */
     public func readSaveFile(header: Self.Cartridge.Header? = nil, result: @escaping ((Data?, Self.Cartridge.Header) -> ())) {
         if let header = header {
+            guard header.ramSize > 0 else {
+                result(nil, header)
+                return
+            }
             self.addOperation(ReadPortOperation(controller: self, context: .saveBackup(header), length: header.ramSize) {
                 guard let data = $0 else {
                     result(nil, header)
