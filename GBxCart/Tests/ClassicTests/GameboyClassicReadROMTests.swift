@@ -94,16 +94,12 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         var saveFile: (Data?, Header?) {
             didSet {
-                XCTAssertNotNil(saveFile)
-                
-                if case let (saveFile?, header?) = saveFile {
-                    if saveFile.isEmpty == false {
-                        print(saveFile)
-                        try! saveFile.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav"))
-                    }
-                    else {
-                        XCTFail("Invalid save data.")
-                    }
+                if case let (saveFile?, header?) = saveFile, saveFile.isEmpty == false {
+                    print(saveFile)
+                    try! saveFile.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav"))
+                }
+                else {
+                    XCTFail("Invalid save data.")
                 }
                 
                 expectiation.fulfill()
