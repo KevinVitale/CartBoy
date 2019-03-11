@@ -198,7 +198,11 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
                 // to read ROM before RAM?). Read 64 bytes of ROM,
                 // (really only 1 byte is required).
                 //--------------------------------------------------------------
-                self.send(.address("\0A", radix: 16, address: 0x0000), .start, .stop)
+                switch header.configuration {
+                case .one, .two:
+                    self.send(.address("\0A", radix: 16, address: 0x0000), .start, .stop)
+                default: (/* do nothing? */)
+                }
                 //--------------------------------------------------------------
                 if case .one = header.configuration {
                     self.send(
