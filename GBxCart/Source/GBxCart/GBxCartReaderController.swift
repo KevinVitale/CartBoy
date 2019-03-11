@@ -219,7 +219,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
                     , .address("B", radix: 10, address: 0x0A)
                 )
             }
-        case .ram(let bank, let header):
+        case .sram(let bank, let header):
             if let _ = header as? GameboyClassic.Cartridge.Header {
                 self.send(.stop)
                 self.send(
@@ -250,7 +250,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
             fallthrough
         case .bank:
             fallthrough
-        case .ram:
+        case .sram:
             self.send(.start)
         default: ()
         }
