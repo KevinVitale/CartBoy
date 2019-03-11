@@ -96,6 +96,17 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
                 delegate.readOperationWillBegin(self)
             }
         }
+        
+        switch self.context {
+        case .cartridge, .saveBackup:
+            if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidBegin(_:))) {
+                DispatchQueue.main.async {
+                    delegate.readOperationDidBegin(self)
+                }
+            }
+            self._isExecuting = true
+        default: ()
+        }
 
         if case let .cartridge(header) = self.context {
             let group = DispatchGroup()
@@ -138,11 +149,14 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
             }
         }
         
-        self._isExecuting = true
-        
-        if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidBegin(_:))) {
-            DispatchQueue.main.async {
-                delegate.readOperationDidBegin(self)
+        switch self.context {
+        case .cartridge, .saveBackup: ()
+        default:
+            self._isExecuting = true
+            if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidBegin(_:))) {
+                DispatchQueue.main.async {
+                    delegate.readOperationDidBegin(self)
+                }
             }
         }
     }
