@@ -76,9 +76,38 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     ///
     private let queue = OperationQueue()
     
+    /**
+     */
+    public final func openReader(delegate: ORSSerialPortDelegate?) throws {
+        self.delegate = delegate
+        
+        if self.reader.isOpen == false {
+            print("Opening, and conifguring...")
+            self.reader.open()
+            self.reader.configuredAsGBxCart()
+        }
+        
+        guard self.reader.isOpen else {
+            throw ReaderControllerError.failedToOpen(self.reader)
+        }
+        
+        print(#function)
+    }
+
     ///
     public var isOpen: Bool {
         return self.reader.isOpen
+    }
+    
+    /**
+     */
+    @discardableResult
+    public func closePort() -> Bool {
+        defer {
+            usleep(2000)
+        }
+        print(#function)
+        return self.reader.close()
     }
     
     /**
@@ -97,13 +126,6 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         set {
             reader.delegate = newValue
         }
-    }
-
-    /**
-     */
-    @discardableResult
-    public func closePort() -> Bool {
-        return self.reader.close()
     }
 
     /**
@@ -240,22 +262,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         default: ()
         }
     }
-    
-    /**
-     */
-    public final func openReader(delegate: ORSSerialPortDelegate?) throws {
-        self.delegate = delegate
-        
-        if self.reader.isOpen == false {
-            self.reader.open()
-            self.reader.configuredAsGBxCart()
-        }
 
-        guard self.reader.isOpen else {
-            throw ReaderControllerError.failedToOpen(self.reader)
-        }
-    }
-    
     private func set<Header>(bank: Int, with header: Header) where Header == Cartridge.Header {
         switch Cartridge.Platform.self {
         case is GameboyClassic.Type:

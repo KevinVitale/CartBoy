@@ -13,6 +13,7 @@
 		0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */; };
 		0AAD811521F381AF00D548C8 /* GBxCartKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AAD810721F381AF00D548C8 /* GBxCartKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0AAD811F21F3826D00D548C8 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
+		0AB2682B22360EF5001D6CF1 /* SwiftCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */; };
 		0ABD40E2221A10D000C6F656 /* GBxCartReaderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BBB221792C000A12FA1 /* GBxCartReaderController.swift */; };
 		0AC59C562234A5180040BAA4 /* OpenPortOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC59C542234A4DE0040BAA4 /* OpenPortOperation.swift */; };
 		0AC59C5A2234A57E0040BAA4 /* ReadPortOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC59C592234A57E0040BAA4 /* ReadPortOperation.swift */; };
@@ -64,6 +65,7 @@
 		0AAD80F621F3815B00D548C8 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AAD810521F381AF00D548C8 /* GBxCartKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GBxCartKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AAD810721F381AF00D548C8 /* GBxCartKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GBxCartKit.h; sourceTree = "<group>"; };
+		0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftCrypto.swift; sourceTree = "<group>"; };
 		0AC59C542234A4DE0040BAA4 /* OpenPortOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenPortOperation.swift; sourceTree = "<group>"; };
 		0AC59C592234A57E0040BAA4 /* ReadPortOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadPortOperation.swift; sourceTree = "<group>"; };
 		0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gibby.xcodeproj; path = ../Dependencies/Gibby/Gibby.xcodeproj; sourceTree = "<group>"; };
@@ -169,6 +171,7 @@
 			isa = PBXGroup;
 			children = (
 				0A108BB32217927100A12FA1 /* ClassicTests */,
+				0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -351,6 +354,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0AB2682B22360EF5001D6CF1 /* SwiftCrypto.swift in Sources */,
 				0A108BB92217929300A12FA1 /* GameboyClassicReadROMTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
