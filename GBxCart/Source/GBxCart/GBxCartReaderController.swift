@@ -82,7 +82,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     /// - warning: Modifying or removing `timeout` will cause bank switching
     /// to fail! There is a tolerance of how low it can be set; for best
     /// results, stay between _150_ & _250_.
-    private let timeout: UInt32 = 150
+    private let timeout: UInt32 = 250
     //------------------------------------------------------------------
     
 
