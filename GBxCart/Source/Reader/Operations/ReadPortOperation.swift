@@ -17,7 +17,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         case cartridge(Controller.Cartridge.Header)
         case bank(_ bank: Int, header: Controller.Cartridge.Header)
         
-        case saveBackup(Controller.Cartridge.Header)
+        case saveFile(Controller.Cartridge.Header)
         case ram(_ bank: Int, header: Controller.Cartridge.Header)
         
         case address(_ address: Controller.Cartridge.Platform.AddressSpace)
@@ -28,8 +28,8 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
                 return "header"
             case .cartridge:
                 return "cartridge"
-            case .saveBackup:
-                return "save backup"
+            case .saveFile:
+                return "save file"
             case .address:
                 return "address"
             case .bank:
@@ -98,7 +98,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         }
         
         switch self.context {
-        case .cartridge, .saveBackup:
+        case .cartridge, .saveFile:
             if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidBegin(_:))) {
                 DispatchQueue.main.async {
                     delegate.readOperationDidBegin(self)
@@ -128,7 +128,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
                 }
             }
         }
-        else if case let .saveBackup(header) = self.context, header.ramBanks > 0 {
+        else if case let .saveFile(header) = self.context, header.ramBanks > 0 {
             let group = DispatchGroup()
             for bank in 0..<header.ramBanks where self.isCancelled == false {
                 group.enter()
@@ -150,7 +150,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         }
         
         switch self.context {
-        case .cartridge, .saveBackup: ()
+        case .cartridge, .saveFile: ()
         default:
             self._isExecuting = true
             if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidBegin(_:))) {

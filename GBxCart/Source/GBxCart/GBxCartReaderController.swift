@@ -190,7 +190,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
                 self.set(bank: bank, with: header)
                 self.send(.address("\0A", radix: 16, address: bank > 1 ? 0x4000 : 0x0000))
             }
-        case .saveBackup(let header):
+        case .saveFile(let header):
             if let header = header as? GameboyClassic.Cartridge.Header {
                 //--------------------------------------------------------------
                 // MBC2 "fix"
@@ -267,8 +267,9 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         let pageSize = 64
 
         switch readOp.context {
-        case .cartridge: fallthrough
-        case .saveBackup:
+        case .cartridge:
+            fallthrough
+        case .saveFile:
             if printProgress {
                 print(progress.fractionCompleted)
             }
@@ -296,7 +297,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         switch readOp.context {
         case .cartridge:
             if closeOnRead { self.closePort() }
-        case .saveBackup:
+        case .saveFile:
             self.send(
                   .stop
                 , .address("B", radix: 16, address: 0x0000)

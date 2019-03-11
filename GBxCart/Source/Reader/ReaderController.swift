@@ -67,7 +67,7 @@ extension ReaderController {
                 result(nil, header)
                 return
             }
-            self.addOperation(ReadPortOperation(controller: self, context: .saveBackup(header), length: header.ramSize) {
+            self.addOperation(ReadPortOperation(controller: self, context: .saveFile(header), length: header.ramSize) {
                 guard let data = $0 else {
                     result(nil, header)
                     return
