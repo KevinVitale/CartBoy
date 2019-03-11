@@ -108,7 +108,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         default: ()
         }
 
-        if case let .cartridge(header) = self.context {
+        if case let .cartridge(header) = self.context, header.romBanks > 0 {
             let group = DispatchGroup()
             for bank in 1..<header.romBanks where self.isCancelled == false {
                 group.enter()
@@ -128,7 +128,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
                 }
             }
         }
-        else if case let .saveBackup(header) = self.context {
+        else if case let .saveBackup(header) = self.context, header.ramBanks > 0 {
             let group = DispatchGroup()
             for bank in 0..<header.ramBanks where self.isCancelled == false {
                 group.enter()
