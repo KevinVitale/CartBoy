@@ -69,6 +69,22 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     public init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
     }
+    
+    /// DEBUG
+    public var printStacktrace: Bool = false
+    
+    /// Temporary?
+    private var closeOnRead: Bool = false
+    
+    /// The amount of microseconds between setting the bank address, and
+    /// settings the bank number.
+    ///
+    /// - warning: Modifying or removing `timeout` will cause bank switching
+    /// to fail! There is a tolerance of how low it can be set; for best
+    /// results, stay between _150_ & _250_.
+    private let timeout: UInt32 = 150
+    //------------------------------------------------------------------
+    
 
     ///
     private let reader: ORSSerialPort
@@ -82,7 +98,9 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         self.delegate = delegate
         
         if self.reader.isOpen == false {
-            print("Opening, and conifguring...")
+            if printStacktrace {
+                print("Opening, and conifguring...")
+            }
             self.reader.open()
             self.reader.configuredAsGBxCart()
         }
@@ -91,7 +109,9 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
             throw ReaderControllerError.failedToOpen(self.reader)
         }
         
-        print(#function)
+        if printStacktrace {
+            print(#function)
+        }
     }
 
     ///
@@ -104,9 +124,13 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     @discardableResult
     public func closePort() -> Bool {
         defer {
-            usleep(2000)
+            if closeOnRead {
+                usleep(1500)
+            }
         }
-        print(#function)
+        if printStacktrace {
+            print(#function)
+        }
         return self.reader.close()
     }
     
@@ -151,6 +175,10 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
             return
         }
         
+        if printStacktrace {
+            print(#function, readOp.context)
+        }
+        
         switch readOp.context {
         case .header:
             let address = Int(Cartridge.Platform.headerRange.lowerBound)
@@ -175,14 +203,14 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
                 if case .one = header.configuration {
                     self.send(
                           .address("B", radix: 16, address: 0x6000)
-                        , .sleep(150)
+                        , .sleep(timeout)
                         , .address("B", radix: 10, address: 1)
                     )
                 }
                 
                 self.send(
                       .address("B", radix: 16, address: 0x0000)
-                    , .sleep(150)
+                    , .sleep(timeout)
                     , .address("B", radix: 10, address: 0x0A)
                 )
             }
@@ -191,7 +219,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
                 self.send(.stop)
                 self.send(
                     .address("B", radix: 16, address: 0x4000)
-                    , .sleep(150)
+                    , .sleep(timeout)
                     , .address("B", radix: 10, address: bank)
                     , .address("\0A", radix: 16, address: 0xA000)
                 )
@@ -208,6 +236,10 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
             return
         }
 
+        if printStacktrace {
+            print(#function, readOp.context)
+        }
+        
         switch readOp.context {
         case .header:
             fallthrough
@@ -249,16 +281,24 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
             return
         }
         
+        if printStacktrace {
+            print(#function, readOp.context)
+        }
+        
         switch readOp.context {
+        case .cartridge:
+            if closeOnRead { self.closePort() }
         case .saveBackup:
             self.send(
                   .address("B", radix: 16, address: 0x0000)
-                , .sleep(150)
+                , .sleep(timeout)
                 , .address("B", radix: 10, address: 0)
             )
+            if closeOnRead { self.closePort() }
         case .header:
             /// - warning: Another important 'pause'; don't delete.
             self.send(.stop, .sleep(75))
+            if closeOnRead { self.closePort() }
         default: ()
         }
     }
@@ -266,15 +306,6 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     private func set<Header>(bank: Int, with header: Header) where Header == Cartridge.Header {
         switch Cartridge.Platform.self {
         case is GameboyClassic.Type:
-            /// The amount of microseconds between setting the bank address, and
-            /// settings the bank number.
-            ///
-            /// - warning: Modifying or removing `timeout` will cause bank switching
-            /// to fail! There is a tolerance of how low it can be set; for best
-            /// results, stay between _150_ & _250_.
-            let timeout: UInt32 = 150
-            //------------------------------------------------------------------
-            
             let header = header as! GameboyClassic.Cartridge.Header
             if case .one = header.configuration {
                 self.send(
