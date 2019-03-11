@@ -141,7 +141,15 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
             }
         case .saveBackup(let header):
             if let header = header as? GameboyClassic.Cartridge.Header {
-                /* mbc2_fix??? */
+                //--------------------------------------------------------------
+                // MBC2 "fix"
+                //--------------------------------------------------------------
+                // MBC2 Fix (unknown why this fixes reading the ram, maybe has
+                // to read ROM before RAM?). Read 64 bytes of ROM,
+                // (really only 1 byte is required).
+                //--------------------------------------------------------------
+                self.send(.address("\0A", radix: 16, address: 0x0000), .start, .stop)
+                //--------------------------------------------------------------
                 if case .one = header.configuration {
                     self.send(
                           .address("B", radix: 16, address: 0x6000)
@@ -220,6 +228,12 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         }
         
         switch readOp.context {
+        case .saveBackup:
+            self.send(
+                  .address("B", radix: 16, address: 0x0000)
+                , .sleep(150)
+                , .address("B", radix: 10, address: 0)
+            )
         case .header:
             /// - warning: Another important 'pause'; don't delete.
             self.send(.stop, .sleep(75))
