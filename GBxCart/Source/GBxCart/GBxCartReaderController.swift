@@ -72,6 +72,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     
     /// DEBUG
     public var printStacktrace: Bool = false
+    public var printProgress: Bool = false
     
     /// Temporary?
     var closeOnRead: Bool = true
@@ -267,7 +268,10 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
 
         switch readOp.context {
         case .cartridge: fallthrough
-        case .saveBackup: ()
+        case .saveBackup:
+            if printProgress {
+                print(progress.fractionCompleted)
+            }
         default:
             if (Int(progress.completedUnitCount) % pageSize) == 0 {
                 self.send(.continue)

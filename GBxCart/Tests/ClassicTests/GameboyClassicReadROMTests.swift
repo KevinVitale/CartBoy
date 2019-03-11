@@ -15,6 +15,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             if controller == nil {
                 controller = try GBxCartReaderController()
                 controller.printStacktrace = false
+                controller.printProgress = true
             }
         }
         catch {
