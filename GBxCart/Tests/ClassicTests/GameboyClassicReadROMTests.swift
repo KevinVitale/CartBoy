@@ -67,6 +67,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                     print(rom)
                     if rom.header.isLogoValid {
                         if let header = rom.header.self as? GameboyClassic.Cartridge.Header {
+                            XCTAssertTrue(header.isLogoValid)
                             print("|-------------------------------------|")
                             print("|  CONFIGURATION: \(header.configuration)")
                         }
@@ -96,6 +97,12 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             didSet {
                 if case let (saveFile?, header?) = saveFile, saveFile.isEmpty == false {
                     print(saveFile)
+                    if let header = header.self as? GameboyClassic.Cartridge.Header {
+                        XCTAssertTrue(header.isLogoValid)
+                        print("|-------------------------------------|")
+                        print("|  CONFIGURATION: \(header.configuration)")
+                    }
+                    print(header)
                     try! saveFile.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav"))
                 }
                 else {
