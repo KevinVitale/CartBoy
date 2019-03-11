@@ -9,12 +9,13 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     private typealias Header    = Cartridge.Header
     
     private private(set) var controller: GBxCartReaderController<Cartridge>!
-    private var closePort = false
     
     override func setUp() {
         do {
             if controller == nil {
                 controller = try GBxCartReaderController()
+                controller.closeOnRead = true
+                controller.printStacktrace = true
             }
         }
         catch {
@@ -22,12 +23,6 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         }
     }
 
-    override func tearDown() {
-        if closePort {
-            controller.closePort()
-        }
-    }
-    
     func testReadHeader() {
         let expectiation = expectation(description: "Header was read")
         
@@ -65,6 +60,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
 
                 if let rom = rom {
                     print(rom)
+                    print("MD5", Data(rom[0..<rom.endIndex]).md5.hexString(separator: "").lowercased())
                     if rom.header.isLogoValid {
                         if let header = rom.header.self as? GameboyClassic.Cartridge.Header {
                             XCTAssertTrue(header.isLogoValid)
@@ -89,7 +85,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         waitForExpectations(timeout: 60)
     }
-    
+
     func testReadSaveFile() {
         let expectiation = expectation(description: "ROM file was read")
         
@@ -118,7 +114,5 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         }
         
         waitForExpectations(timeout: 60)
-        
-        self.closePort = true
     }
 }

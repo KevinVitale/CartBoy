@@ -290,8 +290,11 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
             if closeOnRead { self.closePort() }
         case .saveBackup:
             self.send(
-                  .address("B", radix: 16, address: 0x0000)
-                , .sleep(timeout)
+                  .stop
+                , .address("B", radix: 16, address: 0x0000)
+                , .sleep(500) // ORLY?! Yes...this "very" high timeout fixed a
+                              // _ton_ of 'readRAM' issues for specific carts.
+                              // The pattern appears to be MBC5+RAM carts....?
                 , .address("B", radix: 10, address: 0)
             )
             if closeOnRead { self.closePort() }
