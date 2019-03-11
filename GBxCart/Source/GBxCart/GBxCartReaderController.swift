@@ -99,7 +99,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         
         if self.reader.isOpen == false {
             if printStacktrace {
-                print("Opening, and conifguring...")
+                print("Opening, and configuring...")
             }
             self.reader.open()
             self.reader.configuredAsGBxCart()
