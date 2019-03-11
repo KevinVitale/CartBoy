@@ -1,7 +1,7 @@
 import XCTest
 import ORSSerial
 import Gibby
-@testable import GBxCartKit
+import GBxCartKit
 
 @objc(GameboyClassicReadROMTests)
 fileprivate final class GameboyClassicReadROMTests: XCTestCase {
@@ -14,7 +14,6 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         do {
             if controller == nil {
                 controller = try GBxCartReaderController()
-                controller.closeOnRead = true
                 controller.printStacktrace = false
             }
         }

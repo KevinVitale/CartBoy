@@ -74,7 +74,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     public var printStacktrace: Bool = false
     
     /// Temporary?
-    var closeOnRead: Bool = false
+    var closeOnRead: Bool = true
     
     /// The amount of microseconds between setting the bank address, and
     /// settings the bank number.
