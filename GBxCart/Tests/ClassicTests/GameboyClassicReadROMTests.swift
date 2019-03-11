@@ -33,10 +33,8 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 if let header = romHeader {
                     XCTAssertTrue(romHeader.isLogoValid)
                     
-                    if let header = header as? GameboyClassic.Cartridge.Header {
-                        print("|-------------------------------------|")
-                        print("|  CONFIGURATION: \(header.configuration)")
-                    }
+                    print("|-------------------------------------|")
+                    print("|  CONFIGURATION: \(header.configuration)")
                     print(header)
                 }
 
@@ -62,11 +60,9 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                     print(rom)
                     print("MD5", Data(rom[0..<rom.endIndex]).md5.hexString(separator: "").lowercased())
                     if rom.header.isLogoValid {
-                        if let header = rom.header.self as? GameboyClassic.Cartridge.Header {
-                            XCTAssertTrue(header.isLogoValid)
-                            print("|-------------------------------------|")
-                            print("|  CONFIGURATION: \(header.configuration)")
-                        }
+                        XCTAssertTrue(rom.header.isLogoValid)
+                        print("|-------------------------------------|")
+                        print("|  CONFIGURATION: \(rom.header.configuration)")
                         print(rom.header)
                         try! rom.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(rom.header.title).gb"))
                     }
@@ -93,11 +89,9 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             didSet {
                 if case let (saveFile?, header?) = saveFile, saveFile.isEmpty == false {
                     print(saveFile)
-                    if let header = header.self as? GameboyClassic.Cartridge.Header {
-                        XCTAssertTrue(header.isLogoValid)
-                        print("|-------------------------------------|")
-                        print("|  CONFIGURATION: \(header.configuration)")
-                    }
+                    XCTAssertTrue(header.isLogoValid)
+                    print("|-------------------------------------|")
+                    print("|  CONFIGURATION: \(header.configuration)")
                     print(header)
                     try! saveFile.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav"))
                 }
