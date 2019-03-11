@@ -58,7 +58,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
 
                 if let rom = rom {
                     print(rom)
-                    print("MD5", Data(rom[0..<rom.endIndex]).md5.hexString(separator: "").lowercased())
+                    print("MD5:", Data(rom[0..<rom.endIndex]).md5.hexString(separator: "").lowercased())
                     if rom.header.isLogoValid {
                         XCTAssertTrue(rom.header.isLogoValid)
                         print("|-------------------------------------|")
@@ -88,7 +88,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         var saveFile: (Data?, Header?) {
             didSet {
                 if case let (saveFile?, header?) = saveFile, saveFile.isEmpty == false {
-                    print(saveFile)
+                    print("SRAM:", saveFile)
                     XCTAssertTrue(header.isLogoValid)
                     print("|-------------------------------------|")
                     print("|  CONFIGURATION: \(header.configuration)")

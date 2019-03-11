@@ -94,14 +94,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0A108BB32217927100A12FA1 /* ClassicTests */ = {
-			isa = PBXGroup;
-			children = (
-				0A108BB82217929300A12FA1 /* GameboyClassicReadROMTests.swift */,
-			);
-			path = ClassicTests;
-			sourceTree = "<group>";
-		};
 		0A108BBD22179EC000A12FA1 /* Reader */ = {
 			isa = PBXGroup;
 			children = (
@@ -170,7 +162,7 @@
 		0AAD80F721F3815B00D548C8 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				0A108BB32217927100A12FA1 /* ClassicTests */,
+				0A108BB82217929300A12FA1 /* GameboyClassicReadROMTests.swift */,
 				0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */,
 			);
 			path = Tests;
