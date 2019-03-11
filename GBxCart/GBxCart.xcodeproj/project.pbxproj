@@ -94,13 +94,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0A108BBD22179EC000A12FA1 /* Reader */ = {
+		0A108BBD22179EC000A12FA1 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
 				0A108BBE22179F1400A12FA1 /* ReaderController.swift */,
 				0AC0FE182213294D002E69C2 /* Operations */,
 			);
-			path = Reader;
+			path = Controller;
 			sourceTree = "<group>";
 		};
 		0A1381B421F685C00071E293 /* Utils */ = {
@@ -171,7 +171,7 @@
 		0AAD810621F381AF00D548C8 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				0A108BBD22179EC000A12FA1 /* Reader */,
+				0A108BBD22179EC000A12FA1 /* Controller */,
 				0A1381B721F685E50071E293 /* GBxCart */,
 				0A1381B421F685C00071E293 /* Utils */,
 				0AAD810721F381AF00D548C8 /* GBxCartKit.h */,
