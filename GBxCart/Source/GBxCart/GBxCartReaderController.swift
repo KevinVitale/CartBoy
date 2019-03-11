@@ -125,7 +125,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     public func closePort() -> Bool {
         defer {
             if closeOnRead {
-                usleep(1500)
+                usleep(2000)
             }
         }
         if printStacktrace {
