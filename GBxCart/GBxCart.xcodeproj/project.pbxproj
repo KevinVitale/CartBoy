@@ -103,6 +103,7 @@
 		0A108BBD22179EC000A12FA1 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				0A61C76422371701001D653D /* SerialPortController.swift */,
 				0A108BBE22179F1400A12FA1 /* ReaderController.swift */,
 				0A61C75122371212001D653D /* WriterController.swift */,
 				0AC0FE182213294D002E69C2 /* Operations */,
@@ -179,7 +180,6 @@
 		0AAD810621F381AF00D548C8 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				0A61C76422371701001D653D /* SerialPortController.swift */,
 				0A108BBD22179EC000A12FA1 /* Controller */,
 				0A1381B721F685E50071E293 /* GBxCart */,
 				0A1381B421F685C00071E293 /* Utils */,
