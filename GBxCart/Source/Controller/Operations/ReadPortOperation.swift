@@ -6,13 +6,12 @@ public protocol ReadPortOperationDelegate: NSObjectProtocol {
     @objc optional func readOperationDidBegin(_ operation: Operation)
     @objc optional func readOperation(_ operation: Operation, didRead progress: Progress)
     @objc optional func readOperationDidComplete(_ operation: Operation)
-    
-    @objc optional func romBankSize(for bank: Int) -> Int
 }
 
 class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Controller> {
     enum Context: CustomDebugStringConvertible {
         case header
+        
         case cartridge(Controller.Cartridge.Header)
         case bank(_ bank: Int, header: Controller.Cartridge.Header)
         
@@ -111,7 +110,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
             let group = DispatchGroup()
             for bank in 1..<header.romBanks where self.isCancelled == false {
                 group.enter()
-                let readLength = controller.romBankSize?(for: bank) ?? 0
+                let readLength = bank > 1 ? header.romBankSize : header.romBankSize * 2
                 let operation = ReadPortOperation(controller: self.controller, context: .bank(bank, header: header), length: readLength) { data in
                     if let data = data {
                         self.bytesRead.append(data)

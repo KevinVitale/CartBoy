@@ -81,10 +81,6 @@ final class GBxCartClassicReaderController: GBxCartReaderController<GameboyClass
         }
     }
 
-    @objc func romBankSize(for bank: Int) -> Int {
-        return bank > 1 ? 0x4000 : 0x8000
-    }
-    
     /**
      */
     @objc func readOperationWillBegin(_ operation: Operation) {
