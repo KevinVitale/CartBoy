@@ -61,9 +61,3 @@ extension CartridgeController {
         }
     }
 }
-
-/**
- */
-public enum ReaderControllerError: Error {
-    case failedToOpen(ORSSerialPort?)
-}

@@ -19,3 +19,9 @@ public protocol SerialPortController: class, NSObjectProtocol {
      */
     func openReader(delegate: ORSSerialPortDelegate?) throws
 }
+
+/**
+ */
+public enum SerialPortControllerError: Error {
+    case failedToOpen(ORSSerialPort?)
+}

@@ -42,7 +42,7 @@ open class GBxSerialPortController: NSObject, SerialPortController {
         }
         
         guard self.reader.isOpen else {
-            throw ReaderControllerError.failedToOpen(self.reader)
+            throw SerialPortControllerError.failedToOpen(self.reader)
         }
     }
     
