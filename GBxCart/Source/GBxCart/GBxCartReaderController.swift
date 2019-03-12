@@ -67,10 +67,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartS
     /// DEBUG
     public var printStacktrace: Bool = false
     public var printProgress: Bool = false
-    
-    /// Temporary?
-    var closeOnRead: Bool = true
-    
+
     /// The amount of microseconds between setting the bank address, and
     /// settings the bank number.
     ///
@@ -225,7 +222,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartS
         
         switch readOp.context {
         case .cartridge:
-            if closeOnRead { self.close() }
+            self.close()
         case .saveFile:
             self.send(
                   .stop
@@ -235,11 +232,11 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartS
                               // The pattern appears to be MBC5+RAM carts....?
                 , .address("B", radix: 10, address: 0)
             )
-            if closeOnRead { self.close() }
+            self.close()
         case .header:
             /// - warning: Another important 'pause'; don't delete.
             self.send(.stop, .sleep(75))
-            if closeOnRead { self.close() }
+            self.close()
         default: ()
         }
     }
