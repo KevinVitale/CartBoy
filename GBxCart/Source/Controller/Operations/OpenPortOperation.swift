@@ -1,6 +1,6 @@
 import ORSSerial
 
-class OpenPortOperation<Controller: ReaderController>: Operation, ORSSerialPortDelegate {
+class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialPortDelegate {
     init(controller: Controller) {
         self.controller = controller
     }
