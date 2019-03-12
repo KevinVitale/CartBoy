@@ -46,19 +46,19 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
                 return header.romSize
             case .saveFile(let header, _):
                 return header.ramSize
-            case .bank(_, header: let header):
-                return header.romBankSize
+            case .bank(let bank, header: let header):
+                return bank > 1 ? header.romBankSize : header.romBankSize * 2
             case .sram(_, header: let header):
                 return header.ramBankSize
             }
         }
     }
     
-    required init(controller: Controller, context: Context, length readLength: Int, result: @escaping ((Data?) -> ())) {
+    required init(controller: Controller, context: Context, result: @escaping ((Data?) -> ())) {
         self.result   = result
         self.delegate = controller
         self.context  = context
-        self.progress = Progress(totalUnitCount: Int64(readLength))
+        self.progress = Progress(totalUnitCount: Int64(context.byteCount))
         super.init(controller: controller)
     }
     
@@ -126,8 +126,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
             let group = DispatchGroup()
             for bank in 1..<header.romBanks where self.isCancelled == false {
                 group.enter()
-                let readLength = bank > 1 ? header.romBankSize : header.romBankSize * 2
-                let operation = ReadPortOperation(controller: self.controller, context: .bank(bank, header: header), length: readLength) { data in
+                let operation = ReadPortOperation(controller: self.controller, context: .bank(bank, header: header)) { data in
                     if let data = data {
                         self.bytesRead.append(data)
                     }
@@ -146,8 +145,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
             let group = DispatchGroup()
             for bank in 0..<header.ramBanks where self.isCancelled == false {
                 group.enter()
-                let readLength = header.ramBankSize
-                let operation = ReadPortOperation(controller: self.controller, context: .sram(bank, header: header), length: readLength) { data in
+                let operation = ReadPortOperation(controller: self.controller, context: .sram(bank, header: header)) { data in
                     if let data = data {
                         self.bytesRead.append(data)
                     }

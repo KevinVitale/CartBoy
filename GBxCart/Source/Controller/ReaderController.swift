@@ -10,7 +10,7 @@ extension ReaderController {
     /**
      */
     public func readHeader(result: @escaping ((Self.Cartridge.Header?) -> ())) {
-        self.addOperation(ReadPortOperation(controller: self, context: .header, length: Self.Cartridge.Platform.headerRange.count) {
+        self.addOperation(ReadPortOperation(controller: self, context: .header) {
             guard let data = $0 else {
                 result(nil)
                 return
@@ -23,7 +23,7 @@ extension ReaderController {
      */
     public func readCartridge(header: Self.Cartridge.Header? = nil, result: @escaping ((Self.Cartridge?) -> ())) {
         if let header = header {
-            self.addOperation(ReadPortOperation(controller: self, context: .cartridge(header, intent: .read), length: header.romSize) {
+            self.addOperation(ReadPortOperation(controller: self, context: .cartridge(header, intent: .read)) {
                 guard let data = $0 else {
                     result(nil)
                     return
@@ -46,7 +46,7 @@ extension ReaderController {
                 result(nil, header)
                 return
             }
-            self.addOperation(ReadPortOperation(controller: self, context: .saveFile(header, intent: .read), length: header.ramSize) {
+            self.addOperation(ReadPortOperation(controller: self, context: .saveFile(header, intent: .read)) {
                 guard let data = $0 else {
                     result(nil, header)
                     return
