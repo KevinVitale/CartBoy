@@ -4,7 +4,7 @@ import ORSSerial
 public protocol ReadPortOperationDelegate: NSObjectProtocol {
     @objc optional func readOperationWillBegin(_ operation: Operation)
     @objc optional func readOperationDidBegin(_ operation: Operation)
-    @objc optional func readOperation(_ operation: Operation, didRead progress: Progress)
+    @objc optional func readOperation(_ operation: Operation, didUpdate progress: Progress)
     @objc optional func readOperationDidComplete(_ operation: Operation)
 }
 
@@ -74,8 +74,8 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
                 complete()
             }
             else {
-                if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperation(_:didRead:))) {
-                    delegate.readOperation?(self, didRead: progress)
+                if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperation(_:didUpdate:))) {
+                    delegate.readOperation?(self, didUpdate: progress)
                 }
             }
         }

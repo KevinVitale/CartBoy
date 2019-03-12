@@ -165,7 +165,7 @@ final class GBxCartClassicReaderController: GBxCartReaderController<GameboyClass
 
     /**
      */
-    @objc func readOperation(_ operation: Operation, didRead progress: Progress) {
+    @objc func readOperation(_ operation: Operation, didUpdate progress: Progress) {
         guard let readOp = operation as? ReadPortOperation<GBxCartReaderController<Cartridge>> else {
             operation.cancel()
             return
