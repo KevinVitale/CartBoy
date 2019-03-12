@@ -3,9 +3,16 @@ import Gibby
 
 
 /**
- Cart reader implementation for insideGadgets.com's 'GBxCart'.
+ An opaque `GBxCartSerialPortController` subclass, capable of performing
+ platform-specific read routines.
  */
-public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartSerialPortController, ReaderController {
+public class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartSerialPortController, ReaderController {
+    /// DEBUG
+    public var printStacktrace: Bool = false
+    public var printProgress: Bool = false
+}
+
+final class GBxCartClassicReaderController: GBxCartReaderController<GameboyClassic.Cartridge> {
     private enum ReaderCommand: CustomDebugStringConvertible {
         case start
         case stop
@@ -35,14 +42,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartS
         private var data: Data {
             switch self {
             case .start:
-                switch Cartridge.Platform.self {
-                case is GameboyClassic.Type:
-                    return "R".data(using: .ascii)!
-                case is GameboyAdvance.Type:
-                    return "r".data(using: .ascii)!
-                default:
-                    fatalError("No 'read' strategy provided for \(Cartridge.Platform.self)")
-                }
+                return "R".data(using: .ascii)!
             case .stop:
                 return "0".data(using: .ascii)!
             case .continue:
@@ -64,10 +64,6 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartS
         }
     }
 
-    /// DEBUG
-    public var printStacktrace: Bool = false
-    public var printProgress: Bool = false
-
     /// The amount of microseconds between setting the bank address, and
     /// settings the bank number.
     ///
@@ -85,19 +81,14 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartS
         }
     }
 
-    public func romBankSize(for bank: Int) -> Int {
-        switch Cartridge.Platform.self {
-        case is GameboyClassic.Type:
-            return bank > 1 ? 0x4000 : 0x8000
-        default:
-            fatalError("No 'romBankSize' provided for \(Cartridge.Platform.self)")
-        }
+    @objc func romBankSize(for bank: Int) -> Int {
+        return bank > 1 ? 0x4000 : 0x8000
     }
     
     /**
      */
-    public func readOperationWillBegin(_ operation: Operation) {
-        guard let readOp = operation as? ReadPortOperation<GBxCartReaderController> else {
+    @objc func readOperationWillBegin(_ operation: Operation) {
+        guard let readOp = operation as? ReadPortOperation<GBxCartReaderController<Cartridge>> else {
             operation.cancel()
             return
         }
@@ -111,58 +102,52 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartS
             let address = Int(Cartridge.Platform.headerRange.lowerBound)
             self.send(.address("\0A", radix: 16, address: address))
         case .bank(let bank, let header):
-            if let _ = header as? GameboyClassic.Cartridge.Header {
-                self.send(.stop)
-                self.set(bank: bank, with: header)
-                self.send(.address("\0A", radix: 16, address: bank > 1 ? 0x4000 : 0x0000))
-            }
+            self.send(.stop)
+            self.set(bank: bank, with: header)
+            self.send(.address("\0A", radix: 16, address: bank > 1 ? 0x4000 : 0x0000))
         case .saveFile(let header):
-            if let header = header as? GameboyClassic.Cartridge.Header {
-                //--------------------------------------------------------------
-                // MBC2 "fix"
-                //--------------------------------------------------------------
-                // MBC2 Fix (unknown why this fixes reading the ram, maybe has
-                // to read ROM before RAM?). Read 64 bytes of ROM,
-                // (really only 1 byte is required).
-                //--------------------------------------------------------------
-                switch header.configuration {
-                case .one, .two:
-                    self.send(.address("\0A", radix: 16, address: 0x0000), .start, .stop)
-                default: (/* do nothing? */)
-                }
-                //--------------------------------------------------------------
-                if case .one = header.configuration {
-                    self.send(
-                          .address("B", radix: 16, address: 0x6000)
-                        , .sleep(timeout)
-                        , .address("B", radix: 10, address: 1)
-                    )
-                }
-                
+            //--------------------------------------------------------------
+            // MBC2 "fix"
+            //--------------------------------------------------------------
+            // MBC2 Fix (unknown why this fixes reading the ram, maybe has
+            // to read ROM before RAM?). Read 64 bytes of ROM,
+            // (really only 1 byte is required).
+            //--------------------------------------------------------------
+            switch header.configuration {
+            case .one, .two:
+                self.send(.address("\0A", radix: 16, address: 0x0000), .start, .stop)
+            default: (/* do nothing? */)
+            }
+            //--------------------------------------------------------------
+            if case .one = header.configuration {
                 self.send(
-                      .address("B", radix: 16, address: 0x0000)
+                      .address("B", radix: 16, address: 0x6000)
                     , .sleep(timeout)
-                    , .address("B", radix: 10, address: 0x0A)
+                    , .address("B", radix: 10, address: 1)
                 )
             }
-        case .sram(let bank, let header):
-            if let _ = header as? GameboyClassic.Cartridge.Header {
-                self.send(.stop)
-                self.send(
-                    .address("B", radix: 16, address: 0x4000)
-                    , .sleep(timeout)
-                    , .address("B", radix: 10, address: bank)
-                    , .address("\0A", radix: 16, address: 0xA000)
-                )
-            }
+
+            self.send(
+                  .address("B", radix: 16, address: 0x0000)
+                , .sleep(timeout)
+                , .address("B", radix: 10, address: 0x0A)
+            )
+        case .sram(let bank, _):
+            self.send(.stop)
+            self.send(
+                .address("B", radix: 16, address: 0x4000)
+                , .sleep(timeout)
+                , .address("B", radix: 10, address: bank)
+                , .address("\0A", radix: 16, address: 0xA000)
+            )
         default: ()
         }
     }
     
     /**
      */
-    public func readOperationDidBegin(_ operation: Operation) {
-        guard let readOp = operation as? ReadPortOperation<GBxCartReaderController> else {
+    @objc func readOperationDidBegin(_ operation: Operation) {
+        guard let readOp = operation as? ReadPortOperation<GBxCartReaderController<Cartridge>> else {
             operation.cancel()
             return
         }
@@ -184,8 +169,8 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartS
 
     /**
      */
-    public func readOperation(_ operation: Operation, didRead progress: Progress) {
-        guard let readOp = operation as? ReadPortOperation<GBxCartReaderController> else {
+    @objc func readOperation(_ operation: Operation, didRead progress: Progress) {
+        guard let readOp = operation as? ReadPortOperation<GBxCartReaderController<Cartridge>> else {
             operation.cancel()
             return
         }
@@ -208,10 +193,10 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartS
     
     /**
      */
-    public func readOperationDidComplete(_ operation: Operation) {
+    @objc func readOperationDidComplete(_ operation: Operation) {
         self.reader.delegate = nil
         
-        guard let readOp = operation as? ReadPortOperation<GBxCartReaderController> else {
+        guard let readOp = operation as? ReadPortOperation<GBxCartReaderController<Cartridge>> else {
             operation.cancel()
             return
         }
@@ -241,47 +226,88 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartS
         }
     }
 
-    private func set<Header>(bank: Int, with header: Header) where Header == Cartridge.Header {
-        switch Cartridge.Platform.self {
-        case is GameboyClassic.Type:
-            let header = header as! GameboyClassic.Cartridge.Header
-            if case .one = header.configuration {
+    private func set(bank: Int, with header: GameboyClassic.Cartridge.Header) {
+        if case .one = header.configuration {
+            self.send(
+                .address("B", radix: 16, address: 0x6000)
+                , .sleep(timeout)
+                , .address("B", radix: 10, address: 0)
+            )
+            
+            self.send(
+                .address("B", radix: 16, address: 0x4000)
+                , .sleep(timeout)
+                , .address("B", radix: 10, address: bank >> 5)
+            )
+            
+            self.send(
+                .address("B", radix: 16, address: 0x2000)
+                , .sleep(timeout)
+                , .address("B", radix: 10, address: bank & 0x1F)
+            )
+        }
+        else {
+            self.send(
+                .address("B", radix: 16, address: 0x2100)
+                , .sleep(timeout)
+                , .address("B", radix: 10, address: bank)
+            )
+            if bank >= 0x100 {
                 self.send(
-                    .address("B", radix: 16, address: 0x6000)
-                  , .sleep(timeout)
-                  , .address("B", radix: 10, address: 0)
-                )
-
-                self.send(
-                    .address("B", radix: 16, address: 0x4000)
-                  , .sleep(timeout)
-                  , .address("B", radix: 10, address: bank >> 5)
-                )
-
-                self.send(
-                    .address("B", radix: 16, address: 0x2000)
-                  , .sleep(timeout)
-                  , .address("B", radix: 10, address: bank & 0x1F)
+                    .address("B", radix: 16, address: 0x3000)
+                    , .sleep(timeout)
+                    , .address("B", radix: 10, address: 1)
                 )
             }
-            else {
-                self.send(
-                    .address("B", radix: 16, address: 0x2100)
-                  , .sleep(timeout)
-                  , .address("B", radix: 10, address: bank)
-                )
-                if bank >= 0x100 {
-                    self.send(
-                        .address("B", radix: 16, address: 0x3000)
-                      , .sleep(timeout)
-                      , .address("B", radix: 10, address: 1)
-                    )
-                }
-            }
-        case is GameboyAdvance.Type:
-            fatalError()
-        default:
-            fatalError("No 'read' strategy provided for \(Cartridge.Platform.self)")
         }
     }
+}
+
+final class GBxCartAdvanceReaderController: GBxCartReaderController<GameboyAdvance.Cartridge> {
+    /**
+     */
+    @objc func readOperationWillBegin(_ operation: Operation) {
+        guard let readOp = operation as? ReadPortOperation<GBxCartReaderController<Cartridge>> else {
+            operation.cancel()
+            return
+        }
+        
+        if printStacktrace {
+            print(#function, readOp.context)
+        }
+    }
+    
+    /**
+     */
+    @objc func readOperationDidBegin(_ operation: Operation) {
+        guard let _ = operation as? ReadPortOperation<GBxCartReaderController<Cartridge>> else {
+            operation.cancel()
+            return
+        }
+    }
+    
+    /**
+     */
+    @objc func readOperation(_ operation: Operation, didRead progress: Progress) {
+        guard let _ = operation as? ReadPortOperation<GBxCartReaderController<Cartridge>> else {
+            operation.cancel()
+            return
+        }
+    }
+    
+    /**
+     */
+    @objc func readOperationDidComplete(_ operation: Operation) {
+        self.reader.delegate = nil
+        
+        guard let readOp = operation as? ReadPortOperation<GBxCartReaderController<Cartridge>> else {
+            operation.cancel()
+            return
+        }
+        
+        if printStacktrace {
+            print(#function, readOp.context)
+        }
+    }
+
 }

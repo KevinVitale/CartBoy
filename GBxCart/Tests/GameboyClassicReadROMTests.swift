@@ -5,7 +5,8 @@ import GBxCartKit
 
 @objc(GameboyClassicReadROMTests)
 fileprivate final class GameboyClassicReadROMTests: XCTestCase {
-    private typealias Cartridge = GameboyClassic.Cartridge
+    private typealias Platform  = GameboyClassic
+    private typealias Cartridge = Platform.Cartridge
     private typealias Header    = Cartridge.Header
     
     private private(set) var controller: GBxCartReaderController<Cartridge>!
@@ -13,7 +14,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     override func setUp() {
         do {
             if controller == nil {
-                controller = try GBxCartReaderController()
+                controller = try GBxCartSerialPortController.reader(for: Platform.self)
                 controller.printStacktrace = false
                 controller.printProgress = true
             }

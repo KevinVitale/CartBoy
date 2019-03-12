@@ -3,10 +3,6 @@ import ORSSerial
 /**
  */
 public protocol SerialPortController: class, NSObjectProtocol {
-    /**
-     */
-    init(matching portProfile: ORSSerialPortManager.PortProfile) throws
-    
     ///
     var isOpen: Bool { get }
     

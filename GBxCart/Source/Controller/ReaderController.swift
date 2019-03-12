@@ -2,8 +2,6 @@ import ORSSerial
 import Gibby
 
 public protocol ReaderController: SerialPortController, ReadPortOperationDelegate {
-    init(matching portProfile: ORSSerialPortManager.PortProfile) throws
-    
     /// The associated platform that the adopter relates to.
     associatedtype Cartridge: Gibby.Cartridge
 }

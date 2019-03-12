@@ -3,12 +3,12 @@ import ORSSerial
 
 @objc
 public protocol ReadPortOperationDelegate: NSObjectProtocol {
-    @objc func readOperationWillBegin(_ operation: Operation)
-    @objc func readOperationDidBegin(_ operation: Operation)
-    @objc func readOperation(_ operation: Operation, didRead progress: Progress)
-    @objc func readOperationDidComplete(_ operation: Operation)
+    @objc optional func readOperationWillBegin(_ operation: Operation)
+    @objc optional func readOperationDidBegin(_ operation: Operation)
+    @objc optional func readOperation(_ operation: Operation, didRead progress: Progress)
+    @objc optional func readOperationDidComplete(_ operation: Operation)
     
-    @objc func romBankSize(for bank: Int) -> Int
+    @objc optional func romBankSize(for bank: Int) -> Int
 }
 
 class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Controller> {
@@ -61,7 +61,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
             }
             else {
                 if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperation(_:didRead:))) {
-                    delegate.readOperation(self, didRead: progress)
+                    delegate.readOperation?(self, didRead: progress)
                 }
             }
         }
@@ -72,7 +72,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         self._isFinished  = true
         
         if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidComplete(_:))) {
-            delegate.readOperationDidComplete(self)
+            delegate.readOperationDidComplete?(self)
         }
         
         let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
@@ -93,7 +93,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         
         if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationWillBegin(_:))) {
             DispatchQueue.main.sync {
-                delegate.readOperationWillBegin(self)
+                delegate.readOperationWillBegin?(self)
             }
         }
         
@@ -101,7 +101,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         case .cartridge, .saveFile:
             if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidBegin(_:))) {
                 DispatchQueue.main.async {
-                    delegate.readOperationDidBegin(self)
+                    delegate.readOperationDidBegin?(self)
                 }
             }
             self._isExecuting = true
@@ -112,7 +112,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
             let group = DispatchGroup()
             for bank in 1..<header.romBanks where self.isCancelled == false {
                 group.enter()
-                let readLength = controller.romBankSize(for: bank)
+                let readLength = controller.romBankSize?(for: bank) ?? 0
                 let operation = ReadPortOperation(controller: self.controller, context: .bank(bank, header: header), length: readLength) { data in
                     if let data = data {
                         self.bytesRead.append(data)
@@ -155,7 +155,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
             self._isExecuting = true
             if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidBegin(_:))) {
                 DispatchQueue.main.async {
-                    delegate.readOperationDidBegin(self)
+                    delegate.readOperationDidBegin?(self)
                 }
             }
         }

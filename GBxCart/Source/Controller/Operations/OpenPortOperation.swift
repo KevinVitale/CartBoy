@@ -7,12 +7,12 @@ class OpenPortOperation<Controller: ReaderController>: Operation, ORSSerialPortD
     
     let controller: Controller
     
-    var _isExecuting: Bool = false {
+    @objc var _isExecuting: Bool = false {
         willSet { self.willChangeValue(forKey: "isExecuting") }
         didSet  {  self.didChangeValue(forKey: "isExecuting") }
     }
     
-    var _isFinished: Bool = false {
+    @objc var _isFinished: Bool = false {
         willSet { self.willChangeValue(forKey: "isFinished") }
         didSet  {  self.didChangeValue(forKey: "isFinished") }
     }
