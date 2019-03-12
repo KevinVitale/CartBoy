@@ -95,12 +95,20 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
         
         switch readOp.context {
         case .header:
+            //------------------------------------------------------------------
+            // 1. set the start address to be read (stopping first; '\0')
             let address = Int(Cartridge.Platform.headerRange.lowerBound)
             self.send(.address("\0A", radix: 16, address: address))
+            //------------------------------------------------------------------
         case .bank(let bank, let cartridge):
+            //------------------------------------------------------------------
+            // 1. stop sending
+            // 2. switch the ROM bank
+            // 3. set the start address to be read (stopping first; '\0')
             self.send(.stop)
             self.set(bank: bank, with: cartridge.header!)
             self.send(.address("\0A", radix: 16, address: bank > 1 ? 0x4000 : 0x0000))
+            //------------------------------------------------------------------
         case .saveFile(let header, _):
             //--------------------------------------------------------------
             // MBC2 "fix"
@@ -109,6 +117,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
             // to read ROM before RAM?). Read 64 bytes of ROM,
             // (really only 1 byte is required).
             //--------------------------------------------------------------
+            // 1. set the start address to be read (stopping first; '\0')
             switch header.configuration {
             case .one, .two:
                 self.send(.address("\0A", radix: 16, address: 0x0000), .start, .stop)
@@ -116,19 +125,26 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
             }
             //--------------------------------------------------------------
             if case .one = header.configuration {
+                // set the 'RAM' mode (MBC1-only)
                 self.send(
-                      .address("B", radix: 16, address: 0x6000)
+                    .address("B", radix: 16, address: 0x6000)
                     , .sleep(timeout)
                     , .address("B", radix: 10, address: 1)
                 )
             }
-
+            //------------------------------------------------------------------
+            // Initialize memory-bank controller
             self.send(
-                  .address("B", radix: 16, address: 0x0000)
+                .address("B", radix: 16, address: 0x0000)
                 , .sleep(timeout)
                 , .address("B", radix: 10, address: 0x0A)
             )
+            //------------------------------------------------------------------
         case .sram(let bank, _):
+            //------------------------------------------------------------------
+            // 1. stop sending
+            // 2. switch the RAM bank (then timeout)
+            // 3. set the start address to be read (stopping first; '\0')
             self.send(.stop)
             self.send(
                 .address("B", radix: 16, address: 0x4000)
@@ -136,6 +152,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
                 , .address("B", radix: 10, address: bank)
                 , .address("\0A", radix: 16, address: 0xA000)
             )
+            //------------------------------------------------------------------
         default: ()
         }
     }
