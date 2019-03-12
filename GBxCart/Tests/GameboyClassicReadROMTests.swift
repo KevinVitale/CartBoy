@@ -9,12 +9,12 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     private typealias Cartridge = Platform.Cartridge
     private typealias Header    = Cartridge.Header
     
-    private private(set) var controller: GBxCartReaderController<Cartridge>!
+    private private(set) var controller: GBxCartridgeController<Cartridge>!
     
     override func setUp() {
         do {
             if controller == nil {
-                controller = try GBxCartSerialPortController.reader(for: Platform.self)
+                controller = try GBxSerialPortController.controller(for: Platform.self)
                 controller.printStacktrace = false
                 controller.printProgress = true
             }

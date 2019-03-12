@@ -8,7 +8,7 @@ public protocol SerialPortOperationDelegate: NSObjectProtocol {
     @objc optional func readOperationDidComplete(_ operation: Operation)
 }
 
-class SerialPortOperation<Controller: ReaderController>: OpenPortOperation<Controller> {
+class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Controller> {
     enum Context: CustomDebugStringConvertible {
         enum Intent {
             case read

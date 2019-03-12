@@ -3,7 +3,7 @@ import Gibby
 
 /**
  */
-open class GBxCartSerialPortController: NSObject, SerialPortController {
+open class GBxSerialPortController: NSObject, SerialPortController {
     /**
      */
     init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
@@ -53,13 +53,13 @@ open class GBxCartSerialPortController: NSObject, SerialPortController {
     }
 }
 
-extension GBxCartSerialPortController {
-    public static func reader<Cartridge: Gibby.Cartridge>(for platform: Cartridge.Platform.Type) throws -> GBxCartReaderController<Cartridge> {
+extension GBxSerialPortController {
+    public static func controller<Cartridge: Gibby.Cartridge>(for platform: Cartridge.Platform.Type) throws -> GBxCartridgeController<Cartridge> {
         switch platform {
         case is GameboyClassic.Type:
-            return try GBxCartClassicReaderController() as! GBxCartReaderController<Cartridge>
+            return try GBxCartridgeControllerClassic() as! GBxCartridgeController<Cartridge>
         case is GameboyAdvance.Type:
-            return try GBxCartAdvanceReaderController() as! GBxCartReaderController<Cartridge>
+            return try GBxCartridgeControllerAdvance() as! GBxCartridgeController<Cartridge>
         default:
             fatalError()
         }

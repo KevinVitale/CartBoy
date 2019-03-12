@@ -1,12 +1,12 @@
 import ORSSerial
 import Gibby
 
-public protocol ReaderController: SerialPortController, SerialPortOperationDelegate {
+public protocol CartridgeController: SerialPortController, SerialPortOperationDelegate {
     /// The associated platform that the adopter relates to.
     associatedtype Cartridge: Gibby.Cartridge
 }
 
-extension ReaderController {
+extension CartridgeController {
     /**
      */
     public func readHeader(result: @escaping ((Self.Cartridge.Header?) -> ())) {
