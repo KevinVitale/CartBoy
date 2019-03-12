@@ -17,8 +17,6 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         
         case saveFile(Controller.Cartridge.Header)
         case sram(_ bank: Int, header: Controller.Cartridge.Header)
-        
-        case address(_ address: Controller.Cartridge.Platform.AddressSpace)
 
         var debugDescription: String {
             switch self {
@@ -28,12 +26,25 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
                 return "cartridge"
             case .saveFile:
                 return "save file"
-            case .address:
-                return "address"
             case .bank:
                 return "bank"
             case .sram:
                 return "sram"
+            }
+        }
+        
+        var byteCount: Int {
+            switch self {
+            case .header:
+                return Controller.Cartridge.Platform.headerRange.count
+            case .cartridge(let header):
+                return header.romSize
+            case .saveFile(let header):
+                return header.ramSize
+            case .bank(_, header: let header):
+                return header.romBankSize
+            case .sram(_, header: let header):
+                return header.ramBankSize
             }
         }
     }
