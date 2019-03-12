@@ -101,7 +101,7 @@ final class GBxCartClassicReaderController: GBxCartReaderController<GameboyClass
             self.send(.stop)
             self.set(bank: bank, with: header)
             self.send(.address("\0A", radix: 16, address: bank > 1 ? 0x4000 : 0x0000))
-        case .saveFile(let header):
+        case .saveFile(let header, _):
             //--------------------------------------------------------------
             // MBC2 "fix"
             //--------------------------------------------------------------

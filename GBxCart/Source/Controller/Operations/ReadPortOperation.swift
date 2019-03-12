@@ -10,12 +10,17 @@ public protocol ReadPortOperationDelegate: NSObjectProtocol {
 
 class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Controller> {
     enum Context: CustomDebugStringConvertible {
+        enum Intent {
+            case read
+            case write
+        }
+        
         case header
         
-        case cartridge(Controller.Cartridge.Header)
+        case cartridge(Controller.Cartridge.Header, intent: Intent)
         case bank(_ bank: Int, header: Controller.Cartridge.Header)
         
-        case saveFile(Controller.Cartridge.Header)
+        case saveFile(Controller.Cartridge.Header, intent: Intent)
         case sram(_ bank: Int, header: Controller.Cartridge.Header)
 
         var debugDescription: String {
@@ -37,9 +42,9 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
             switch self {
             case .header:
                 return Controller.Cartridge.Platform.headerRange.count
-            case .cartridge(let header):
+            case .cartridge(let header, _):
                 return header.romSize
-            case .saveFile(let header):
+            case .saveFile(let header, _):
                 return header.ramSize
             case .bank(_, header: let header):
                 return header.romBankSize
@@ -117,7 +122,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         default: ()
         }
 
-        if case let .cartridge(header) = self.context, header.romBanks > 0 {
+        if case let .cartridge(header, _) = self.context, header.romBanks > 0 {
             let group = DispatchGroup()
             for bank in 1..<header.romBanks where self.isCancelled == false {
                 group.enter()
@@ -137,7 +142,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
                 }
             }
         }
-        else if case let .saveFile(header) = self.context, header.ramBanks > 0 {
+        else if case let .saveFile(header, _) = self.context, header.ramBanks > 0 {
             let group = DispatchGroup()
             for bank in 0..<header.ramBanks where self.isCancelled == false {
                 group.enter()
