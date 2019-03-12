@@ -1,14 +1,14 @@
 import ORSSerial
 
 @objc
-public protocol ReadPortOperationDelegate: NSObjectProtocol {
+public protocol SerialPortOperationDelegate: NSObjectProtocol {
     @objc optional func readOperationWillBegin(_ operation: Operation)
     @objc optional func readOperationDidBegin(_ operation: Operation)
     @objc optional func readOperation(_ operation: Operation, didUpdate progress: Progress)
     @objc optional func readOperationDidComplete(_ operation: Operation)
 }
 
-class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Controller> {
+class SerialPortOperation<Controller: ReaderController>: OpenPortOperation<Controller> {
     enum Context: CustomDebugStringConvertible {
         enum Intent {
             case read
@@ -63,7 +63,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
     }
     
     var context: Context
-    weak var delegate: ReadPortOperationDelegate?
+    weak var delegate: SerialPortOperationDelegate?
     
     private      let    result: (Data?) -> ()
     private      let  progress: Progress
@@ -74,7 +74,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
                 complete()
             }
             else {
-                if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperation(_:didUpdate:))) {
+                if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.readOperation(_:didUpdate:))) {
                     delegate.readOperation?(self, didUpdate: progress)
                 }
             }
@@ -85,7 +85,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         self._isExecuting = false
         self._isFinished  = true
         
-        if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidComplete(_:))) {
+        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.readOperationDidComplete(_:))) {
             delegate.readOperationDidComplete?(self)
         }
         
@@ -105,7 +105,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         super.main()
         self.progress.becomeCurrent(withPendingUnitCount: 0)
         
-        if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationWillBegin(_:))) {
+        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.readOperationWillBegin(_:))) {
             DispatchQueue.main.sync {
                 delegate.readOperationWillBegin?(self)
             }
@@ -113,7 +113,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         
         switch self.context {
         case .cartridge, .saveFile:
-            if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidBegin(_:))) {
+            if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.readOperationDidBegin(_:))) {
                 DispatchQueue.main.async {
                     delegate.readOperationDidBegin?(self)
                 }
@@ -126,7 +126,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
             let group = DispatchGroup()
             for bank in 1..<header.romBanks where self.isCancelled == false {
                 group.enter()
-                let operation = ReadPortOperation(controller: self.controller, context: .bank(bank, header: header)) { data in
+                let operation = SerialPortOperation(controller: self.controller, context: .bank(bank, header: header)) { data in
                     if let data = data {
                         self.bytesRead.append(data)
                     }
@@ -145,7 +145,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
             let group = DispatchGroup()
             for bank in 0..<header.ramBanks where self.isCancelled == false {
                 group.enter()
-                let operation = ReadPortOperation(controller: self.controller, context: .sram(bank, header: header)) { data in
+                let operation = SerialPortOperation(controller: self.controller, context: .sram(bank, header: header)) { data in
                     if let data = data {
                         self.bytesRead.append(data)
                     }
@@ -165,7 +165,7 @@ class ReadPortOperation<Controller: ReaderController>: OpenPortOperation<Control
         case .cartridge, .saveFile: ()
         default:
             self._isExecuting = true
-            if let delegate = self.delegate, delegate.responds(to: #selector(ReadPortOperationDelegate.readOperationDidBegin(_:))) {
+            if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.readOperationDidBegin(_:))) {
                 DispatchQueue.main.async {
                     delegate.readOperationDidBegin?(self)
                 }
