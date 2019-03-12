@@ -2,7 +2,7 @@ import ORSSerial
 
 /**
  */
-protocol SerialPortController: class, NSObjectProtocol {
+public protocol SerialPortController: class, NSObjectProtocol {
     /**
      */
     init(matching portProfile: ORSSerialPortManager.PortProfile) throws

@@ -10,9 +10,8 @@ open class GBxCartSerialPortController: NSObject, SerialPortController {
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
     }
     
-    
     ///
-    private let reader: ORSSerialPort
+    let reader: ORSSerialPort
     
     ///
     private let queue = OperationQueue()
@@ -25,7 +24,7 @@ open class GBxCartSerialPortController: NSObject, SerialPortController {
     /**
      */
     @discardableResult
-    final func close() -> Bool {
+    public final func close() -> Bool {
         defer {
             usleep(2000)
         }
@@ -34,7 +33,7 @@ open class GBxCartSerialPortController: NSObject, SerialPortController {
     
     /**
      */
-    final func openReader(delegate: ORSSerialPortDelegate?) throws {
+    public final func openReader(delegate: ORSSerialPortDelegate?) throws {
         self.reader.delegate = delegate
         
         if self.reader.isOpen == false {
@@ -49,7 +48,7 @@ open class GBxCartSerialPortController: NSObject, SerialPortController {
     
     /**
      */
-    final func addOperation(_ operation: Operation) {
+    public final func addOperation(_ operation: Operation) {
         self.queue.addOperation(operation)
     }
     

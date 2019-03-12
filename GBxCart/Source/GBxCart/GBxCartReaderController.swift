@@ -5,7 +5,7 @@ import Gibby
 /**
  Cart reader implementation for insideGadgets.com's 'GBxCart'.
  */
-public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject, ReaderController {
+public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: GBxCartSerialPortController, ReaderController {
     private enum ReaderCommand: CustomDebugStringConvertible {
         case start
         case stop
@@ -63,13 +63,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
             usleep(duration)
         }
     }
-    
-    /**
-     */
-    public init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
-        self.reader = try ORSSerialPortManager.port(matching: portProfile)
-    }
-    
+
     /// DEBUG
     public var printStacktrace: Bool = false
     public var printProgress: Bool = false
@@ -85,56 +79,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     /// results, stay between _150_ & _250_.
     private let timeout: UInt32 = 250
     //------------------------------------------------------------------
-    
 
-    ///
-    private let reader: ORSSerialPort
-    
-    ///
-    private let queue = OperationQueue()
-    
-    /**
-     */
-    public final func openReader(delegate: ORSSerialPortDelegate?) throws {
-        self.delegate = delegate
-        
-        if self.reader.isOpen == false {
-            if printStacktrace {
-                print("Opening, and configuring...")
-            }
-            self.reader.open()
-            self.reader.configuredAsGBxCart()
-        }
-        
-        guard self.reader.isOpen else {
-            throw ReaderControllerError.failedToOpen(self.reader)
-        }
-        
-        if printStacktrace {
-            print(#function)
-        }
-    }
-
-    ///
-    public var isOpen: Bool {
-        return self.reader.isOpen
-    }
-    
-    /**
-     */
-    @discardableResult
-    public func closePort() -> Bool {
-        defer {
-            if closeOnRead {
-                usleep(2000)
-            }
-        }
-        if printStacktrace {
-            print(#function)
-        }
-        return self.reader.close()
-    }
-    
     /**
      */
     private func send(_ command: ReaderCommand...) {
@@ -143,22 +88,6 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         }
     }
 
-    ///
-    public var delegate: ORSSerialPortDelegate? {
-        get {
-            return reader.delegate
-        }
-        set {
-            reader.delegate = newValue
-        }
-    }
-
-    /**
-     */
-    public func addOperation(_ operation: Operation) {
-        self.queue.addOperation(operation)
-    }
-    
     public func romBankSize(for bank: Int) -> Int {
         switch Cartridge.Platform.self {
         case is GameboyClassic.Type:
@@ -283,7 +212,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
     /**
      */
     public func readOperationDidComplete(_ operation: Operation) {
-        self.delegate = nil
+        self.reader.delegate = nil
         
         guard let readOp = operation as? ReadPortOperation<GBxCartReaderController> else {
             operation.cancel()
@@ -296,7 +225,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
         
         switch readOp.context {
         case .cartridge:
-            if closeOnRead { self.closePort() }
+            if closeOnRead { self.close() }
         case .saveFile:
             self.send(
                   .stop
@@ -306,11 +235,11 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
                               // The pattern appears to be MBC5+RAM carts....?
                 , .address("B", radix: 10, address: 0)
             )
-            if closeOnRead { self.closePort() }
+            if closeOnRead { self.close() }
         case .header:
             /// - warning: Another important 'pause'; don't delete.
             self.send(.stop, .sleep(75))
-            if closeOnRead { self.closePort() }
+            if closeOnRead { self.close() }
         default: ()
         }
     }

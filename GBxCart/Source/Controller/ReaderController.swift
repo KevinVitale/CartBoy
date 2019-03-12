@@ -1,30 +1,11 @@
 import ORSSerial
 import Gibby
 
-public protocol ReaderController: class, ReadPortOperationDelegate {
+public protocol ReaderController: SerialPortController, ReadPortOperationDelegate {
     init(matching portProfile: ORSSerialPortManager.PortProfile) throws
     
     /// The associated platform that the adopter relates to.
     associatedtype Cartridge: Gibby.Cartridge
-
-    ///
-    var isOpen: Bool { get }
-    
-    ///
-    var delegate: ORSSerialPortDelegate? { get set }
-    
-    /**
-     */
-    @discardableResult
-    func closePort() -> Bool
-
-    /**
-     */
-    func addOperation(_ operation: Operation)
-
-    /**
-     */
-    func openReader(delegate: ORSSerialPortDelegate?) throws
 }
 
 extension ReaderController {
