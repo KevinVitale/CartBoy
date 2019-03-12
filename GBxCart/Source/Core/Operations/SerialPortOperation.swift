@@ -12,7 +12,7 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
     enum Context: CustomDebugStringConvertible {
         enum Intent {
             case read
-            case write
+            case write(Data)
         }
         
         case header
@@ -156,22 +156,47 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
                 }
             }
         }
-        else if case let .saveFile(header, _) = self.context, header.ramBanks > 0 {
+        else if case let .saveFile(header, intent) = self.context, header.ramBanks > 0 {
             let group = DispatchGroup()
             for bank in 0..<header.ramBanks where self.isCancelled == false {
                 group.enter()
-                let operation = SerialPortOperation(controller: self.controller, context: .sram(bank, saveFile: context)) { data in
-                    if let data = data {
-                        self.bytesRead.append(data)
+                var operation: SerialPortOperation! = nil
+                switch intent {
+                //--------------------------------------------------------------
+                // Read 'RAM'
+                case .read:
+                    operation = SerialPortOperation(controller: self.controller, context: .sram(bank, saveFile: context)) { data in
+                        if let data = data {
+                            self.bytesRead.append(data)
+                        }
+                        group.leave()
                     }
-                    group.leave()
+                //--------------------------------------------------------------
+                // Write 'RAM'
+                case .write(let data):
+                    let startAddress = bank * header.ramBankSize
+                    let endAddress   = startAddress.advanced(by: header.ramBankSize)
+                    let dataToWrite  = data[startAddress..<endAddress]
+                    let context      = Context.sram(bank, saveFile: .saveFile(header, intent: .write(dataToWrite)))
+
+                    operation = SerialPortOperation(controller: self.controller, context: context) { data in
+                        if let data = data {
+                            self.bytesRead.append(data)
+                        }
+                        group.leave()
+                    }
                 }
                 
-                self.controller.addOperation(operation)
-                group.wait()
-                
-                if operation.isCancelled {
-                    self.cancel()
+                if let operation = operation {
+                    self.controller.addOperation(operation)
+                    group.wait()
+                    
+                    if operation.isCancelled {
+                        self.cancel()
+                    }
+                }
+                else {
+                    group.leave()
                 }
             }
         }
