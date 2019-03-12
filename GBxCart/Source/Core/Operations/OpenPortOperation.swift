@@ -3,9 +3,11 @@ import ORSSerial
 class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialPortDelegate {
     init(controller: Controller) {
         self.controller = controller
+        self.transactionID = UUID()
     }
     
     let controller: Controller
+    let transactionID: UUID
     
     @objc var _isExecuting: Bool = false {
         willSet { self.willChangeValue(forKey: "isExecuting") }
