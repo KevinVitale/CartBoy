@@ -97,9 +97,9 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
         case .header:
             let address = Int(Cartridge.Platform.headerRange.lowerBound)
             self.send(.address("\0A", radix: 16, address: address))
-        case .bank(let bank, let header):
+        case .bank(let bank, let cartridge):
             self.send(.stop)
-            self.set(bank: bank, with: header)
+            self.set(bank: bank, with: cartridge.header!)
             self.send(.address("\0A", radix: 16, address: bank > 1 ? 0x4000 : 0x0000))
         case .saveFile(let header, _):
             //--------------------------------------------------------------

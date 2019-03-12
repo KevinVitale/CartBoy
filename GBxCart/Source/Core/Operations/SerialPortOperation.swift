@@ -18,10 +18,10 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
         case header
         
         case cartridge(Controller.Cartridge.Header, intent: Intent)
-        case bank(_ bank: Int, header: Controller.Cartridge.Header)
+        indirect case bank(_ bank: Int, cartridge: Context)
         
         case saveFile(Controller.Cartridge.Header, intent: Intent)
-        case sram(_ bank: Int, header: Controller.Cartridge.Header)
+        indirect case sram(_ bank: Int, saveFile: Context)
 
         var debugDescription: String {
             switch self {
@@ -38,6 +38,21 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
             }
         }
         
+        var header: Controller.Cartridge.Header? {
+            switch self {
+            case .cartridge(let header, _):
+                return header
+            case .bank(_, let cartridge):
+                return cartridge.header!
+            case .saveFile(let header, _):
+                return header
+            case .sram(_, let saveFile):
+                return saveFile.header!
+            default:
+                return nil
+            }
+        }
+        
         var byteCount: Int {
             switch self {
             case .header:
@@ -46,10 +61,10 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
                 return header.romSize
             case .saveFile(let header, _):
                 return header.ramSize
-            case .bank(let bank, header: let header):
-                return bank > 1 ? header.romBankSize : header.romBankSize * 2
-            case .sram(_, header: let header):
-                return header.ramBankSize
+            case .bank(let bank, _):
+                return bank > 1 ? header!.romBankSize : header!.romBankSize * 2
+            case .sram:
+                return header!.ramBankSize
             }
         }
     }
@@ -126,7 +141,7 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
             let group = DispatchGroup()
             for bank in 1..<header.romBanks where self.isCancelled == false {
                 group.enter()
-                let operation = SerialPortOperation(controller: self.controller, context: .bank(bank, header: header)) { data in
+                let operation = SerialPortOperation(controller: self.controller, context: .bank(bank, cartridge: context)) { data in
                     if let data = data {
                         self.bytesRead.append(data)
                     }
@@ -145,7 +160,7 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
             let group = DispatchGroup()
             for bank in 0..<header.ramBanks where self.isCancelled == false {
                 group.enter()
-                let operation = SerialPortOperation(controller: self.controller, context: .sram(bank, header: header)) { data in
+                let operation = SerialPortOperation(controller: self.controller, context: .sram(bank, saveFile: context)) { data in
                     if let data = data {
                         self.bytesRead.append(data)
                     }
