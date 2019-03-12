@@ -166,6 +166,14 @@
 			path = Core;
 			sourceTree = "<group>";
 		};
+		0A61C77522382D93001D653D /* Devices */ = {
+			isa = PBXGroup;
+			children = (
+				0A1381B721F685E50071E293 /* GBxCart */,
+			);
+			path = Devices;
+			sourceTree = "<group>";
+		};
 		0AAD80E821F380F900D548C8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -187,7 +195,7 @@
 			isa = PBXGroup;
 			children = (
 				0A61C77422382D66001D653D /* Core */,
-				0A1381B721F685E50071E293 /* GBxCart */,
+				0A61C77522382D93001D653D /* Devices */,
 				0AAD810721F381AF00D548C8 /* GBxCartKit.h */,
 			);
 			path = Source;
