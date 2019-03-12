@@ -271,7 +271,7 @@ public final class GBxCartReaderController<Cartridge: Gibby.Cartridge>: NSObject
             fallthrough
         case .saveFile:
             if printProgress {
-                print(progress.fractionCompleted)
+                print(".", terminator: "")
             }
         default:
             if (Int(progress.completedUnitCount) % pageSize) == 0 {
