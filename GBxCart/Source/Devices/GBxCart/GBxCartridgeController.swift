@@ -64,7 +64,11 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
 
         func send(to controller: GBxCartridgeControllerClassic) {
             if controller.printStacktrace {
-                print(self)
+                switch self {
+                case .continue: ()
+                default:
+                    print(self)
+                }
             }
             guard case .sleep(let duration) = self else {
                 controller.reader.send(self.data)
