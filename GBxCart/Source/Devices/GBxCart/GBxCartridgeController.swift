@@ -60,9 +60,12 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
             }
         }
 
-        func send(to reader: ORSSerialPort) {
+        func send(to controller: GBxCartridgeControllerClassic) {
+            if controller.printStacktrace {
+                print(self)
+            }
             guard case .sleep(let duration) = self else {
-                reader.send(self.data)
+                controller.reader.send(self.data)
                 return
             }
             usleep(duration)
@@ -82,7 +85,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
      */
     private func send(_ command: ReaderCommand...) {
         command.forEach {
-            $0.send(to: self.reader)
+            $0.send(to: self)
         }
     }
 
