@@ -10,6 +10,10 @@ open class GBxSerialPortController: NSObject, SerialPortController {
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
     }
     
+    /// DEBUG
+    public var printStacktrace: Bool = false
+    public var printProgress: Bool = false
+
     ///
     let reader: ORSSerialPort
     
@@ -26,6 +30,9 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     @discardableResult
     public final func close() -> Bool {
         defer {
+            if self.printStacktrace {
+                print(#function)
+            }
             usleep(2000)
         }
         return self.reader.close()

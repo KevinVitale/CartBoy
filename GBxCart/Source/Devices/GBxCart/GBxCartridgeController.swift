@@ -7,9 +7,6 @@ import Gibby
  platform-specific read routines.
  */
 public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: GBxSerialPortController, CartridgeController {
-    /// DEBUG
-    public var printStacktrace: Bool = false
-    public var printProgress: Bool = false
 }
 
 final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic.Cartridge> {
