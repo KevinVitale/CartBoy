@@ -115,6 +115,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         let expectiation = expectation(description: "RAM file was erased")
         
         controller.eraseSaveFile {
+            XCTAssertTrue($0)
             expectiation.fulfill()
         }
         
@@ -126,7 +127,8 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         let saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/POKEMON YELLOW.sav.bak")
         let saveFile = try! Data(contentsOf: saveFileURL)
-        controller.write(saveFile: saveFile) {
+        controller.writeSaveFile(saveFile) {
+            XCTAssertTrue($0)
             expectiation.fulfill()
         }
         

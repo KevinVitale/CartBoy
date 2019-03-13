@@ -63,32 +63,34 @@ extension CartridgeController {
 }
 
 extension CartridgeController {
-    public func write(header: Self.Cartridge.Header? = nil, saveFile data: Data, result: @escaping (() -> ())) {
+    public func writeSaveFile(_ data: Data, header: Self.Cartridge.Header? = nil, result: @escaping ((Bool) -> ())) {
         if let header = header {
             guard header.ramSize == data.count else {
-                result()
+                result(false)
                 return
             }
             self.addOperation(SerialPortOperation(controller: self, context: .saveFile(header, intent: .write(data))) { _ in
-                result()
+                result(true)
             })
         }
         else {
             self.readHeader {
-                self.write(header: $0, saveFile: data, result: result)
+                self.writeSaveFile(data, header: $0, result: result)
             }
         }
     }
     
-    public func eraseSaveFile(header: Self.Cartridge.Header? = nil, result: @escaping (() -> ())) {
+    public func eraseSaveFile(header: Self.Cartridge.Header? = nil, result: @escaping ((Bool) -> ())) {
         if let header = header {
-            self.addOperation(SerialPortOperation(controller: self, context: .saveFile(header, intent: .write(Data(count: header.ramSize)))) { _ in
-                result()
-            })
+            self.writeSaveFile(Data(count: header.ramSize), header: header, result: result)
         }
         else {
             self.readHeader {
-                self.eraseSaveFile(header: $0, result: result)
+                guard let header = $0 else {
+                    result(false)
+                    return
+                }
+                self.writeSaveFile(Data(count: header.ramSize), header: header, result: result)
             }
         }
     }
