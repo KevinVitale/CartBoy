@@ -277,7 +277,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
         }
     }
 
-    private func set(bank: Int, with header: GameboyClassic.Cartridge.Header) {
+    private func set(bank: Int, with header: GameboyClassic.Cartridge.Header, timeout: UInt32 = 250) {
         if case .one = header.configuration {
             self.send(
                 .address("B", radix: 16, address: 0x6000)
