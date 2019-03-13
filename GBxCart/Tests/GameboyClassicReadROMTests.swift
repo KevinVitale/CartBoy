@@ -120,4 +120,16 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         waitForExpectations(timeout: 60)
     }
+    
+    func testWriteSaveFile() {
+        let expectiation = expectation(description: "RAM file was erased")
+        
+        let saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/POKEMON YELLOW.sav.bak")
+        let saveFile = try! Data(contentsOf: saveFileURL)
+        controller.write(saveFile: saveFile) {
+            expectiation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 60)
+    }
 }
