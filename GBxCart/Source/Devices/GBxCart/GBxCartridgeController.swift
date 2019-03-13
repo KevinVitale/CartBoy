@@ -154,12 +154,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
                 )
             }
             //------------------------------------------------------------------
-            // Initialize memory-bank controller
-            self.send(
-                .address("B", radix: 16, address: 0x0000)
-                , .sleep(timeout)
-                , .address("B", radix: 10, address: 0x0A)
-            )
+            self.toggleRAMMode(on: true)
             //------------------------------------------------------------------
         case .sram(let bank, _):
             //------------------------------------------------------------------
@@ -264,14 +259,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
         case .cartridge:
             self.close()
         case .saveFile:
-            self.send(
-                  .stop
-                , .address("B", radix: 16, address: 0x0000)
-                , .sleep(500) // ORLY?! Yes...this "very" high timeout fixed a
-                              // _ton_ of 'readRAM' issues for specific carts.
-                              // The pattern appears to be MBC5+RAM carts....?
-                , .address("B", radix: 10, address: 0)
-            )
+            self.toggleRAMMode(on: false)
             self.close()
         case .header:
             /// - warning: Another important 'pause'; don't delete.
@@ -279,6 +267,14 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
             self.close()
         default: ()
         }
+    }
+    
+    private func toggleRAMMode(on turnOn: Bool, timeout: UInt32 = 250) {
+        self.send(
+            .address("B", radix: 16, address: 0x0000)
+            , .sleep(timeout)
+            , .address("B", radix: 10, address: turnOn ? 0x0A: 0x00)
+        )
     }
 
     private func set(bank: Int, with header: GameboyClassic.Cartridge.Header, timeout: UInt32 = 250) {
