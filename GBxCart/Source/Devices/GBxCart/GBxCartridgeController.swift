@@ -19,23 +19,28 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
         case write(bytes: Data)
         
         var debugDescription: String {
-            var desc = ""
+            var desc = ">>>:\t"
+            var appendDataDesc = true
             switch self {
             case .start:
-                desc += "START:\n"
+                desc += "START:\t"
             case .stop:
-                desc += "STOP:\n"
+                desc += "STOP:\t"
             case .continue:
-                desc += "CONT:\n"
+                desc += "CONT:\t"
             case .address(let command, let radix, let address):
                 let addr = String(address, radix: radix, uppercase: true)
-                desc += "ADDR: \(command);\(radix);\(addr)\n"
+                desc += "ADDR: \(command);\(radix);\(addr)\t"
             case .sleep(let duration):
-                desc += "SLP: \(duration)\n"
+                desc += "SLEEP:\t\t\(duration)u"
+                appendDataDesc = false
             case .write(bytes: let data):
                 desc += "WRT: \(data.count)"
             }
-            desc += data.hexString()
+            
+            if (appendDataDesc) {
+                desc += "\t[\(data.hexString(separator: "|"))]"
+            }
             return desc
         }
         
