@@ -10,9 +10,18 @@ public protocol SerialPortOperationDelegate: NSObjectProtocol {
 
 class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Controller> {
     enum Context: CustomDebugStringConvertible {
-        enum Intent {
+        enum Intent: CustomDebugStringConvertible {
             case read
             case write(Data)
+            
+            var debugDescription: String {
+                switch self {
+                case .read:
+                    return "read"
+                case .write(let data):
+                    return "write(count: \(data.count) bytes; md5: \(data.md5.hexString(separator: "").lowercased()))"
+                }
+            }
         }
         
         case header
@@ -31,14 +40,19 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
                 return "cartridge"
             case .saveFile:
                 return "save file"
-            case .bank:
-                return "bank"
-            case .sram(_, let context):
+            case .bank(let bank, let context):
+                switch context {
+                case .cartridge(_, let intent):
+                    return "\r>>> bank: #\(bank), \(intent)"
+                default:
+                    return "\r>>> bank: #\(bank)"
+                }
+            case .sram(let bank, let context):
                 switch context {
                 case .saveFile(_, let intent):
-                    return "sram \(intent)"
+                    return "\r>>> sram: #\(bank), \(intent)"
                 default:
-                    return "sram"
+                    return "\r>>> sram: #\(bank)"
                 }
             }
         }
