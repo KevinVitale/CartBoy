@@ -104,6 +104,10 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
         }
         
         switch readOp.context {
+        case .cartridge(let header, _):
+            if printStacktrace {
+                print(header)
+            }
         case .header:
             //------------------------------------------------------------------
             // 1. set the start address to be read (stopping first; '\0')
@@ -120,6 +124,9 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
             self.send(.address("\0A", radix: 16, address: bank > 1 ? 0x4000 : 0x0000))
             //------------------------------------------------------------------
         case .saveFile(let header, _):
+            if printStacktrace {
+                print(header)
+            }
             //--------------------------------------------------------------
             // MBC2 "fix"
             //--------------------------------------------------------------
@@ -163,7 +170,6 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
                 , .address("\0A", radix: 16, address: 0xA000)
             )
             //------------------------------------------------------------------
-        default: ()
         }
     }
     
