@@ -19,6 +19,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
         case `continue`
         case address(_ command: String, radix: Int, address: Int)
         case sleep(_ duration: UInt32)
+        case write(bytes: Data)
         
         var debugDescription: String {
             var desc = ""
@@ -34,6 +35,8 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
                 desc += "ADDR: \(command);\(radix);\(addr)\n"
             case .sleep(let duration):
                 desc += "SLP: \(duration)\n"
+            case .write(bytes: let data):
+                desc += "WRT: \(data.count)"
             }
             desc += data.hexString()
             return desc
@@ -50,6 +53,8 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
             case .address(let command, let radix, let address):
                 let addr = String(address, radix: radix, uppercase: true)
                 return "\(command)\(addr)\0".data(using: .ascii)!
+            case .write(bytes: let data):
+                return "W".data(using: .ascii)! + data
             default:
                 return Data()
             }
@@ -171,11 +176,20 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
         
         switch readOp.context {
         case .header:
-            fallthrough
-        case .bank:
-            fallthrough
-        case .sram:
             self.send(.start)
+        case .bank:
+            self.send(.start)
+        case .sram(let bank, let context):
+            switch context {
+            case .saveFile(_, .read):
+                self.send(.start)
+            case .saveFile(let header, .write(let data)):
+                let startAddress = bank * header.ramBankSize
+                let endAddress   = startAddress.advanced(by: 64)
+                let dataToWrite  = data[startAddress..<endAddress]
+                self.send(.write(bytes: dataToWrite))
+            default: (/* no-op */)
+            }
         default: ()
         }
     }
@@ -196,6 +210,19 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
         case .saveFile:
             if printProgress {
                 print(".", terminator: "")
+            }
+        case .sram(let bank, saveFile: let context):
+            if (Int(progress.completedUnitCount) % pageSize) == 0 {
+                switch context {
+                case .saveFile(_, .read):
+                    self.send(.continue)
+                case .saveFile(let header, .write(let data)):
+                    let startAddress = (bank * header.ramBankSize) + Int(progress.completedUnitCount)
+                    let endAddress   = startAddress.advanced(by: pageSize)
+                    let dataToWrite  = data[startAddress..<endAddress]
+                    self.send(.write(bytes: dataToWrite))
+                default: ()
+                }
             }
         default:
             if (Int(progress.completedUnitCount) % pageSize) == 0 {

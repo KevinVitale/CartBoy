@@ -33,11 +33,16 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
                 return "save file"
             case .bank:
                 return "bank"
-            case .sram:
-                return "sram"
+            case .sram(_, let context):
+                switch context {
+                case .saveFile(_, let intent):
+                    return "sram \(intent)"
+                default:
+                    return "sram"
+                }
             }
         }
-        
+
         var header: Controller.Cartridge.Header? {
             switch self {
             case .cartridge(let header, _):
@@ -178,7 +183,7 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
                     let endAddress   = startAddress.advanced(by: header.ramBankSize)
                     let dataToWrite  = data[startAddress..<endAddress]
                     let context      = Context.sram(bank, saveFile: .saveFile(header, intent: .write(dataToWrite)))
-
+                    
                     operation = SerialPortOperation(controller: self.controller, context: context) { data in
                         if let data = data {
                             self.bytesRead.append(data)
@@ -225,7 +230,33 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
         // operation to append the correct data.
         //----------------------------------------------------------------------
         if (self.isExecuting) {
-            self.bytesRead.append(data)
+            // Default to 'data'; only when the operation's intent is to 'write'
+            // do we override the data being appended.
+            var dataToAppend: Data = data
+            
+            if case let .sram(_, context) = self.context {
+                switch context {
+                case .cartridge(_, .write):
+                    fatalError()
+                case .saveFile(_, .write):
+                    // Notes about [data.count * 64]:
+                    //  1. A single 'acknowledgment' byte is returned when
+                    //     performing write operations.
+                    //  2. An empty, 64-byte long buffer is appended, allowing
+                    //     the operation to progress.
+                    //  3. What should the write operation's 'result' be? Do we
+                    //     want to append the original data instead?
+                    //----------------------------------------------------------
+                    //  TO-DO:
+                    //----------------------------------------------------------
+                    //  Further consideration needs to be given to the size of
+                    //  buffer created, and where the value should come from.
+                    dataToAppend = Data(count: data.count *  64)
+                default: ()
+                }
+            }
+            
+            self.bytesRead.append(dataToAppend)
         }
     }
 }

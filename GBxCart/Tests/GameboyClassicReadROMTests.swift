@@ -84,7 +84,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     }
 
     func testReadSaveFile() {
-        let expectiation = expectation(description: "ROM file was read")
+        let expectiation = expectation(description: "RAM file was read")
         
         var saveFile: (Data?, Header?) {
             didSet {
@@ -106,6 +106,16 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         controller.readSaveFile { (data: Data?, header: Header) in
             saveFile = (data, header)
+        }
+        
+        waitForExpectations(timeout: 60)
+    }
+    
+    func testEraseSaveFile() {
+        let expectiation = expectation(description: "RAM file was erased")
+        
+        controller.eraseSaveFile {
+            expectiation.fulfill()
         }
         
         waitForExpectations(timeout: 60)
