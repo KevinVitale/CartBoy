@@ -163,7 +163,10 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
                 .address("B", radix: 16, address: 0x4000)
                 , .sleep(timeout)
                 , .address("B", radix: 10, address: bank)
-                , .address("\0A", radix: 16, address: 0xA000)
+            )
+            self.send(
+                .sleep(3000) // 'Bus-Timing 3000'! Fixes 'writeSave'?
+               , .address("A", radix: 16, address: 0xA000)
             )
             //------------------------------------------------------------------
         }
