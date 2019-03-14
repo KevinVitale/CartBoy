@@ -15,8 +15,8 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         do {
             if controller == nil {
                 controller = try GBxSerialPortController.controller(for: Platform.self)
-                controller.printStacktrace = true
-                controller.printProgress = false
+                controller.printStacktrace = false
+                controller.printProgress = true
             }
         }
         catch {
