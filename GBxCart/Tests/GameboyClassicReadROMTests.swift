@@ -94,7 +94,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                     print("|-------------------------------------|")
                     print("|  CONFIGURATION: \(header.configuration)")
                     print(header)
-                    try! saveFile.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav"))
+                    try! saveFile.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav.bak"))
                 }
                 else {
                     XCTFail("Invalid save data.")
