@@ -88,7 +88,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
 
     /**
      */
-    @objc func readOperationWillBegin(_ operation: Operation) {
+    @objc func portOperationWillBegin(_ operation: Operation) {
         guard let readOp = operation as? SerialPortOperation<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
@@ -174,7 +174,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
     
     /**
      */
-    @objc func readOperationDidBegin(_ operation: Operation) {
+    @objc func portOperationDidBegin(_ operation: Operation) {
         guard let readOp = operation as? SerialPortOperation<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
@@ -206,7 +206,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
 
     /**
      */
-    @objc func readOperation(_ operation: Operation, didUpdate progress: Progress) {
+    @objc func portOperation(_ operation: Operation, didUpdate progress: Progress) {
         guard let readOp = operation as? SerialPortOperation<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
@@ -243,7 +243,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
     
     /**
      */
-    @objc func readOperationDidComplete(_ operation: Operation) {
+    @objc func portOperationDidComplete(_ operation: Operation) {
         self.reader.delegate = nil
         
         guard let readOp = operation as? SerialPortOperation<GBxCartridgeController<Cartridge>> else {
@@ -317,7 +317,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
 final class GBxCartridgeControllerAdvance: GBxCartridgeController<GameboyAdvance.Cartridge> {
     /**
      */
-    @objc func readOperationWillBegin(_ operation: Operation) {
+    @objc func portOperationWillBegin(_ operation: Operation) {
         guard let readOp = operation as? SerialPortOperation<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
@@ -330,7 +330,7 @@ final class GBxCartridgeControllerAdvance: GBxCartridgeController<GameboyAdvance
     
     /**
      */
-    @objc func readOperationDidBegin(_ operation: Operation) {
+    @objc func portOperationDidBegin(_ operation: Operation) {
         guard let _ = operation as? SerialPortOperation<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
@@ -339,7 +339,7 @@ final class GBxCartridgeControllerAdvance: GBxCartridgeController<GameboyAdvance
     
     /**
      */
-    @objc func readOperation(_ operation: Operation, didRead progress: Progress) {
+    @objc func portOperation(_ operation: Operation, didRead progress: Progress) {
         guard let _ = operation as? SerialPortOperation<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
@@ -348,7 +348,7 @@ final class GBxCartridgeControllerAdvance: GBxCartridgeController<GameboyAdvance
     
     /**
      */
-    @objc func readOperationDidComplete(_ operation: Operation) {
+    @objc func portOperationDidComplete(_ operation: Operation) {
         self.reader.delegate = nil
         
         guard let readOp = operation as? SerialPortOperation<GBxCartridgeController<Cartridge>> else {

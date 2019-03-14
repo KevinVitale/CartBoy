@@ -2,10 +2,10 @@ import ORSSerial
 
 @objc
 public protocol SerialPortOperationDelegate: NSObjectProtocol {
-    @objc optional func readOperationWillBegin(_ operation: Operation)
-    @objc optional func readOperationDidBegin(_ operation: Operation)
-    @objc optional func readOperation(_ operation: Operation, didUpdate progress: Progress)
-    @objc optional func readOperationDidComplete(_ operation: Operation)
+    @objc optional func portOperationWillBegin(_ operation: Operation)
+    @objc optional func portOperationDidBegin(_ operation: Operation)
+    @objc optional func portOperation(_ operation: Operation, didUpdate progress: Progress)
+    @objc optional func portOperationDidComplete(_ operation: Operation)
 }
 
 class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Controller> {
@@ -108,8 +108,8 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
                 complete()
             }
             else {
-                if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.readOperation(_:didUpdate:))) {
-                    delegate.readOperation?(self, didUpdate: progress)
+                if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.portOperation(_:didUpdate:))) {
+                    delegate.portOperation?(self, didUpdate: progress)
                 }
             }
         }
@@ -119,8 +119,8 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
         self._isExecuting = false
         self._isFinished  = true
         
-        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.readOperationDidComplete(_:))) {
-            delegate.readOperationDidComplete?(self)
+        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.portOperationDidComplete(_:))) {
+            delegate.portOperationDidComplete?(self)
         }
         
         let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
@@ -139,17 +139,17 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
         super.main()
         self.progress.becomeCurrent(withPendingUnitCount: 0)
         
-        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.readOperationWillBegin(_:))) {
+        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.portOperationWillBegin(_:))) {
             DispatchQueue.main.sync {
-                delegate.readOperationWillBegin?(self)
+                delegate.portOperationWillBegin?(self)
             }
         }
         
         switch self.context {
         case .cartridge, .saveFile:
-            if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.readOperationDidBegin(_:))) {
+            if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.portOperationDidBegin(_:))) {
                 DispatchQueue.main.async {
-                    delegate.readOperationDidBegin?(self)
+                    delegate.portOperationDidBegin?(self)
                 }
             }
             self._isExecuting = true
@@ -224,9 +224,9 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
         case .cartridge, .saveFile: ()
         default:
             self._isExecuting = true
-            if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.readOperationDidBegin(_:))) {
+            if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.portOperationDidBegin(_:))) {
                 DispatchQueue.main.async {
-                    delegate.readOperationDidBegin?(self)
+                    delegate.portOperationDidBegin?(self)
                 }
             }
         }
