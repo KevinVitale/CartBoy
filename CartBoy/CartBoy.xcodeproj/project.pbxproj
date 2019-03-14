@@ -1,0 +1,121 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		0ADA1402223AC30000333E3A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0ADA13FB223AC30000333E3A /* CartBoyKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0AAD80F621F3815B00D548C8;
+			remoteInfo = Tests;
+		};
+		0ADA1404223AC30000333E3A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0ADA13FB223AC30000333E3A /* CartBoyKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0AAD810521F381AF00D548C8;
+			remoteInfo = CartBoyKit;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0ADA13FB223AC30000333E3A /* CartBoyKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CartBoyKit.xcodeproj; path = ../CartBoyKit/CartBoyKit.xcodeproj; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0ADA13F4223AC2EB00333E3A = {
+			isa = PBXGroup;
+			children = (
+				0ADA13FB223AC30000333E3A /* CartBoyKit.xcodeproj */,
+			);
+			sourceTree = "<group>";
+		};
+		0ADA13FC223AC30000333E3A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0ADA1403223AC30000333E3A /* Tests.xctest */,
+				0ADA1405223AC30000333E3A /* CartBoyKit.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		0ADA13F5223AC2EB00333E3A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1010;
+			};
+			buildConfigurationList = 0ADA13F8223AC2EB00333E3A /* Build configuration list for PBXProject "CartBoy" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 0ADA13F4223AC2EB00333E3A;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 0ADA13FC223AC30000333E3A /* Products */;
+					ProjectRef = 0ADA13FB223AC30000333E3A /* CartBoyKit.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		0ADA1403223AC30000333E3A /* Tests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = Tests.xctest;
+			remoteRef = 0ADA1402223AC30000333E3A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		0ADA1405223AC30000333E3A /* CartBoyKit.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = CartBoyKit.framework;
+			remoteRef = 0ADA1404223AC30000333E3A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin XCBuildConfiguration section */
+		0ADA13F9223AC2EB00333E3A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		0ADA13FA223AC2EB00333E3A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0ADA13F8223AC2EB00333E3A /* Build configuration list for PBXProject "CartBoy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0ADA13F9223AC2EB00333E3A /* Debug */,
+				0ADA13FA223AC2EB00333E3A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0ADA13F5223AC2EB00333E3A /* Project object */;
+}

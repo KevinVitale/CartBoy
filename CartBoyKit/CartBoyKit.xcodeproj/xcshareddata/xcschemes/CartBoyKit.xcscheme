@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "0AAD810421F381AF00D548C8"
-               BuildableName = "GBxCartKit.framework"
-               BlueprintName = "Kit"
-               ReferencedContainer = "container:GBxCart.xcodeproj">
+               BuildableName = "CartBoyKit.framework"
+               BlueprintName = "CartBoyKit"
+               ReferencedContainer = "container:CartBoyKit.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,7 +35,7 @@
                BlueprintIdentifier = "0AAD80F521F3815B00D548C8"
                BuildableName = "Tests.xctest"
                BlueprintName = "Tests"
-               ReferencedContainer = "container:GBxCart.xcodeproj">
+               ReferencedContainer = "container:CartBoyKit.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -43,9 +43,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0AAD810421F381AF00D548C8"
-            BuildableName = "GBxCartKit.framework"
-            BlueprintName = "Kit"
-            ReferencedContainer = "container:GBxCart.xcodeproj">
+            BuildableName = "CartBoyKit.framework"
+            BlueprintName = "CartBoyKit"
+            ReferencedContainer = "container:CartBoyKit.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -65,9 +65,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0AAD810421F381AF00D548C8"
-            BuildableName = "GBxCartKit.framework"
-            BlueprintName = "Kit"
-            ReferencedContainer = "container:GBxCart.xcodeproj">
+            BuildableName = "CartBoyKit.framework"
+            BlueprintName = "CartBoyKit"
+            ReferencedContainer = "container:CartBoyKit.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -83,9 +83,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0AAD810421F381AF00D548C8"
-            BuildableName = "GBxCartKit.framework"
-            BlueprintName = "Kit"
-            ReferencedContainer = "container:GBxCart.xcodeproj">
+            BuildableName = "CartBoyKit.framework"
+            BlueprintName = "CartBoyKit"
+            ReferencedContainer = "container:CartBoyKit.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
