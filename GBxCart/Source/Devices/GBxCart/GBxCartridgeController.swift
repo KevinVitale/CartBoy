@@ -78,15 +78,6 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
         }
     }
 
-    /// The amount of microseconds between setting the bank address, and
-    /// settings the bank number.
-    ///
-    /// - warning: Modifying or removing `timeout` will cause bank switching
-    /// to fail! There is a tolerance of how low it can be set; for best
-    /// results, stay between _150_ & _250_.
-    private let timeout: UInt32 = 250
-    //------------------------------------------------------------------
-
     /**
      */
     private func send(_ command: ReaderCommand...) {
@@ -107,16 +98,22 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
             print(#function, readOp.context)
         }
         
+        let timeout: UInt32 = 250
+        
         switch readOp.context {
         case .cartridge(let header, _):
             if printStacktrace {
                 print(header)
             }
         case .header:
+            self.toggleRAMMode(on: false)
             //------------------------------------------------------------------
             // 1. set the start address to be read (stopping first; '\0')
             let address = Int(Cartridge.Platform.headerRange.lowerBound)
-            self.send(.address("\0A", radix: 16, address: address))
+            self.send(
+                .sleep(timeout)
+              , .address("\0A", radix: 16, address: address)
+            )
             //------------------------------------------------------------------
         case .bank(let bank, let cartridge):
             //------------------------------------------------------------------
@@ -260,16 +257,16 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
             self.close()
         case .saveFile:
             self.toggleRAMMode(on: false)
+            self.send(.stop)
             self.close()
         case .header:
-            /// - warning: Another important 'pause'; don't delete.
-            self.send(.stop, .sleep(75))
+            self.send(.stop)
             self.close()
         default: ()
         }
     }
     
-    private func toggleRAMMode(on turnOn: Bool, timeout: UInt32 = 250) {
+    private func toggleRAMMode(on turnOn: Bool, timeout: UInt32 = 500) {
         self.send(
             .address("B", radix: 16, address: 0x0000)
             , .sleep(timeout)
