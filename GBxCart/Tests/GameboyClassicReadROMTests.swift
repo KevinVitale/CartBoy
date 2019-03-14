@@ -105,6 +105,9 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         }
         
         controller.readSaveFile { (data: Data?, header: Header) in
+            if let data = data {
+                print("MD5:", data.md5.hexString(separator: "").lowercased())
+            }
             saveFile = (data, header)
         }
         
@@ -127,6 +130,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         let saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/POKEMON YELLOW.sav.bak")
         let saveFile = try! Data(contentsOf: saveFileURL)
+        print("MD5:", saveFile.md5.hexString(separator: "").lowercased())
         controller.writeSaveFile(saveFile) {
             XCTAssertTrue($0)
             expectiation.fulfill()
