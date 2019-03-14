@@ -20,7 +20,7 @@
 		0AC59C562234A5180040BAA4 /* OpenPortOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC59C542234A4DE0040BAA4 /* OpenPortOperation.swift */; };
 		0AC59C5A2234A57E0040BAA4 /* SerialPortOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC59C592234A57E0040BAA4 /* SerialPortOperation.swift */; };
 		0AC92F8821F95FB200605C82 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AC92F8521F95F8D00605C82 /* Gibby.framework */; };
-		0AC92F8921F95FC400605C82 /* CartBoyKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD810521F381AF00D548C8 /* CartBoyKit.framework */; };
+		0AC92F8921F95FC400605C82 /* CartKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD810521F381AF00D548C8 /* CartKit.framework */; };
 		0AC92F8A21F95FD100605C82 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
 		0AE7F270221D942A00D86827 /* NSCondition+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE7F26F221D942A00D86827 /* NSCondition+Ext.swift */; };
 /* End PBXBuildFile section */
@@ -67,7 +67,7 @@
 		0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+Ext.swift"; sourceTree = "<group>"; };
 		0AAD80E721F380F900D548C8 /* ORSSerialPort.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ORSSerialPort.xcodeproj; path = "../Dependencies/ORSSerialPort/Framework Project/ORSSerialPort.xcodeproj"; sourceTree = "<group>"; };
 		0AAD80F621F3815B00D548C8 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0AAD810521F381AF00D548C8 /* CartBoyKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CartBoyKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0AAD810521F381AF00D548C8 /* CartKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CartKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AAD810721F381AF00D548C8 /* GBxCartKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GBxCartKit.h; sourceTree = "<group>"; };
 		0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftCrypto.swift; sourceTree = "<group>"; };
 		0AC59C542234A4DE0040BAA4 /* OpenPortOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenPortOperation.swift; sourceTree = "<group>"; };
@@ -82,7 +82,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0AC92F8A21F95FD100605C82 /* ORSSerial.framework in Frameworks */,
-				0AC92F8921F95FC400605C82 /* CartBoyKit.framework in Frameworks */,
+				0AC92F8921F95FC400605C82 /* CartKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -143,7 +143,7 @@
 			isa = PBXGroup;
 			children = (
 				0AAD80F621F3815B00D548C8 /* Tests.xctest */,
-				0AAD810521F381AF00D548C8 /* CartBoyKit.framework */,
+				0AAD810521F381AF00D548C8 /* CartKit.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -258,9 +258,9 @@
 			productReference = 0AAD80F621F3815B00D548C8 /* Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		0AAD810421F381AF00D548C8 /* CartBoyKit */ = {
+		0AAD810421F381AF00D548C8 /* CartKit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0AAD811621F381AF00D548C8 /* Build configuration list for PBXNativeTarget "CartBoyKit" */;
+			buildConfigurationList = 0AAD811621F381AF00D548C8 /* Build configuration list for PBXNativeTarget "CartKit" */;
 			buildPhases = (
 				0AAD810021F381AF00D548C8 /* Headers */,
 				0AAD810121F381AF00D548C8 /* Sources */,
@@ -271,9 +271,9 @@
 			);
 			dependencies = (
 			);
-			name = CartBoyKit;
+			name = CartKit;
 			productName = Kit;
-			productReference = 0AAD810521F381AF00D548C8 /* CartBoyKit.framework */;
+			productReference = 0AAD810521F381AF00D548C8 /* CartKit.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -295,7 +295,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 0A3DD4BF21F2A60B00BCC6D4 /* Build configuration list for PBXProject "CartBoy" */;
+			buildConfigurationList = 0A3DD4BF21F2A60B00BCC6D4 /* Build configuration list for PBXProject "CartKit" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -318,7 +318,7 @@
 			projectRoot = "";
 			targets = (
 				0AAD80F521F3815B00D548C8 /* Tests */,
-				0AAD810421F381AF00D548C8 /* CartBoyKit */,
+				0AAD810421F381AF00D548C8 /* CartKit */,
 			);
 		};
 /* End PBXProject section */
@@ -674,7 +674,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kevinvitale.Kit;
-				PRODUCT_NAME = CartBoyKit;
+				PRODUCT_NAME = CartKit;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -749,7 +749,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kevinvitale.Kit;
-				PRODUCT_NAME = CartBoyKit;
+				PRODUCT_NAME = CartKit;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -763,7 +763,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0A3DD4BF21F2A60B00BCC6D4 /* Build configuration list for PBXProject "CartBoy" */ = {
+		0A3DD4BF21F2A60B00BCC6D4 /* Build configuration list for PBXProject "CartKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0A3DD4C021F2A60B00BCC6D4 /* Debug */,
@@ -781,7 +781,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0AAD811621F381AF00D548C8 /* Build configuration list for PBXNativeTarget "CartBoyKit" */ = {
+		0AAD811621F381AF00D548C8 /* Build configuration list for PBXNativeTarget "CartKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0AAD811721F381AF00D548C8 /* Debug */,

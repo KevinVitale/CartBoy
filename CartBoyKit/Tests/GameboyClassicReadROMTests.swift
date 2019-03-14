@@ -1,7 +1,7 @@
 import XCTest
 import ORSSerial
 import Gibby
-import CartBoyKit
+import CartKit
 
 @objc(GameboyClassicReadROMTests)
 fileprivate final class GameboyClassicReadROMTests: XCTestCase {

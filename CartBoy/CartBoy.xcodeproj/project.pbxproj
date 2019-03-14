@@ -7,41 +7,41 @@
 	objects = {
 
 /* Begin PBXContainerItemProxy section */
-		0ADA1402223AC30000333E3A /* PBXContainerItemProxy */ = {
+		0A30454B223B096100C12C0C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 0ADA13FB223AC30000333E3A /* CartBoyKit.xcodeproj */;
+			containerPortal = 0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 0AAD80F621F3815B00D548C8;
 			remoteInfo = Tests;
 		};
-		0ADA1404223AC30000333E3A /* PBXContainerItemProxy */ = {
+		0A30454D223B096100C12C0C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 0ADA13FB223AC30000333E3A /* CartBoyKit.xcodeproj */;
+			containerPortal = 0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 0AAD810521F381AF00D548C8;
-			remoteInfo = CartBoyKit;
+			remoteInfo = CartKit;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0ADA13FB223AC30000333E3A /* CartBoyKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CartBoyKit.xcodeproj; path = ../CartBoyKit/CartBoyKit.xcodeproj; sourceTree = "<group>"; };
+		0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CartKit.xcodeproj; path = ../CartBoyKit/CartKit.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		0A304547223B096100C12C0C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0A30454C223B096100C12C0C /* Tests.xctest */,
+				0A30454E223B096100C12C0C /* CartKit.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		0ADA13F4223AC2EB00333E3A = {
 			isa = PBXGroup;
 			children = (
-				0ADA13FB223AC30000333E3A /* CartBoyKit.xcodeproj */,
+				0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */,
 			);
-			sourceTree = "<group>";
-		};
-		0ADA13FC223AC30000333E3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				0ADA1403223AC30000333E3A /* Tests.xctest */,
-				0ADA1405223AC30000333E3A /* CartBoyKit.framework */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -63,8 +63,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 0ADA13FC223AC30000333E3A /* Products */;
-					ProjectRef = 0ADA13FB223AC30000333E3A /* CartBoyKit.xcodeproj */;
+					ProductGroup = 0A304547223B096100C12C0C /* Products */;
+					ProjectRef = 0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -74,18 +74,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		0ADA1403223AC30000333E3A /* Tests.xctest */ = {
+		0A30454C223B096100C12C0C /* Tests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = Tests.xctest;
-			remoteRef = 0ADA1402223AC30000333E3A /* PBXContainerItemProxy */;
+			remoteRef = 0A30454B223B096100C12C0C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		0ADA1405223AC30000333E3A /* CartBoyKit.framework */ = {
+		0A30454E223B096100C12C0C /* CartKit.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = CartBoyKit.framework;
-			remoteRef = 0ADA1404223AC30000333E3A /* PBXContainerItemProxy */;
+			path = CartKit.framework;
+			remoteRef = 0A30454D223B096100C12C0C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
