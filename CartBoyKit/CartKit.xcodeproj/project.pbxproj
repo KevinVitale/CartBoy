@@ -14,6 +14,8 @@
 		0A61C76522371701001D653D /* SerialPortController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A61C76422371701001D653D /* SerialPortController.swift */; };
 		0A61C76B22371925001D653D /* GBxSerialPortController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A61C76A22371925001D653D /* GBxSerialPortController.swift */; };
 		0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */; };
+		0AA6E27E223B2B35003F4721 /* FlashCart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA6E27D223B2B35003F4721 /* FlashCart.swift */; };
+		0AA6E284223B3021003F4721 /* AM29F016B.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA6E283223B3021003F4721 /* AM29F016B.swift */; };
 		0AAD811521F381AF00D548C8 /* GBxCartKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AAD810721F381AF00D548C8 /* GBxCartKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0AAD811F21F3826D00D548C8 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
 		0ABD40E2221A10D000C6F656 /* GBxCartridgeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BBB221792C000A12FA1 /* GBxCartridgeController.swift */; };
@@ -65,6 +67,8 @@
 		0A61C76422371701001D653D /* SerialPortController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialPortController.swift; sourceTree = "<group>"; };
 		0A61C76A22371925001D653D /* GBxSerialPortController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxSerialPortController.swift; sourceTree = "<group>"; };
 		0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+Ext.swift"; sourceTree = "<group>"; };
+		0AA6E27D223B2B35003F4721 /* FlashCart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashCart.swift; sourceTree = "<group>"; };
+		0AA6E283223B3021003F4721 /* AM29F016B.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AM29F016B.swift; sourceTree = "<group>"; };
 		0AAD80E721F380F900D548C8 /* ORSSerialPort.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ORSSerialPort.xcodeproj; path = "../Dependencies/ORSSerialPort/Framework Project/ORSSerialPort.xcodeproj"; sourceTree = "<group>"; };
 		0AAD80F621F3815B00D548C8 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AAD810521F381AF00D548C8 /* CartKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CartKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -175,6 +179,14 @@
 			path = Devices;
 			sourceTree = "<group>";
 		};
+		0AA6E285223B3036003F4721 /* Classic */ = {
+			isa = PBXGroup;
+			children = (
+				0AA6E283223B3021003F4721 /* AM29F016B.swift */,
+			);
+			path = Classic;
+			sourceTree = "<group>";
+		};
 		0AAD80E821F380F900D548C8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -223,6 +235,8 @@
 		0ADA13E1223ABE6300333E3A /* Flash Carts */ = {
 			isa = PBXGroup;
 			children = (
+				0AA6E27D223B2B35003F4721 /* FlashCart.swift */,
+				0AA6E285223B3036003F4721 /* Classic */,
 			);
 			path = "Flash Carts";
 			sourceTree = "<group>";
@@ -386,9 +400,11 @@
 			files = (
 				0ABD40E2221A10D000C6F656 /* GBxCartridgeController.swift in Sources */,
 				0AC59C5A2234A57E0040BAA4 /* SerialPortOperation.swift in Sources */,
+				0AA6E284223B3021003F4721 /* AM29F016B.swift in Sources */,
 				0A61C750223711BA001D653D /* SwiftCrypto.swift in Sources */,
 				0A61C76B22371925001D653D /* GBxSerialPortController.swift in Sources */,
 				0A61C76522371701001D653D /* SerialPortController.swift in Sources */,
+				0AA6E27E223B2B35003F4721 /* FlashCart.swift in Sources */,
 				0AC59C562234A5180040BAA4 /* OpenPortOperation.swift in Sources */,
 				0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */,
 				0A108BBF22179F1400A12FA1 /* CartridgeController.swift in Sources */,

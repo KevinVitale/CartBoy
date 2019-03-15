@@ -95,3 +95,18 @@ extension CartridgeController {
         }
     }
 }
+
+extension CartridgeController where Self.Cartridge: FlashCart {
+    public func writeROMFile(to flashCart: Self.Cartridge, result: @escaping ((Bool) -> ())) {
+        let header = flashCart.header
+        let data = Data(flashCart[0..<Self.Cartridge.Index(flashCart.count)])
+        
+        guard header.romSize == data.count else {
+            result(false)
+            return
+        }
+        self.addOperation(SerialPortOperation(controller: self, context: .cartridge(header, intent: .write(data))) { _ in
+            result(true)
+        })
+    }
+}

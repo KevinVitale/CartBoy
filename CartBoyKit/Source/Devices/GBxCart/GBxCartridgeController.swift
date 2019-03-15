@@ -9,7 +9,7 @@ import Gibby
 public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: GBxSerialPortController, CartridgeController {
 }
 
-final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic.Cartridge> {
+final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartridgeController<Cartridge> where Cartridge.Platform == GameboyClassic {
     private enum ReaderCommand: CustomDebugStringConvertible {
         case start
         case stop
@@ -116,15 +116,24 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
             )
             //------------------------------------------------------------------
         case .bank(let bank, let cartridge):
+            guard let header = cartridge.header as? GameboyClassic.Cartridge.Header else {
+                operation.cancel()
+                return
+            }
             //------------------------------------------------------------------
             // 1. stop sending
             // 2. switch the ROM bank
             // 3. set the start address to be read (stopping first; '\0')
             self.send(.stop)
-            self.set(bank: bank, with: cartridge.header!)
+            self.set(bank: bank, with: header)
             self.send(.address("\0A", radix: 16, address: bank > 1 ? 0x4000 : 0x0000))
             //------------------------------------------------------------------
         case .saveFile(let header, _):
+            guard let header = header as? GameboyClassic.Cartridge.Header else {
+                operation.cancel()
+                return
+            }
+            //------------------------------------------------------------------
             if printStacktrace {
                 print(header)
             }
@@ -314,7 +323,7 @@ final class GBxCartridgeControllerClassic: GBxCartridgeController<GameboyClassic
     }
 }
 
-final class GBxCartridgeControllerAdvance: GBxCartridgeController<GameboyAdvance.Cartridge> {
+final class GBxCartridgeControllerAdvance<Cartridge: Gibby.Cartridge>: GBxCartridgeController<Cartridge> where Cartridge.Platform == GameboyAdvance {
     /**
      */
     @objc func portOperationWillBegin(_ operation: Operation) {

@@ -61,14 +61,11 @@ open class GBxSerialPortController: NSObject, SerialPortController {
 }
 
 extension GBxSerialPortController {
-    public static func controller<Cartridge: Gibby.Cartridge>(for platform: Cartridge.Platform.Type) throws -> GBxCartridgeController<Cartridge> {
-        switch platform {
-        case is GameboyClassic.Type:
-            return try GBxCartridgeControllerClassic() as! GBxCartridgeController<Cartridge>
-        case is GameboyAdvance.Type:
-            return try GBxCartridgeControllerAdvance() as! GBxCartridgeController<Cartridge>
-        default:
-            fatalError()
-        }
+    public static func controller<Cartridge: Gibby.Cartridge>(for cartrige: Cartridge.Type) throws -> GBxCartridgeController<Cartridge> where Cartridge.Platform == GameboyClassic {
+        return try GBxCartridgeControllerClassic<Cartridge>()
+    }
+    
+    public static func controller<Cartridge: Gibby.Cartridge>(for cartrige: Cartridge.Type) throws -> GBxCartridgeController<Cartridge> where Cartridge.Platform == GameboyAdvance {
+        return try GBxCartridgeControllerAdvance<Cartridge>()
     }
 }
