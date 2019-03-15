@@ -18,7 +18,7 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     let reader: ORSSerialPort
     
     ///
-    public private(set) var version: SerialPortControllerVendorVersion = .init(major: "1", minor: "#", revision: "#")
+    public private(set) var version: SerialPortControllerVendorVersion = .init(major: "1", minor: "#", revision: "a")
     
     ///
     public private(set) var voltage: Voltage = .high
