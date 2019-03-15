@@ -189,7 +189,20 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
                         }
                         group.leave()
                     }
-                case .write: ()
+                //--------------------------------------------------------------
+                // Write 'ROM'
+                case .write(let data):
+                    let startAddress = bank * (header.romBankSize * bank > 1 ? 1 : 2)
+                    let endAddress   = startAddress.advanced(by: header.romBankSize)
+                    let dataToWrite  = data[startAddress..<endAddress]
+                    let context = Context.bank(bank, cartridge: .cartridge(header, intent: .write(dataToWrite)))
+
+                    operation = SerialPortOperation(controller: self.controller, context: context) { data in
+                        if let data = data {
+                            self.bytesRead.append(data)
+                        }
+                        group.leave()
+                    }
                 }
                 //--------------------------------------------------------------
                 // Execute
@@ -285,7 +298,7 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
             if case let .sram(_, context) = self.context {
                 switch context {
                 case .cartridge(_, .write):
-                    fatalError()
+                    fallthrough
                 case .saveFile(_, .write):
                     // Notes about [data.count * 64]:
                     //  1. A single 'acknowledgment' byte is returned when

@@ -137,4 +137,18 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         waitForExpectations(timeout: 60)
     }
+    
+    func testWriteROMFile() {
+        let expectiation = expectation(description: "RAM file was erased")
+        
+        let romFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/ZELDA.gb")
+        let romFile = try! Data(contentsOf: romFileURL)
+        print("MD5:", romFile.md5.hexString(separator: "").lowercased())
+        controller.writeROMFile(to: Cartridge(bytes: romFile)) {
+            XCTAssertTrue($0)
+            expectiation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 60)
+    }
 }

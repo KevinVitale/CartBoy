@@ -101,7 +101,7 @@ extension CartridgeController where Self.Cartridge: FlashCart {
         let header = flashCart.header
         let data = Data(flashCart[0..<Self.Cartridge.Index(flashCart.count)])
         
-        guard header.romSize == data.count else {
+        guard header.romSize == data.count, flashCart.hasSufficentCapacity else {
             result(false)
             return
         }
