@@ -156,22 +156,34 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
         default: ()
         }
 
-        if case let .cartridge(header, _) = self.context, header.romBanks > 0 {
+        if case let .cartridge(header, intent) = self.context, header.romBanks > 0 {
             let group = DispatchGroup()
             for bank in 1..<header.romBanks where self.isCancelled == false {
                 group.enter()
-                let operation = SerialPortOperation(controller: self.controller, context: .bank(bank, cartridge: context)) { data in
-                    if let data = data {
-                        self.bytesRead.append(data)
+                var operation: SerialPortOperation! = nil
+                switch intent {
+                case .read:
+                    operation = SerialPortOperation(controller: self.controller, context: .bank(bank, cartridge: context)) { data in
+                        if let data = data {
+                            self.bytesRead.append(data)
+                        }
+                        group.leave()
                     }
-                    group.leave()
+                case .write: ()
                 }
-                
-                self.controller.addOperation(operation)
-                group.wait()
-                
-                if operation.isCancelled {
-                    self.cancel()
+                //--------------------------------------------------------------
+                // Execute
+                //--------------------------------------------------------------
+                if let operation = operation {
+                    self.controller.addOperation(operation)
+                    group.wait()
+                    
+                    if operation.isCancelled {
+                        self.cancel()
+                    }
+                }
+                else {
+                    group.leave()
                 }
             }
         }
@@ -205,7 +217,9 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
                         group.leave()
                     }
                 }
-                
+                //--------------------------------------------------------------
+                // Execute
+                //--------------------------------------------------------------
                 if let operation = operation {
                     self.controller.addOperation(operation)
                     group.wait()
