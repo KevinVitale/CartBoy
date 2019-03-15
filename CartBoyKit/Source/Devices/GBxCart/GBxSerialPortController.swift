@@ -18,6 +18,12 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     let reader: ORSSerialPort
     
     ///
+    public private(set) var version: SerialPortControllerVendorVersion = .init(major: "1", minor: "#", revision: "#")
+    
+    ///
+    public private(set) var voltage: Voltage = .high
+
+    ///
     private let queue = OperationQueue()
     
     ///
@@ -46,6 +52,9 @@ open class GBxSerialPortController: NSObject, SerialPortController {
         if self.reader.isOpen == false {
             self.reader.open()
             self.reader.configuredAsGBxCart()
+            self.version.change(minor: self.readDevice(property: "h")) // PCB
+            self.version.change(revision: self.readDevice(property: "V")) // Firmware
+            self.voltage = self.readDevice(property: "C") == "1" ? .high : .low
         }
         
         guard self.reader.isOpen else {
@@ -57,6 +66,31 @@ open class GBxSerialPortController: NSObject, SerialPortController {
      */
     public final func addOperation(_ operation: Operation) {
         self.queue.addOperation(operation)
+    }
+    
+    /**
+     */
+    private func readDevice(property command: String) -> String {
+        let group = DispatchGroup()
+        group.enter()
+        //----------------------------------------------------------------------
+        var version = ""
+        let responseDescriptor = ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) { data in
+            defer { group.leave() }
+            version = data?.hexString().lowercased() ?? ""
+            return true
+        }
+        let serialRequest = ORSSerialRequest(
+            dataToSend: command.data(using: .ascii)!
+            , userInfo: nil
+            , timeoutInterval: 5
+            , responseDescriptor: responseDescriptor
+        )
+        //----------------------------------------------------------------------
+        self.reader.send(serialRequest)
+        //----------------------------------------------------------------------
+        group.wait()
+        return version
     }
 }
 
