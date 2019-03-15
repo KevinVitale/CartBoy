@@ -8,7 +8,20 @@ public protocol SerialPortOperationDelegate: NSObjectProtocol {
     @objc optional func portOperationDidComplete(_ operation: Operation)
 }
 
+/**
+ A `SerialPortOperation` manages the lifecycle of a serial port request.
+ 
+ Given a particular `Context`, the receiver coordinates with its `delegate` to
+ complete the request, then returns its results.
+ */
 class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Controller> {
+    /**
+     An enumeration representing purpose of a `SerialPortOperation`.
+     
+     Delegates are wholly responsible for driving a `SerialPortOperation` to
+     completion. A delegate should inspect the operation's `context` property
+     during delegate callbacks in order to determine what to do next.
+     */
     enum Context: CustomDebugStringConvertible {
         enum Intent: CustomDebugStringConvertible {
             case read
@@ -24,8 +37,13 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
             }
         }
         
+        /// Read cartridge's header information.
         case header
         
+        /// Scan the entirity of the cartridge's ROM memory.
+        /// - note: When using this operation, the receiver will spawn several
+        ///         sub-operations, each using `Context.bank(_, cartridge:)` as
+        ///         their `context`.
         case cartridge(Controller.Cartridge.Header, intent: Intent)
         indirect case bank(_ bank: Int, cartridge: Context)
         
@@ -162,6 +180,8 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
                 group.enter()
                 var operation: SerialPortOperation! = nil
                 switch intent {
+                //--------------------------------------------------------------
+                // Read 'ROM'
                 case .read:
                     operation = SerialPortOperation(controller: self.controller, context: .bank(bank, cartridge: context)) { data in
                         if let data = data {
@@ -273,7 +293,7 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
                     //  2. An empty, 64-byte long buffer is appended, allowing
                     //     the operation to progress.
                     //  3. What should the write operation's 'result' be? Do we
-                    //     want to append the original data instead?
+                    //     want to append the original data instead? Return nil?
                     //----------------------------------------------------------
                     //  TO-DO:
                     //----------------------------------------------------------
