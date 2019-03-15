@@ -52,9 +52,9 @@ open class GBxSerialPortController: NSObject, SerialPortController {
         if self.reader.isOpen == false {
             self.reader.open()
             self.reader.configuredAsGBxCart()
-            self.version.change(minor: self.readDevice(property: "h")) // PCB
-            self.version.change(revision: self.readDevice(property: "V")) // Firmware
-            self.voltage = self.readDevice(property: "C") == "1" ? .high : .low
+            self.version.change(minor: self.sendAndWait(command: "h")) // PCB
+            self.version.change(revision: self.sendAndWait(command: "V")) // Firmware
+            self.voltage = self.sendAndWait(command: "C") == "1" ? .high : .low
         }
         
         guard self.reader.isOpen else {
@@ -70,7 +70,7 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     
     /**
      */
-    private func readDevice(property command: String) -> String {
+    private func sendAndWait(data: Data) -> String {
         let group = DispatchGroup()
         group.enter()
         //----------------------------------------------------------------------
@@ -81,7 +81,7 @@ open class GBxSerialPortController: NSObject, SerialPortController {
             return true
         }
         let serialRequest = ORSSerialRequest(
-            dataToSend: command.data(using: .ascii)!
+            dataToSend: data
             , userInfo: nil
             , timeoutInterval: 5
             , responseDescriptor: responseDescriptor
@@ -91,6 +91,18 @@ open class GBxSerialPortController: NSObject, SerialPortController {
         //----------------------------------------------------------------------
         group.wait()
         return version
+    }
+    
+    /**
+     */
+    func sendAndWait(command: String) -> String {
+        return self.sendAndWait(data: command.data(using: .ascii)!)
+    }
+    
+    /**
+     */
+    func sendAndWait(value: Int, radix: Int = 16) -> String {
+        return self.sendAndWait(data: String(value, radix: radix, uppercase: false).data(using: .ascii)!)
     }
 }
 
