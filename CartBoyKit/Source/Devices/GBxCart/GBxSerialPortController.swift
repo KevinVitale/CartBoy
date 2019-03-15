@@ -34,12 +34,12 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     /**
      */
     @discardableResult
-    public final func close() -> Bool {
+    public final func close(wait timeout: UInt32 = 2000) -> Bool {
         defer {
             if self.printStacktrace {
                 print(#function)
             }
-            usleep(2000)
+            usleep(timeout)
         }
         return self.reader.close()
     }
