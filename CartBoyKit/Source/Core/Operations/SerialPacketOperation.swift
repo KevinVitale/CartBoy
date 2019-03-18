@@ -65,8 +65,8 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
             delegate.packetOperation(self, didComplete: data, with: self.intent)
         }
         
-        self.controller.close(wait: 10)
         self.result(data)
+        self.controller.close()
     }
     
     override func main() {

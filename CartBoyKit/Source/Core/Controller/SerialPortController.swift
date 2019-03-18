@@ -12,7 +12,7 @@ public protocol SerialPortController: class, NSObjectProtocol {
     /**
      */
     @discardableResult
-    func close(wait timeout: UInt32) -> Bool
+    func close() -> Bool
     
     /**
      */

@@ -35,12 +35,12 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     /**
      */
     @discardableResult
-    public final func close(wait timeout: UInt32 = 2000) -> Bool {
+    public final func close() -> Bool {
         defer {
             if self.printStacktrace {
                 print(#function)
             }
-            usleep(timeout)
+            usleep(2000)
             
             self.isOpenCondition.whileLocked {
                 self.delegate = nil
@@ -68,7 +68,7 @@ open class GBxSerialPortController: NSObject, SerialPortController {
                 print(NSString(string: #file).lastPathComponent, #function, #line, "Waiting...")
                 self.isOpenCondition.wait()
             }
-
+            
             print("Continuing...")
             self.delegate = delegate
             //------------------------------------------------------------------
