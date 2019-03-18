@@ -39,7 +39,19 @@
             </BuildableReference>
             <SkippedTests>
                <Test
-                  Identifier = "GameboyClassicReadROMTests">
+                  Identifier = "GameboyClassicReadROMTests/testEraseSaveFile()">
+               </Test>
+               <Test
+                  Identifier = "GameboyClassicReadROMTests/testReadROM()">
+               </Test>
+               <Test
+                  Identifier = "GameboyClassicReadROMTests/testReadSaveFile()">
+               </Test>
+               <Test
+                  Identifier = "GameboyClassicReadROMTests/testWriteSaveFile()">
+               </Test>
+               <Test
+                  Identifier = "SerialPacketOperationTests">
                </Test>
             </SkippedTests>
          </TestableReference>
