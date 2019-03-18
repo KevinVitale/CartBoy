@@ -31,6 +31,10 @@ open class GBxSerialPortController: NSObject, SerialPortController {
         return self.reader.isOpen
     }
     
+    private final func open() {
+        defer { print(#file, #function, #line) }
+        self.reader.open()
+    }
     /**
      */
     @discardableResult
@@ -47,18 +51,25 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     /**
      */
     public final func openReader(delegate: ORSSerialPortDelegate?) throws {
-        self.reader.delegate = delegate
-        
-        if self.reader.isOpen == false {
-            self.reader.open()
-            self.reader.configuredAsGBxCart()
-            self.version.change(minor: self.sendAndWait(command: "h")) // PCB
-            self.version.change(revision: self.sendAndWait(command: "V")) // Firmware
-            self.voltage = self.sendAndWait(command: "C") == "1" ? .high : .low
-        }
-        
-        guard self.reader.isOpen else {
-            throw SerialPortControllerError.failedToOpen(self.reader)
+        DispatchQueue.main.async {
+            self.reader.delegate = delegate
+            
+            if self.reader.isOpen == false {
+                self.open()
+                self.reader.configuredAsGBxCart()
+                
+                /*
+                 self.version.change(minor: self.sendAndWait(command: "h")) // PCB
+                 self.version.change(revision: self.sendAndWait(command: "V")) // Firmware
+                 self.voltage = self.sendAndWait(command: "C") == "1" ? .high : .low
+                 */
+            }
+            
+            /*
+            guard self.reader.isOpen else {
+                throw SerialPortControllerError.failedToOpen(self.reader)
+            }
+             */
         }
     }
     

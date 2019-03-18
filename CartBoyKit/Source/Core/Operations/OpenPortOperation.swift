@@ -46,21 +46,44 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
             }
             
             while self.controller.isOpen == false {
+                print("Waiting...")
                 self.isOpenCondition.wait() // self.isOpenCondition.wait(until: Date().addingTimeInterval(5))
             }
         }
     }
     
-    func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
+    @objc func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
         self.cancel()
     }
     
-    func serialPortWasOpened(_ serialPort: ORSSerialPort) {
+    @objc func serialPortWasOpened(_ serialPort: ORSSerialPort) {
         self.isOpenCondition.whileLocked {
+            print(#file, #function, #line)
             self.isOpenCondition.signal()
         }
     }
+
+    @objc func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+        print(#function)
+    }
     
-    func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+    @objc func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+        print(#function)
+    }
+    
+    @objc func serialPort(_ serialPort: ORSSerialPort, requestDidTimeout request: ORSSerialRequest) {
+        print(#function)
+    }
+    
+    @objc func serialPort(_ serialPort: ORSSerialPort, didEncounterError error: Error) {
+        print(#function)
+    }
+    
+    @objc func serialPort(_ serialPort: ORSSerialPort, didReceiveResponse responseData: Data, to request: ORSSerialRequest) {
+        print(#function)
+    }
+    
+    @objc func serialPort(_ serialPort: ORSSerialPort, didReceivePacket packetData: Data, matching descriptor: ORSSerialPacketDescriptor) {
+        print(#function)
     }
 }
