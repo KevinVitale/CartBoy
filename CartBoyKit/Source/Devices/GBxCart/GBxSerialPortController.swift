@@ -92,17 +92,6 @@ extension GBxSerialPortController: SerialPacketOperationDelegate {
             operation.cancel()
             return
         }
-        
-        switch context as! OperationContext {
-        case .header:
-            self.reader.send("\0A100\0".data(using: .ascii)!)
-            self.reader.send("R".data(using: .ascii)!)
-        case .cartridge:
-            self.reader.send("\0A0\0".data(using: .ascii)!)
-            self.reader.send("R".data(using: .ascii)!)
-        default:
-            fatalError()
-        }
     }
     
     public func packetOperation(_ operation: Operation, didUpdate progress: Progress, with intent: Any?) {
@@ -110,8 +99,6 @@ extension GBxSerialPortController: SerialPacketOperationDelegate {
             operation.cancel()
             return
         }
-        
-        self.reader.send("1".data(using: .ascii)!)
     }
     
     public func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
