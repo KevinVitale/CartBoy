@@ -36,17 +36,6 @@ open class GBxSerialPortController: NSObject, SerialPortController {
      */
     @discardableResult
     public final func close() -> Bool {
-        defer {
-            if self.printStacktrace {
-                print(#function)
-            }
-            usleep(2000)
-            
-            self.isOpenCondition.whileLocked {
-                self.delegate = nil
-                self.isOpenCondition.signal()
-            }
-        }
         return self.reader.close()
     }
     
@@ -126,6 +115,11 @@ extension GBxSerialPortController: SerialPacketOperationDelegate {
         guard let intent = intent as? PacketIntent, case .read(_, let context?) = intent, context is OperationContext else {
             operation.cancel()
             return
+        }
+        
+        self.isOpenCondition.whileLocked {
+            self.delegate = nil
+            self.isOpenCondition.signal()
         }
     }
     

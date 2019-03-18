@@ -58,14 +58,6 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
             self._isFinished  = true
         }
         
-        let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
-        let data = self.buffer.prefix(upTo: Int(upToCount))
-        
-        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didComplete:with:))) {
-            delegate.packetOperation(self, didComplete: data, with: self.intent)
-        }
-        
-        self.result(data)
         self.controller.close()
     }
     
@@ -91,6 +83,7 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
     
     override func serialPortWasOpened(_ serialPort: ORSSerialPort) {
         defer {
+            print(NSString(string: #file).lastPathComponent, #function, #line)
             self.isReadyCondition.whileLocked {
                 self._isReady = true
                 self.isReadyCondition.signal()
@@ -102,6 +95,17 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
         serialPort.startListeningForPackets(matching: ORSSerialPacketDescriptor(maximumPacketLength: packetLength, userInfo: nil) { data in
             return data!.count == packetLength
         })
+    }
+    
+    override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+        let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
+        let data = self.buffer.prefix(upTo: Int(upToCount))
+        
+        self.result(data)
+        
+        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didComplete:with:))) {
+            delegate.packetOperation(self, didComplete: data, with: self.intent)
+        }
     }
     
     override func serialPort(_ serialPort: ORSSerialPort, didReceivePacket packetData: Data, matching descriptor: ORSSerialPacketDescriptor) {
