@@ -125,9 +125,9 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     }
     
     func testWriteSaveFile() {
-        let expectiation = expectation(description: "RAM file was erased")
+        let expectiation = expectation(description: "RAM file was restored")
         
-        let saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/POKEMON YELLOW.sav.bak")
+        let saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/POKEMON RED.sav.bak")
         let saveFile = try! Data(contentsOf: saveFileURL)
         print("MD5:", saveFile.md5.hexString(separator: "").lowercased())
         controller.restore(from: saveFile) {
@@ -138,6 +138,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         waitForExpectations(timeout: 60)
     }
     
+    /*
     func testWriteROMFile() {
         let expectiation = expectation(description: "RAM file was erased")
         
@@ -151,4 +152,5 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         
         waitForExpectations(timeout: 60)
     }
+     */
 }

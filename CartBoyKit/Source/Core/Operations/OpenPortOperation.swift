@@ -46,10 +46,14 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
             }
             
             while self.controller.isOpen == false {
-                print("Waiting...")
+                print(NSString(string: #file).lastPathComponent, #function, #line, ">>> Waiting...")
                 self.isOpenCondition.wait() // self.isOpenCondition.wait(until: Date().addingTimeInterval(5))
             }
         }
+    }
+    
+    deinit {
+        print(NSString(string: #file).lastPathComponent, #function, #line)
     }
     
     @objc func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
@@ -58,7 +62,7 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
     
     @objc func serialPortWasOpened(_ serialPort: ORSSerialPort) {
         self.isOpenCondition.whileLocked {
-            print(#file, #function, #line)
+            print(NSString(string: #file).lastPathComponent, #function, #line)
             self.isOpenCondition.signal()
         }
     }
@@ -68,7 +72,6 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
     }
     
     @objc func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
-        print(#function)
     }
     
     @objc func serialPort(_ serialPort: ORSSerialPort, requestDidTimeout request: ORSSerialRequest) {

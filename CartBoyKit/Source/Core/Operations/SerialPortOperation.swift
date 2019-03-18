@@ -134,9 +134,11 @@ class SerialPortOperation<Controller: CartridgeController>: OpenPortOperation<Co
     }
     
     private func complete() {
-        self._isExecuting = false
-        self._isFinished  = true
-        
+        if self.isCancelled == false {
+            self._isExecuting = false
+            self._isFinished  = true
+        }
+
         if let delegate = self.delegate, delegate.responds(to: #selector(SerialPortOperationDelegate.portOperationDidComplete(_:))) {
             delegate.portOperationDidComplete?(self)
         }

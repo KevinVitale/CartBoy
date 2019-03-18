@@ -32,7 +32,7 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     }
     
     private final func open() {
-        defer { print(#file, #function, #line) }
+        print(NSString(string: #file).lastPathComponent, #function, #line)
         self.reader.open()
     }
     /**

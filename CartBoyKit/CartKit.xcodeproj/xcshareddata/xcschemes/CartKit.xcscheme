@@ -37,6 +37,11 @@
                BlueprintName = "Tests"
                ReferencedContainer = "container:CartKit.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "GameboyClassicReadROMTests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
       <MacroExpansion>
