@@ -16,19 +16,21 @@ class SerialPacketOperationTests: XCTestCase {
     }
 
     func testExample() {
-        _ = expectation(description: "opened")
+        let exp = expectation(description: "opened")
+        exp.expectedFulfillmentCount = 10
         
         let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
         
-        for _ in 0..<3 {
+        for _ in 0..<exp.expectedFulfillmentCount {
             controller.addOperation(SerialPacketOperation(controller: controller, delegate: controller, intent: .read(count: 0x8000, context: OperationContext.cartridge)) {
                 let cart = GameboyClassic.Cartridge(bytes: $0!)
                 print(cart.header)
                 print(cart)
+                exp.fulfill()
             })
         }
 
-        waitForExpectations(timeout: 10)
+        waitForExpectations(timeout: 100)
     }
 
     /*
