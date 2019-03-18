@@ -1,15 +1,47 @@
 import ORSSerial
 import Gibby
 
+/**
+ A controller which manages the serial port interations as it relates to Gameboy
+ readers and writesr.
+ 
+ - note: `Cartridge` headers are required for all operations.
+ - note: ROM files are _"read"_ & _"written"_, or _"erased"_ (the latter two, if they are a `FlashCart`).
+ - note: Save files are _"backed-up"_, _"restored"_, or _"deleted"_, if the `Cartridge` has **SRAM** support.
+ */
 public protocol CartridgeController: SerialPortController, SerialPortOperationDelegate {
     /// The associated platform that the adopter relates to.
     associatedtype Cartridge: Gibby.Cartridge
+
+    /**
+     */
+    func header(result: @escaping ((Self.Cartridge.Header?) -> ()))
+    
+    /**
+     */
+    func read(header: Self.Cartridge.Header?, result: @escaping ((Self.Cartridge?) -> ()))
+    
+    /**
+     */
+    func write<Cartridge: FlashCart>(to flashCart: Cartridge, result: @escaping (Bool) ->()) where Cartridge == Self.Cartridge
+
+    /**
+     */
+    func backup(header: Self.Cartridge.Header?, result: @escaping (Data?, Self.Cartridge.Header) -> ())
+    
+    /**
+     */
+    func restore(from backup: Data, header: Self.Cartridge.Header?, result: @escaping (Bool) -> ())
+    
+    /**
+     */
+    func delete(header: Self.Cartridge.Header?, result: @escaping (Bool) -> ())
 }
 
 extension CartridgeController {
     /**
      */
-    public func readHeader(result: @escaping ((Self.Cartridge.Header?) -> ())) {
+    public func header(result: @escaping ((Self.Cartridge.Header?) -> ())) {
         self.addOperation(SerialPortOperation(controller: self, context: .header) {
             guard let data = $0 else {
                 result(nil)
@@ -21,7 +53,7 @@ extension CartridgeController {
     
     /**
      */
-    public func readCartridge(header: Self.Cartridge.Header? = nil, result: @escaping ((Self.Cartridge?) -> ())) {
+    public func read(header: Self.Cartridge.Header? = nil, result: @escaping ((Self.Cartridge?) -> ())) {
         if let header = header {
             self.addOperation(SerialPortOperation(controller: self, context: .cartridge(header, intent: .read)) {
                 guard let data = $0 else {
@@ -32,15 +64,32 @@ extension CartridgeController {
             })
         }
         else {
-            self.readHeader {
-                self.readCartridge(header: $0, result: result)
+            self.header {
+                self.read(header: $0, result: result)
             }
         }
     }
-    
+}
+
+extension CartridgeController where Cartridge: FlashCart {
     /**
      */
-    public func readSaveFile(header: Self.Cartridge.Header? = nil, result: @escaping ((Data?, Self.Cartridge.Header) -> ())) {
+    public func write(to flashCart: Self.Cartridge, result: @escaping ((Bool) -> ())) {
+        let header = flashCart.header
+        let data = Data(flashCart[0..<Self.Cartridge.Index(flashCart.count)])
+        
+        guard header.romSize == data.count, flashCart.hasSufficentCapacity else {
+            result(false)
+            return
+        }
+        self.addOperation(SerialPortOperation(controller: self, context: .cartridge(header, intent: .write(data))) { _ in
+            result(true)
+        })
+    }
+}
+
+extension CartridgeController {
+    public func backup(header: Self.Cartridge.Header? = nil, result: @escaping ((Data?, Self.Cartridge.Header) -> ())) {
         if let header = header {
             guard header.ramSize > 0 else {
                 result(nil, header)
@@ -55,15 +104,12 @@ extension CartridgeController {
             })
         }
         else {
-            self.readHeader {
-                self.readSaveFile(header: $0, result: result)
+            self.header {
+                self.backup(header: $0, result: result)
             }
         }
     }
-}
-
-extension CartridgeController {
-    public func writeSaveFile(_ data: Data, header: Self.Cartridge.Header? = nil, result: @escaping ((Bool) -> ())) {
+    public func restore(from data: Data, header: Self.Cartridge.Header? = nil, result: @escaping ((Bool) -> ())) {
         if let header = header {
             guard header.ramSize == data.count else {
                 result(false)
@@ -74,39 +120,25 @@ extension CartridgeController {
             })
         }
         else {
-            self.readHeader {
-                self.writeSaveFile(data, header: $0, result: result)
+            self.header {
+                self.restore(from: data, header: $0, result: result)
             }
         }
     }
     
-    public func eraseSaveFile(header: Self.Cartridge.Header? = nil, result: @escaping ((Bool) -> ())) {
+    public func delete(header: Self.Cartridge.Header? = nil, result: @escaping ((Bool) -> ())) {
         if let header = header {
-            self.writeSaveFile(Data(count: header.ramSize), header: header, result: result)
+            self.restore(from: Data(count: header.ramSize), header: header, result: result)
         }
         else {
-            self.readHeader {
+            self.header {
                 guard let header = $0 else {
                     result(false)
                     return
                 }
-                self.writeSaveFile(Data(count: header.ramSize), header: header, result: result)
+                self.restore(from: Data(count: header.ramSize), header: header, result: result)
             }
         }
     }
 }
 
-extension CartridgeController where Self.Cartridge: FlashCart {
-    public func writeROMFile(to flashCart: Self.Cartridge, result: @escaping ((Bool) -> ())) {
-        let header = flashCart.header
-        let data = Data(flashCart[0..<Self.Cartridge.Index(flashCart.count)])
-        
-        guard header.romSize == data.count, flashCart.hasSufficentCapacity else {
-            result(false)
-            return
-        }
-        self.addOperation(SerialPortOperation(controller: self, context: .cartridge(header, intent: .write(data))) { _ in
-            result(true)
-        })
-    }
-}

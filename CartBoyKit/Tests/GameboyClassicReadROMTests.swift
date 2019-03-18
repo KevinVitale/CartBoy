@@ -42,7 +42,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             }
         }
         
-        controller.readHeader { (header: Header?) in
+        controller.header { (header: Header?) in
             romHeader = header
         }
         
@@ -75,7 +75,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             }
         }
 
-        controller.readCartridge { (cartridge: Cartridge?) in
+        controller.read { (cartridge: Cartridge?) in
             rom = cartridge
         }
         
@@ -103,7 +103,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             }
         }
         
-        controller.readSaveFile { (data: Data?, header: Header) in
+        controller.backup { (data: Data?, header: Header) in
             if let data = data {
                 print("MD5:", data.md5.hexString(separator: "").lowercased())
             }
@@ -116,7 +116,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     func testEraseSaveFile() {
         let expectiation = expectation(description: "RAM file was erased")
         
-        controller.eraseSaveFile {
+        controller.delete {
             XCTAssertTrue($0)
             expectiation.fulfill()
         }
@@ -130,7 +130,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         let saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/POKEMON YELLOW.sav.bak")
         let saveFile = try! Data(contentsOf: saveFileURL)
         print("MD5:", saveFile.md5.hexString(separator: "").lowercased())
-        controller.writeSaveFile(saveFile) {
+        controller.restore(from: saveFile) {
             XCTAssertTrue($0)
             expectiation.fulfill()
         }
@@ -144,7 +144,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         let romFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/ZELDA.gb")
         let romFile = try! Data(contentsOf: romFileURL)
         print("MD5:", romFile.md5.hexString(separator: "").lowercased())
-        controller.writeROMFile(to: Cartridge(bytes: romFile)) {
+        controller.write(to: Cartridge(bytes: romFile)) {
             XCTAssertTrue($0)
             expectiation.fulfill()
         }
