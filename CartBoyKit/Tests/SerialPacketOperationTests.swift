@@ -33,12 +33,15 @@ class SerialPacketOperationTests: XCTestCase {
         waitForExpectations(timeout: 100)
     }
 
-    /*
     func testPerformanceExample() {
-        // This is an example of a performance test case.
         self.measure {
-            // Put the code you want to measure the time of here.
+            let exp = expectation(description: "did read")
+            let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
+            controller.addOperation(SerialPacketOperation(controller: controller, delegate: controller, intent: .read(count: 80, context: OperationContext.header)) { _ in
+                // print(GameboyClassic.Cartridge.Header(bytes: $0!))
+                exp.fulfill()
+            })
+            waitForExpectations(timeout: 10)
         }
     }
-     */
 }
