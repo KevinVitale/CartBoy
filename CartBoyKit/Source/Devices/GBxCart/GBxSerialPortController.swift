@@ -77,10 +77,13 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     }
 }
 
-public enum OperationContext {
-    case header
-    case cartridge
-    case saveFile
+
+extension GBxSerialPortController {
+    enum OperationContext {
+        case header
+        case cartridge
+        case saveFile
+    }
 }
 
 extension GBxSerialPortController: SerialPacketOperationDelegate {

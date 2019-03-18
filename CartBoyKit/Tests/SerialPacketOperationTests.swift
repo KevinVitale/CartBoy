@@ -22,7 +22,7 @@ class SerialPacketOperationTests: XCTestCase {
         let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
         
         for _ in 0..<exp.expectedFulfillmentCount {
-            controller.addOperation(SerialPacketOperation(controller: controller, delegate: controller, intent: .read(count: 0x8000, context: OperationContext.cartridge)) {
+            controller.addOperation(SerialPacketOperation(controller: controller, delegate: controller, intent: .read(count: 0x8000, context: GBxSerialPortController.OperationContext.cartridge)) {
                 let cart = GameboyClassic.Cartridge(bytes: $0!)
                 print(cart.header)
                 print(cart)
@@ -37,7 +37,7 @@ class SerialPacketOperationTests: XCTestCase {
         self.measure {
             let exp = expectation(description: "did read")
             let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
-            controller.addOperation(SerialPacketOperation(controller: controller, delegate: controller, intent: .read(count: 80, context: OperationContext.header)) { _ in
+            controller.addOperation(SerialPacketOperation(controller: controller, delegate: controller, intent: .read(count: 80, context: GBxSerialPortController.OperationContext.header)) { _ in
                 // print(GameboyClassic.Cartridge.Header(bytes: $0!))
                 exp.fulfill()
             })
