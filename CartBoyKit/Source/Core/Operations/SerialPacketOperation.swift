@@ -24,7 +24,8 @@ enum PacketIntent {
 }
 
 final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOperation<Controller> {
-    required init(controller: Controller, delegate: SerialPacketOperationDelegate? = nil, intent: PacketIntent) {
+    required init(controller: Controller, delegate: SerialPacketOperationDelegate? = nil, intent: PacketIntent, result: @escaping ((Data?) -> ())) {
+        self.result   = result
         self.intent   = intent
         self.progress = Progress(totalUnitCount: Int64(intent.count))
         super.init(controller: controller)
@@ -32,10 +33,11 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
         self.delegate = delegate
     }
     
+    private weak var delegate: SerialPacketOperationDelegate?
     private let intent: PacketIntent
     private let progress: Progress
-    private weak var delegate: SerialPacketOperationDelegate?
-    private weak var serialPort: ORSSerialPort? = nil
+    private let result: (Data?) -> ()
+    private let isReadyCondition = NSCondition()
     private var buffer: Data = .init() {
         didSet {
             progress.completedUnitCount = Int64(buffer.count)
@@ -62,40 +64,51 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
         if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didComplete:with:))) {
             delegate.packetOperation(self, didComplete: data, with: self.intent)
         }
+        
+        self.controller.close(wait: 10)
+        self.result(data)
     }
     
     override func main() {
         super.main()
         self.progress.becomeCurrent(withPendingUnitCount: 0)
         
-        print(NSString(string: #file).lastPathComponent, #function, #line)
-        guard let serialPort = self.serialPort else {
-            cancel()
-            return
-        }
-        
-        let packetLength = self.delegate?.packetLength(for: self.intent) ?? 0
+        self.isReadyCondition.whileLocked {
+            while !self.isReady {
+                self.isReadyCondition.wait()
+            }
+            
+            self._isExecuting = true
+            print(NSString(string: #file).lastPathComponent, #function, #line)
 
-        self._isExecuting = true
-        
-        serialPort.startListeningForPackets(matching: ORSSerialPacketDescriptor(maximumPacketLength: packetLength, userInfo: nil) { data in
-            return data!.count == packetLength
-        })
-        
-        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didBeginWith:))) {
-            DispatchQueue.main.sync {
-                delegate.packetOperation(self, didBeginWith: self.intent)
+            if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didBeginWith:))) {
+                DispatchQueue.main.sync {
+                    delegate.packetOperation(self, didBeginWith: self.intent)
+                }
             }
         }
     }
     
-    @objc override func serialPortWasOpened(_ serialPort: ORSSerialPort) {
-        super.serialPortWasOpened(serialPort)
-        self.serialPort = serialPort
+    override func serialPortWasOpened(_ serialPort: ORSSerialPort) {
+        defer {
+            self.isReadyCondition.whileLocked {
+                self._isReady = true
+                self.isReadyCondition.signal()
+            }
+        }
+        
+        let packetLength = self.delegate?.packetLength(for: self.intent) ?? 0
+        
+        serialPort.startListeningForPackets(matching: ORSSerialPacketDescriptor(maximumPacketLength: packetLength, userInfo: nil) { data in
+            return data!.count == packetLength
+        })
     }
     
     override func serialPort(_ serialPort: ORSSerialPort, didReceivePacket packetData: Data, matching descriptor: ORSSerialPacketDescriptor) {
-        print(NSString(string: #file).lastPathComponent, #function, #line, packetData)
         self.buffer.append(packetData)
+        
+        if self.progress.isFinished {
+            serialPort.stopListeningForPackets(matching: descriptor)
+        }
     }
 }

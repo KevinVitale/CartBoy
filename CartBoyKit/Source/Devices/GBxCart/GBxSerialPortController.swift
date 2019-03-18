@@ -24,9 +24,6 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     public private(set) var voltage: Voltage = .high
 
     ///
-    private let queue = OperationQueue()
-    
-    ///
     public var isOpen: Bool {
         return self.reader.isOpen
     }
@@ -44,76 +41,105 @@ open class GBxSerialPortController: NSObject, SerialPortController {
                 print(#function)
             }
             usleep(timeout)
+            
+            self.isOpenCondition.whileLocked {
+                self.delegate = nil
+                self.isOpenCondition.signal()
+            }
         }
         return self.reader.close()
     }
     
+    private let isOpenCondition = NSCondition()
+    private var currentDelegate: ORSSerialPortDelegate? = nil // Prevents 'deinit'
+    private var delegate: ORSSerialPortDelegate?  {
+        get { return reader.delegate     }
+        set {
+            currentDelegate = newValue
+            reader.delegate = newValue
+        }
+    }
+
     /**
      */
-    public final func openReader(delegate: ORSSerialPortDelegate?) throws {
-        DispatchQueue.main.async {
-            self.reader.delegate = delegate
-            
-            if self.reader.isOpen == false {
-                self.open()
-                self.reader.configuredAsGBxCart()
-                
-                /*
-                 self.version.change(minor: self.sendAndWait(command: "h")) // PCB
-                 self.version.change(revision: self.sendAndWait(command: "V")) // Firmware
-                 self.voltage = self.sendAndWait(command: "C") == "1" ? .high : .low
-                 */
+    public final func openReader(delegate: ORSSerialPortDelegate?) {
+        self.isOpenCondition.whileLocked {
+            while self.currentDelegate != nil {
+                print(NSString(string: #file).lastPathComponent, #function, #line, "Waiting...")
+                self.isOpenCondition.wait()
             }
-            
-            /*
-            guard self.reader.isOpen else {
-                throw SerialPortControllerError.failedToOpen(self.reader)
+
+            print("Continuing...")
+            self.delegate = delegate
+            //------------------------------------------------------------------
+            DispatchQueue.main.async {
+                if self.reader.isOpen == false {
+                    self.open()
+                    self.reader.configuredAsGBxCart()
+                }
             }
-             */
         }
     }
     
     /**
      */
     public final func addOperation(_ operation: Operation) {
-        self.queue.addOperation(operation)
+        operation.start()
     }
-    
-    /**
-     */
-    private func sendAndWait(data: Data) -> String {
-        let group = DispatchGroup()
-        group.enter()
-        //----------------------------------------------------------------------
-        var version = ""
-        let responseDescriptor = ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) { data in
-            defer { group.leave() }
-            version = data?.hexString().lowercased() ?? ""
-            return true
+}
+
+public enum OperationContext {
+    case header
+    case cartridge
+    case saveFile
+}
+
+extension GBxSerialPortController: SerialPacketOperationDelegate {
+    public func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
+        guard let intent = intent as? PacketIntent, case .read(_, let context?) = intent, context is OperationContext else {
+            operation.cancel()
+            return
         }
-        let serialRequest = ORSSerialRequest(
-            dataToSend: data
-            , userInfo: nil
-            , timeoutInterval: 5
-            , responseDescriptor: responseDescriptor
-        )
-        //----------------------------------------------------------------------
-        self.reader.send(serialRequest)
-        //----------------------------------------------------------------------
-        group.wait()
-        return version
+        
+        switch context as! OperationContext {
+        case .header:
+            self.reader.send("\0A100\0".data(using: .ascii)!)
+            self.reader.send("R".data(using: .ascii)!)
+        case .cartridge:
+            self.reader.send("\0A0\0".data(using: .ascii)!)
+            self.reader.send("R".data(using: .ascii)!)
+        default:
+            fatalError()
+        }
     }
     
-    /**
-     */
-    func sendAndWait(command: String) -> String {
-        return self.sendAndWait(data: command.data(using: .ascii)!)
+    public func packetOperation(_ operation: Operation, didUpdate progress: Progress, with intent: Any?) {
+        guard let intent = intent as? PacketIntent, case .read(_, let context?) = intent, context is OperationContext else {
+            operation.cancel()
+            return
+        }
+        
+        self.reader.send("1".data(using: .ascii)!)
     }
     
-    /**
-     */
-    func sendAndWait(value: Int, radix: Int = 16) -> String {
-        return self.sendAndWait(data: String(value, radix: radix, uppercase: false).data(using: .ascii)!)
+    public func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
+        guard let intent = intent as? PacketIntent, case .read(_, let context?) = intent, context is OperationContext else {
+            operation.cancel()
+            return
+        }
+    }
+    
+    public func packetLength(for intent: Any?) -> UInt {
+        guard let intent = intent as? PacketIntent else {
+            fatalError()
+        }
+        
+        switch intent {
+        case .read:
+            return 64
+        case .write:
+            return 1
+        }
     }
 }
 

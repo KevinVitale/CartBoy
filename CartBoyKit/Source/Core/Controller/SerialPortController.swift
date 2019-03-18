@@ -20,7 +20,8 @@ public protocol SerialPortController: class, NSObjectProtocol {
     
     /**
      */
-    func openReader(delegate: ORSSerialPortDelegate?) throws
+    func openReader(delegate: ORSSerialPortDelegate?)
+    
 }
 
 /**

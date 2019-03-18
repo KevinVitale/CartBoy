@@ -1,9 +1,10 @@
 import ORSSerial
 
-class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialPortDelegate {
+public class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialPortDelegate {
     init(controller: Controller) {
         self.controller = controller
         self.transactionID = UUID()
+        super.init()
     }
     
     let controller: Controller
@@ -19,74 +20,75 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
         didSet  {  self.didChangeValue(forKey: "isFinished") }
     }
     
-    private let isOpenCondition: NSCondition = NSCondition()
-    
-    override var isExecuting: Bool {
+    @objc var _isReady: Bool = false {
+        willSet { self.willChangeValue(forKey: "isReady") }
+        didSet  {  self.didChangeValue(forKey: "isReady") }
+    }
+
+    override public var isExecuting: Bool {
         return _isExecuting
     }
     
-    override var isFinished: Bool {
+    override public var isFinished: Bool {
         return _isFinished
     }
     
-    override func cancel() {
+    override public var isReady: Bool {
+        return _isReady && super.isReady
+    }
+    
+    public override var isAsynchronous: Bool {
+        return true
+    }
+
+    override public func cancel() {
         super.cancel()
         self._isExecuting = false
         self._isFinished = true
     }
     
-    override func main() {
-        self.isOpenCondition.whileLocked {
-            do {
-                try self.controller.openReader(delegate: self)
-            }
-            catch {
-                cancel()
-                return
-            }
-            
-            while self.controller.isOpen == false {
-                print(NSString(string: #file).lastPathComponent, #function, #line, ">>> Waiting...")
-                self.isOpenCondition.wait() // self.isOpenCondition.wait(until: Date().addingTimeInterval(5))
-            }
+    @objc public override func start() {
+        if self.isAsynchronous {
+            Thread(target: self, selector: #selector(self.main), object: nil).start()
+        }
+        else {
+            main()
         }
     }
-    
+
+    @objc override public func main() {
+        super.main()
+        print(NSString(string: #file).lastPathComponent, #function, #line)
+        self.controller.openReader(delegate: self)
+    }
+
     deinit {
         print(NSString(string: #file).lastPathComponent, #function, #line)
     }
     
-    @objc func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
+    public func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
         self.cancel()
     }
     
-    @objc func serialPortWasOpened(_ serialPort: ORSSerialPort) {
-        self.isOpenCondition.whileLocked {
-            print(NSString(string: #file).lastPathComponent, #function, #line)
-            self.isOpenCondition.signal()
-        }
+    public func serialPortWasOpened(_ serialPort: ORSSerialPort) {
+        print(NSString(string: #file).lastPathComponent, #function, #line)
     }
 
-    @objc func serialPortWasClosed(_ serialPort: ORSSerialPort) {
-        print(#function)
+    public func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+        print(NSString(string: #file).lastPathComponent, #function, #line)
     }
     
-    @objc func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+    public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
     }
     
-    @objc func serialPort(_ serialPort: ORSSerialPort, requestDidTimeout request: ORSSerialRequest) {
-        print(#function)
+    public func serialPort(_ serialPort: ORSSerialPort, requestDidTimeout request: ORSSerialRequest) {
+        print(NSString(string: #file).lastPathComponent, #function, #line)
     }
     
-    @objc func serialPort(_ serialPort: ORSSerialPort, didEncounterError error: Error) {
-        print(#function)
+    public func serialPort(_ serialPort: ORSSerialPort, didEncounterError error: Error) {
+        print(NSString(string: #file).lastPathComponent, #function, #line)
     }
     
-    @objc func serialPort(_ serialPort: ORSSerialPort, didReceiveResponse responseData: Data, to request: ORSSerialRequest) {
-        print(#function)
-    }
-    
-    @objc func serialPort(_ serialPort: ORSSerialPort, didReceivePacket packetData: Data, matching descriptor: ORSSerialPacketDescriptor) {
-        print(#function)
+    public func serialPort(_ serialPort: ORSSerialPort, didReceivePacket packetData: Data, matching descriptor: ORSSerialPacketDescriptor) {
     }
 }
