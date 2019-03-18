@@ -58,35 +58,26 @@ public class OpenPortOperation<Controller: SerialPortController>: Operation, ORS
 
     @objc override public func main() {
         super.main()
-        print(NSString(string: #file).lastPathComponent, #function, #line)
         self.controller.openReader(delegate: self)
     }
 
-    deinit {
-        print(NSString(string: #file).lastPathComponent, #function, #line)
-    }
-    
     public func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
         self.cancel()
     }
     
     public func serialPortWasOpened(_ serialPort: ORSSerialPort) {
-        print(NSString(string: #file).lastPathComponent, #function, #line)
     }
 
     public func serialPortWasClosed(_ serialPort: ORSSerialPort) {
-        print(NSString(string: #file).lastPathComponent, #function, #line)
     }
     
     public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
     }
     
     public func serialPort(_ serialPort: ORSSerialPort, requestDidTimeout request: ORSSerialRequest) {
-        print(NSString(string: #file).lastPathComponent, #function, #line)
     }
     
     public func serialPort(_ serialPort: ORSSerialPort, didEncounterError error: Error) {
-        print(NSString(string: #file).lastPathComponent, #function, #line)
     }
     
     public func serialPort(_ serialPort: ORSSerialPort, didReceivePacket packetData: Data, matching descriptor: ORSSerialPacketDescriptor) {

@@ -29,7 +29,6 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     }
     
     private final func open() {
-        print(NSString(string: #file).lastPathComponent, #function, #line)
         self.reader.open()
     }
     /**
@@ -54,11 +53,11 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     public final func openReader(delegate: ORSSerialPortDelegate?) {
         self.isOpenCondition.whileLocked {
             while self.currentDelegate != nil {
-                print(NSString(string: #file).lastPathComponent, #function, #line, "Waiting...")
+                // print(NSString(string: #file).lastPathComponent, #function, #line, "Waiting...")
                 self.isOpenCondition.wait()
             }
             
-            print("Continuing...")
+            // print("Continuing...")
             self.delegate = delegate
             //------------------------------------------------------------------
             DispatchQueue.main.async {

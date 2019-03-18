@@ -71,7 +71,6 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
             }
             
             self._isExecuting = true
-            print(NSString(string: #file).lastPathComponent, #function, #line)
 
             if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didBeginWith:))) {
                 DispatchQueue.main.sync {
@@ -83,7 +82,6 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
     
     override func serialPortWasOpened(_ serialPort: ORSSerialPort) {
         defer {
-            print(NSString(string: #file).lastPathComponent, #function, #line)
             self.isReadyCondition.whileLocked {
                 self._isReady = true
                 self.isReadyCondition.signal()
