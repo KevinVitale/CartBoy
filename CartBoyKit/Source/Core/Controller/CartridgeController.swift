@@ -24,6 +24,10 @@ public protocol CartridgeController: SerialPortController, SerialPortOperationDe
     /**
      */
     func write<Cartridge: FlashCart>(to flashCart: Cartridge, result: @escaping (Bool) ->()) where Cartridge == Self.Cartridge
+    
+    /**
+     */
+    func erase<Cartridge: FlashCart>(flashCart: Cartridge, result: @escaping (Bool) ->()) where Cartridge == Self.Cartridge
 
     /**
      */
@@ -85,6 +89,12 @@ extension CartridgeController where Cartridge: FlashCart {
         self.addOperation(SerialPortOperation(controller: self, context: .cartridge(header, intent: .write(data))) { _ in
             result(true)
         })
+    }
+    
+    /**
+     */
+    public func erase(flashCart: Self.Cartridge, result: @escaping (Bool) ->()) {
+        fatalError()
     }
 }
 
