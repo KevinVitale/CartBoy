@@ -33,23 +33,41 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         
         self.dataToSend = "0".bytes()
         timeout(.veryLong)
-
-        switch context as! OperationContext {
-        case .header:
-            self.dataToSend = "A100\0".bytes()
-            self.dataToSend = "R".bytes()
-        case .cartridge:
+        
+        //----------------------------------------------------------------------
+        // HEADER CHECK
+        //----------------------------------------------------------------------
+        if case let .read(_, context as OperationContext) = intent, context != .header {
             guard let header = header, header.isLogoValid else {
-                print("ERROR: INVALID HEADER")
+                print("WARNING: invalid header detected!")
+                print(self.header!)
                 operation.cancel()
                 return
             }
-            print(header)
-            self.dataToSend = "A0\0".bytes()
-            timeout(.veryLong)
-            self.dataToSend = "R".bytes()
-        default:
-            fatalError()
+        }
+        
+        //----------------------------------------------------------------------
+        // READ
+        //----------------------------------------------------------------------
+        if case let .read(_, context as OperationContext) = intent {
+            switch context {
+            case .header:
+                self.dataToSend = "A100\0".bytes()
+                self.dataToSend = "R".bytes()
+            case .cartridge:
+                print(header!)
+                self.dataToSend = "A0\0".bytes()
+                timeout(.veryLong)
+                self.dataToSend = "R".bytes()
+            case .saveFile:
+                print(header!)
+            }
+        }
+        //----------------------------------------------------------------------
+        // WRITE
+        //----------------------------------------------------------------------
+        else if case .write(let data) = intent {
+            print(data)
         }
     }
     
@@ -100,6 +118,8 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 else {
                     self.dataToSend = "1".bytes()
                 }
+            case .saveFile:
+                self.toggle(ram: true)
             default:
                 self.dataToSend = "1".bytes()
             }
@@ -111,6 +131,15 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
     }
     
     override func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
+        guard let intent = intent as? PacketIntent else {
+            operation.cancel()
+            return
+        }
+        
+        if case let .read(_, context as OperationContext) = intent, context == .saveFile {
+            self.toggle(ram: false)
+        }
+        
         super.packetOperation(operation, didComplete: buffer, with: intent)
     }
 }
@@ -123,6 +152,11 @@ extension GBxCartridgeControllerClassic {
     fileprivate func `switch`(to bank: Int, at address: Int) {
         self.bank(address: address)
         self.bank(address: bank, radix: 10)
+    }
+    
+    fileprivate func toggle(ram mode: Bool) {
+        self.bank(address: 0x0000)
+        self.bank(address: mode ? 0x0A : 0x00, radix: 10)
     }
 }
 
