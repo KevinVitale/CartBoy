@@ -7,7 +7,7 @@ extension Data {
         })
     }
     
-    public func hexString(separator: String = " ") -> String {
-        return map { String($0, radix: 16, uppercase: true) }.joined(separator: separator)
+    public func hexString(separator: String = " ", radix: Int = 16) -> String {
+        return map { String($0, radix: radix, uppercase: true) }.joined(separator: separator)
     }
 }
