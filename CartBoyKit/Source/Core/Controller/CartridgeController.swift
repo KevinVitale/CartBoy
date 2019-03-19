@@ -34,7 +34,61 @@ public protocol CartridgeController: SerialPortController {
     func delete(header: Self.Cartridge.Header?, result: @escaping (Bool) -> ())
 }
 
-extension CartridgeController {
+extension CartridgeController where Self: SerialPacketOperationDelegate {
+    public func read(header: Cartridge.Header? = nil, result: @escaping ((Cartridge?) -> ())) {
+        guard let header = header else {
+            self.header {
+                self.read(header: $0, result: result)
+            }
+            return
+        }
+        self.addOperation(SerialPacketOperation(controller: self, delegate: self, intent: .read(count: header.romSize, context: OperationContext.cartridge)) {
+            guard let data = $0 else {
+                result(nil)
+                return
+            }
+            result(.init(bytes: data))
+        })
+    }
+    
+    public func backup(header: Cartridge.Header? = nil, result: @escaping (Data?, Cartridge.Header) -> ()) {
+        if let header = header {
+            guard header.ramSize > 0 else {
+                result(nil, header)
+                return
+            }
+            self.addOperation(SerialPacketOperation(controller: self, delegate: self, intent: .read(count: header.ramSize, context: OperationContext.saveFile)) {
+                guard let data = $0 else {
+                    result(nil, header)
+                    return
+                }
+                result(data, header)
+            })
+        }
+        else {
+            self.header {
+                self.backup(header: $0, result: result)
+            }
+        }
+    }
+    
+    public func restore(from backup: Data, header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) {
+        if let header = header {
+            guard header.ramSize == backup.count else {
+                result(false)
+                return
+            }
+            self.addOperation(SerialPacketOperation(controller: self, delegate: self, intent: .write(data: backup)) { _ in
+                result(true)
+            })
+        }
+        else {
+            self.header {
+                self.restore(from: backup, header: $0, result: result)
+            }
+        }
+    }
+    
     public func delete(header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) {
         if let header = header {
             self.restore(from: Data(count: header.ramSize), header: header, result: result)

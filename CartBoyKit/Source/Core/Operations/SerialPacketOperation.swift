@@ -1,7 +1,7 @@
 import Foundation
 import ORSSerial
 
-@objc protocol SerialPacketOperationDelegate: class, NSObjectProtocol {
+@objc public protocol SerialPacketOperationDelegate: class, NSObjectProtocol {
     @objc func packetOperation(_ operation: Operation, didBeginWith intent: Any?)
     @objc func packetOperation(_ operation: Operation, didUpdate progress: Progress, with intent: Any?)
     @objc func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?)
@@ -21,6 +21,12 @@ enum PacketIntent {
             return data.count
         }
     }
+}
+
+enum OperationContext {
+    case header
+    case cartridge
+    case saveFile
 }
 
 final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOperation<Controller> {

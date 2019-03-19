@@ -76,15 +76,6 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     }
 }
 
-
-extension GBxSerialPortController {
-    enum OperationContext {
-        case header
-        case cartridge
-        case saveFile
-    }
-}
-
 extension GBxSerialPortController: SerialPacketOperationDelegate {
     public func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
         guard let intent = intent as? PacketIntent, case .read(_, let context?) = intent, context is OperationContext else {
