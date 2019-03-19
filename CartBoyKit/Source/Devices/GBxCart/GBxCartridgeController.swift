@@ -58,9 +58,20 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: GBxSerialPortCo
     }
     
     public func restore(from backup: Data, header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) {
-    }
-    
-    public func delete(header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) {
+        if let header = header {
+            guard header.ramSize == backup.count else {
+                result(false)
+                return
+            }
+            self.addOperation(SerialPacketOperation(controller: self, delegate: self, intent: .write(data: backup)) { _ in
+                result(true)
+            })
+        }
+        else {
+            self.header {
+                self.restore(from: backup, header: $0, result: result)
+            }
+        }
     }
 }
 

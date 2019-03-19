@@ -33,3 +33,20 @@ public protocol CartridgeController: SerialPortController {
      */
     func delete(header: Self.Cartridge.Header?, result: @escaping (Bool) -> ())
 }
+
+extension CartridgeController {
+    public func delete(header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) {
+        if let header = header {
+            self.restore(from: Data(count: header.ramSize), header: header, result: result)
+        }
+        else {
+            self.header {
+                guard let header = $0 else {
+                    result(false)
+                    return
+                }
+                self.delete(header: header, result: result)
+            }
+        }
+    }
+}
