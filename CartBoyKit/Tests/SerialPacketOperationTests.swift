@@ -43,4 +43,18 @@ class SerialPacketOperationTests: XCTestCase {
             waitForExpectations(timeout: 10)
         }
     }
+    
+    func testReadSaveFilePerformance() {
+        self.measure {
+            let exp = expectation(description: "did read")
+            let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
+            controller.backup { data, header in
+                if let data = data {
+                    print(data.md5.hexString(separator: "").lowercased())
+                }
+                exp.fulfill()
+            }
+            waitForExpectations(timeout: 10)
+        }
+    }
 }

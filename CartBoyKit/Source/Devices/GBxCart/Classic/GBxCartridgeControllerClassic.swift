@@ -38,13 +38,22 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         // HEADER CHECK
         //----------------------------------------------------------------------
         if case let .read(_, context as OperationContext) = intent, context != .header {
-            guard let header = header, header.isLogoValid else {
+            guard let header = self.header, header.isLogoValid else {
                 print("WARNING: invalid header detected!")
                 print(self.header!)
                 operation.cancel()
                 return
             }
         }
+        
+        let header: GameboyClassic.Cartridge.Header! = {
+            if case let .read(_, context as OperationContext) = intent, context != .header {
+                return self.header as? GameboyClassic.Cartridge.Header
+            }
+            else {
+                return nil
+            }
+        }()
         
         //----------------------------------------------------------------------
         // READ
@@ -55,12 +64,48 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 self.dataToSend = "A100\0".bytes()
                 self.dataToSend = "R".bytes()
             case .cartridge:
-                print(header!)
+                print(header)
                 self.dataToSend = "A0\0".bytes()
                 timeout(.veryLong)
                 self.dataToSend = "R".bytes()
             case .saveFile:
-                print(header!)
+                switch header.configuration {
+                //--------------------------------------------------------------
+                // MBC2 "fix"
+                //--------------------------------------------------------------
+                case .one, .two:
+                    //----------------------------------------------------------
+                    // START; STOP
+                    //----------------------------------------------------------
+                    self.dataToSend = "A0\0".bytes()
+                    self.dataToSend = "R".bytes()
+                    self.dataToSend = "0".bytes()
+                default: (/* do nothing */)
+                }
+                
+                //--------------------------------------------------------------
+                // SET: the 'RAM' mode (MBC1-ONLY)
+                //--------------------------------------------------------------
+                if case .one = header.configuration {
+                    self.switch(to: 1, at: 0x6000)
+                }
+                
+                //--------------------------------------------------------------
+                // TOGGLE
+                //--------------------------------------------------------------
+                self.toggle(ram: true)
+                
+                //--------------------------------------------------------------
+                // BANK SWITCH
+                //--------------------------------------------------------------
+                self.switch(to: 0, at: 0x4000)
+                
+                //--------------------------------------------------------------
+                // START
+                //--------------------------------------------------------------
+                self.dataToSend = "AA000\0".bytes()
+                timeout(.veryLong)
+                self.dataToSend = "R".bytes()
             }
         }
         //----------------------------------------------------------------------
@@ -81,10 +126,21 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         // READ
         //----------------------------------------------------------------------
         if case let .read(_, context as OperationContext) = intent {
+            let header: GameboyClassic.Cartridge.Header! = {
+                if case let .read(_, context as OperationContext) = intent, context != .header {
+                    return self.header as? GameboyClassic.Cartridge.Header
+                }
+                else {
+                    return nil
+                }
+            }()
+            let completedUnitCount = Int(progress.completedUnitCount)
+            
+            //------------------------------------------------------------------
+            // OPERATION
+            //------------------------------------------------------------------
             switch context {
             case .cartridge:
-                let header = self.header as! GameboyClassic.Cartridge.Header
-                let completedUnitCount = Int(progress.completedUnitCount)
                 if case let bank = completedUnitCount / header.romBankSize, bank >= 1, completedUnitCount % header.romBankSize == 0 {
                     //----------------------------------------------------------
                     // STOP
@@ -127,7 +183,14 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     self.dataToSend = "1".bytes()
                 }
             case .saveFile:
-                self.toggle(ram: true)
+                if case let bank = completedUnitCount / header.ramBankSize, completedUnitCount % header.ramBankSize == 0 {
+                    //----------------------------------------------------------
+                    // DEBUG
+                    //----------------------------------------------------------
+                    if printProgress {
+                        print("#\(bank), \(progress.fractionCompleted)%")
+                    }
+                }
                 fallthrough
             default:
                 self.dataToSend = "1".bytes()

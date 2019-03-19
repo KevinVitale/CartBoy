@@ -42,9 +42,6 @@
                   Identifier = "GameboyClassicReadROMTests/testEraseSaveFile()">
                </Test>
                <Test
-                  Identifier = "GameboyClassicReadROMTests/testReadSaveFile()">
-               </Test>
-               <Test
                   Identifier = "GameboyClassicReadROMTests/testWriteSaveFile()">
                </Test>
             </SkippedTests>
