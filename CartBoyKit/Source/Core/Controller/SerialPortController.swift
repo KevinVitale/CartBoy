@@ -11,17 +11,17 @@ public protocol SerialPortController: class, NSObjectProtocol {
     
     /**
      */
-    @discardableResult
-    func close() -> Bool
-    
-    /**
-     */
     func addOperation(_ operation: Operation)
     
     /**
      */
     func openReader(delegate: ORSSerialPortDelegate?)
     
+    /**
+     */
+    @discardableResult
+    func close() -> Bool
+
     /**
      */
     @discardableResult
