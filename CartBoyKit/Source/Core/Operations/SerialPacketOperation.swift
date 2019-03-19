@@ -46,7 +46,9 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
             }
             else {
                 if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didUpdate:with:))) {
-                    delegate.packetOperation(self, didUpdate: progress, with: self.intent)
+                    if case let packetLength = Int64(self.delegate?.packetLength(for: self.intent) ?? 0), progress.completedUnitCount % packetLength == 0 {
+                        delegate.packetOperation(self, didUpdate: progress, with: self.intent)
+                    }
                 }
             }
         }
@@ -63,17 +65,17 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
     
     override func main() {
         super.main()
-        self.progress.becomeCurrent(withPendingUnitCount: 0)
-        
+
         self.isReadyCondition.whileLocked {
             while !self.isReady {
                 self.isReadyCondition.wait()
             }
             
+            self.progress.becomeCurrent(withPendingUnitCount: 0)
             self._isExecuting = true
 
             if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didBeginWith:))) {
-                DispatchQueue.main.sync {
+                DispatchQueue.main.async {
                     delegate.packetOperation(self, didBeginWith: self.intent)
                 }
             }
@@ -87,12 +89,6 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
                 self.isReadyCondition.signal()
             }
         }
-        
-        let packetLength = self.delegate?.packetLength(for: self.intent) ?? 0
-        
-        serialPort.startListeningForPackets(matching: ORSSerialPacketDescriptor(maximumPacketLength: packetLength, userInfo: nil) { data in
-            return data!.count == packetLength
-        })
     }
     
     override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
@@ -106,11 +102,7 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
         }
     }
     
-    override func serialPort(_ serialPort: ORSSerialPort, didReceivePacket packetData: Data, matching descriptor: ORSSerialPacketDescriptor) {
-        self.buffer.append(packetData)
-        
-        if self.progress.isFinished {
-            serialPort.stopListeningForPackets(matching: descriptor)
-        }
+    override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+        self.buffer.append(data)
     }
 }
