@@ -19,7 +19,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 if data != Data([0x31]), printStacktrace {
                     print(#function, #line, "Data: \(data.hexString())")
                 }
-                self.reader.send(data)
+                self.send(data)
                 timeout()
             }
         }

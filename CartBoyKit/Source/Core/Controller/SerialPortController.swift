@@ -22,6 +22,10 @@ public protocol SerialPortController: class, NSObjectProtocol {
      */
     func openReader(delegate: ORSSerialPortDelegate?)
     
+    /**
+     */
+    @discardableResult
+    func send(_ data: Data) -> Bool
 }
 
 /**

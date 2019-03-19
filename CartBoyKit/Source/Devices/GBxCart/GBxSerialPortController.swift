@@ -74,6 +74,13 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     public final func addOperation(_ operation: Operation) {
         operation.start()
     }
+    
+    /**
+     */
+    @discardableResult
+    public final func send(_ data: Data) -> Bool {
+        return self.reader.send(data)
+    }
 }
 
 extension GBxSerialPortController: SerialPacketOperationDelegate {
