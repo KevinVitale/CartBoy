@@ -33,8 +33,6 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 if let header = romHeader {
                     XCTAssertTrue(romHeader.isLogoValid)
                     
-                    print("|-------------------------------------|")
-                    print("|  CONFIGURATION: \(header.configuration)")
                     print(header)
                 }
 
@@ -61,8 +59,6 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                     print("MD5:", Data(rom[0..<rom.endIndex]).md5.hexString(separator: "").lowercased())
                     if rom.header.isLogoValid {
                         XCTAssertTrue(rom.header.isLogoValid)
-                        print("|-------------------------------------|")
-                        print("|  CONFIGURATION: \(rom.header.configuration)")
                         print(rom.header)
                         try! rom.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(rom.header.title).gb"))
                     }
@@ -90,10 +86,8 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 if case let (saveFile?, header?) = saveFile, saveFile.isEmpty == false {
                     print("SRAM:", saveFile)
                     XCTAssertTrue(header.isLogoValid)
-                    print("|-------------------------------------|")
-                    print("|  CONFIGURATION: \(header.configuration)")
                     print(header)
-                    try! saveFile.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav.bak"))
+                    try! saveFile.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav"))
                 }
                 else {
                     XCTFail("Invalid save data.")

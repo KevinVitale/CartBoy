@@ -64,7 +64,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 self.dataToSend = "A100\0".bytes()
                 self.dataToSend = "R".bytes()
             case .cartridge:
-                print(header)
+                print(NSString(string: #file).lastPathComponent, #function, #line, "\n\(header!)")
                 self.dataToSend = "A0\0".bytes()
                 timeout(.veryLong)
                 self.dataToSend = "R".bytes()
