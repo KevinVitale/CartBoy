@@ -83,6 +83,19 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     }
 }
 
+extension GBxSerialPortController {
+    enum Timeout: UInt32 {
+        case short    = 250
+        case medium   = 1000
+        case long     = 5000
+        case veryLong = 10000
+    }
+    
+    final func timeout(_ timeout: Timeout = .short) {
+        usleep(timeout.rawValue)
+    }
+}
+
 extension GBxSerialPortController: SerialPacketOperationDelegate {
     public func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
         guard let intent = intent as? PacketIntent, case .read(_, let context?) = intent, context is OperationContext else {

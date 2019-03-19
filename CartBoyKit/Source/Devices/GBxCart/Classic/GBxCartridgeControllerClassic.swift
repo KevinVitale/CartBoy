@@ -2,17 +2,6 @@ import ORSSerial
 import Gibby
 
 final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartridgeController<Cartridge> where Cartridge.Platform == GameboyClassic {
-    private enum Timeout: UInt32 {
-        case short    = 250
-        case medium   = 1000
-        case long     = 5000
-        case veryLong = 10000
-    }
-    
-    private func timeout(_ timeout: Timeout = .short) {
-        usleep(timeout.rawValue)
-    }
-    
     fileprivate var dataToSend: Data? {
         didSet {
             if let data = dataToSend {
