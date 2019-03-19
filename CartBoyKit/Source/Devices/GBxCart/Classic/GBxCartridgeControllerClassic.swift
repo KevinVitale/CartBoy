@@ -77,56 +77,67 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
             return
         }
         
-        switch intent {
-        case .read(_, let context) where context is OperationContext:
-            switch context as! OperationContext {
+        //----------------------------------------------------------------------
+        // READ
+        //----------------------------------------------------------------------
+        if case let .read(_, context as OperationContext) = intent {
+            switch context {
             case .cartridge:
-                if let header = self.header as? GameboyClassic.Cartridge.Header {
-                    /**
-                     - warning: problems reading ROMs correctly may be due to
-                                mishandling this `if case`, especially as it
-                                relates to when bank swiching *should* happen
-                                (e.g., `bank >= `).
-                     */
-                    if case let bank = Int(progress.completedUnitCount) / header.romBankSize, bank >= 1, Int(progress.completedUnitCount) % header.romBankSize == 0 {
-                        self.dataToSend = "0".bytes()
-
-                        switch header.configuration {
-                        case .one:
-                            self.switch(to: 0, at: 0x6000)
-                            self.switch(to: bank >> 5, at: 0x4000)
-                            self.switch(to: (bank & 0x1F), at: 0x2000)
-                        default:
-                            self.switch(to: bank, at: 0x2100)
-                            if bank >= 0x100 {
-                                self.switch(to: 1, at: 0x3000)
-                            }
+                let header = self.header as! GameboyClassic.Cartridge.Header
+                let completedUnitCount = Int(progress.completedUnitCount)
+                if case let bank = completedUnitCount / header.romBankSize, bank >= 1, completedUnitCount % header.romBankSize == 0 {
+                    //----------------------------------------------------------
+                    // STOP
+                    //----------------------------------------------------------
+                    self.dataToSend = "0".bytes()
+                    
+                    //----------------------------------------------------------
+                    // BANK SWITCH
+                    //----------------------------------------------------------
+                    switch header.configuration {
+                    case .one:
+                        self.switch(to: 0, at: 0x6000)
+                        self.switch(to: bank >> 5, at: 0x4000)
+                        self.switch(to: (bank & 0x1F), at: 0x2000)
+                    default:
+                        self.switch(to: bank, at: 0x2100)
+                        if bank >= 0x100 {
+                            self.switch(to: 1, at: 0x3000)
                         }
-                        
-                        if printProgress {
-                            print("#\(bank), \(progress.fractionCompleted)%")
-                        }
-
-                        self.dataToSend = "A4000\0".bytes()
-                        timeout(.short)
-                        self.dataToSend = "R".bytes()
                     }
-                    else {
-                        self.dataToSend = "1".bytes()
+                    
+                    //----------------------------------------------------------
+                    // DEBUG
+                    //----------------------------------------------------------
+                    if printProgress {
+                        print("#\(bank), \(progress.fractionCompleted)%")
                     }
+                    
+                    //----------------------------------------------------------
+                    // START
+                    //----------------------------------------------------------
+                    self.dataToSend = "A4000\0".bytes()
+                    timeout(.short)
+                    self.dataToSend = "R".bytes()
                 }
                 else {
+                    //----------------------------------------------------------
+                    // CONTINUE
+                    //----------------------------------------------------------
                     self.dataToSend = "1".bytes()
                 }
             case .saveFile:
                 self.toggle(ram: true)
+                fallthrough
             default:
                 self.dataToSend = "1".bytes()
             }
-        case .write(_): ()
-        default:
-            operation.cancel()
-            return
+        }
+        //----------------------------------------------------------------------
+        // WRITE
+        //----------------------------------------------------------------------
+        else if case .write(let data) = intent {
+            print(data)
         }
     }
     
