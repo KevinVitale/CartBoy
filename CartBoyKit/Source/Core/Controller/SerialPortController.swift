@@ -30,12 +30,6 @@ public protocol SerialPortController: class, NSObjectProtocol {
 
 /**
  */
-public enum SerialPortControllerError: Error {
-    case failedToOpen(ORSSerialPort?)
-}
-
-/**
- */
 public struct SerialPortControllerVendorVersion: Equatable, Codable, CustomDebugStringConvertible {
     public let major: String
     public let minor: String
