@@ -6,8 +6,9 @@ import Gibby
 open class GBxSerialPortController: NSObject, SerialPortController {
     /**
      */
-    init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
+    required public init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
+        super.init()
     }
     
     /// DEBUG
@@ -15,7 +16,7 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     public var printProgress: Bool = false
 
     ///
-    let reader: ORSSerialPort
+    final let reader: ORSSerialPort
     
     ///
     public private(set) var version: SerialPortControllerVendorVersion = .init(major: "1", minor: "1", revision: "a")
