@@ -14,19 +14,16 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         }
     }
 
-    @objc func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
-        guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
-            operation.cancel()
-            return
-        }
-        
+    @objc override func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
+        super.packetOperation(operation, didBeginWith: intent)
+
         self.dataToSend = "0".bytes()
         timeout(.veryLong)
 
         //----------------------------------------------------------------------
         // READ
         //----------------------------------------------------------------------
-        if case let .read(_, context) = intent {
+        if case let .read(_, context)? = intent as? Intent<GBxCartridgeController<Cartridge>> {
             switch context {
             case .header:
                 self.dataToSend = "A100\0".bytes()
@@ -81,7 +78,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         // WRITE
         //----------------------------------------------------------------------
-        else if case .write(let data) = intent {
+        else if case .write(let data, _)? = intent as? Intent<GBxCartridgeController<Cartridge>> {
             print(data)
         }
     }
@@ -160,7 +157,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         // WRITE
         //----------------------------------------------------------------------
-        else if case .write(let data) = intent {
+        else if case .write(let data, _) = intent {
             print(data)
         }
     }

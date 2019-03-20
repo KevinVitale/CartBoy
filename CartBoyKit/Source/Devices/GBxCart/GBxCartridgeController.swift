@@ -7,7 +7,24 @@ import Gibby
  platform-specific serial port operations.
  */
 public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: GBxSerialPortController, CartridgeController {
-    public func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
+    @objc public func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
+        guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
+            operation.cancel()
+            return
+        }
+        
+        if case .read(_, let context) = intent {
+            switch context {
+            case .cartridge(let header) where !header.isLogoValid: fallthrough
+            case  .saveFile(let header) where !header.isLogoValid:
+                operation.cancel()
+                return
+            default: (/* do nothing */)
+            }
+        }
+    }
+    
+    @objc public func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
         guard let _ = intent as? Intent<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
