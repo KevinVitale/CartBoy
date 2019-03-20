@@ -19,12 +19,13 @@ class SerialPacketOperationTests: XCTestCase {
         let exp = expectation(description: "opened")
         exp.expectedFulfillmentCount = 1
         
-        let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
-        controller.detect {
-            print($0!)
+        
+        let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        controller.version { (version: String?) in
+            print(version)
             exp.fulfill()
         }
-        
+
         waitForExpectations(timeout: 5)
     }
 
@@ -32,8 +33,8 @@ class SerialPacketOperationTests: XCTestCase {
         let exp = expectation(description: "opened")
         exp.expectedFulfillmentCount = 2
         
-        let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
-        
+        let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+
         
         for _ in 0..<exp.expectedFulfillmentCount {
             controller.read {
@@ -50,20 +51,24 @@ class SerialPacketOperationTests: XCTestCase {
     func testSerialPacketBlockOperation() {
         let exp = expectation(description: "opened")
         exp.expectedFulfillmentCount = 2
-        let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
         
-        controller.detect {
-            print($0!)
+        
+        let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        controller.whileOpened(perform: {
             exp.fulfill()
-            controller.whileOpened(perform: {
-                return controller.send("0".bytes())
+            /*
+            try! GBxCartridgeController<GameboyClassic.Cartridge>.whileOpened(perform: {
+                return $0.send("0".bytes())
             }) {
                 print("Data Sent?", $0!)
             }
+             */
             controller.header {
                 print($0!)
                 exp.fulfill()
             }
+        }) {
+            print($0)
         }
 
         waitForExpectations(timeout: 5)
@@ -72,8 +77,9 @@ class SerialPacketOperationTests: XCTestCase {
     func testPerformanceExample() {
         self.measure {
             let exp = expectation(description: "did read")
-            let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
-            controller.header { _ in
+            let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+            controller.header {
+                print($0!)
                 exp.fulfill()
             }
             waitForExpectations(timeout: 10)
@@ -83,7 +89,7 @@ class SerialPacketOperationTests: XCTestCase {
     func testReadSaveFilePerformance() {
         self.measure {
             let exp = expectation(description: "did read")
-            let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
+            let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
             controller.backup { data, header in
                 if let data = data {
                     print(data.md5.hexString(separator: "").lowercased())

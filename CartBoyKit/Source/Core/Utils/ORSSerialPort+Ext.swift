@@ -30,8 +30,6 @@ extension ORSSerialPortManager {
                 return { $0.path.hasPrefix(prefix) }
             }
         }
-        
-        public static let GBxCart: PortProfile = .prefix("/dev/cu.usbserial-14")
     }
     
     private static func match(_ profile: PortProfile) -> ORSSerialPort? {
@@ -46,23 +44,5 @@ extension ORSSerialPortManager {
             throw PortMatchingError.noMatching(profile: profile)
         }
         return port
-    }
-    
-    public static func GBxCart(_ profile: PortProfile = .prefix("/dev/cu.usbserial-14")) throws -> ORSSerialPort {
-        return try port(matching: profile).configuredAsGBxCart()
-    }
-}
-
-extension ORSSerialPort {
-    @discardableResult
-    public final func configuredAsGBxCart() -> ORSSerialPort {
-        self.allowsNonStandardBaudRates = true
-        self.baudRate = 1000000
-        self.dtr = true
-        self.rts = true
-        self.numberOfDataBits = 8
-        self.numberOfStopBits = 1
-        self.parity = .none
-        return self
     }
 }

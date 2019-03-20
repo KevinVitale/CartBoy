@@ -22,10 +22,6 @@ final class SerialPacketOperation<Controller: CartridgeController>: OpenPortOper
         case saveFile(Controller.Cartridge.Header)
     }
     
-    override private init(controller: Controller, block: (() -> ())? = nil) {
-        super.init(controller: controller, block: block)
-    }
-    
     convenience init(delegate: Controller, intent: Intent, result: @escaping ((Data?) -> ())) {
         self.init(controller: delegate)
 
@@ -37,7 +33,7 @@ final class SerialPacketOperation<Controller: CartridgeController>: OpenPortOper
     private var intent: Intent! = nil
     private var progress: Progress! = nil
     private var result: ((Data?) -> ())! = nil
-    private var buffer: Data = .init() {
+    override var buffer: Data {
         didSet {
             progress.completedUnitCount = Int64(buffer.count)
             if progress.isFinished {
@@ -76,9 +72,5 @@ final class SerialPacketOperation<Controller: CartridgeController>: OpenPortOper
         }
         
         super.serialPortWasClosed(serialPort)
-    }
-    
-    @objc override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
-        self.buffer.append(data)
     }
 }

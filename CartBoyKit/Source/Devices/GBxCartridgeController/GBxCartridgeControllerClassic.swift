@@ -5,7 +5,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
     fileprivate var dataToSend: Data? {
         didSet {
             if let data = dataToSend {
-                if data != Data([0x31]) {
+                if data != Data([0x31]), false {
                     print(#function, #line, "Data: \(data.hexString())")
                 }
                 self.send(data)

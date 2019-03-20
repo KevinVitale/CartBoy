@@ -13,7 +13,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     override func setUp() {
         do {
             if controller == nil {
-                controller = try GBxSerialPortController.controller(for: Cartridge.self)
+                controller = try GBxCartridgeController.controller()
             }
         }
         catch {

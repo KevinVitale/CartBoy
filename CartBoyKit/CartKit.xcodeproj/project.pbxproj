@@ -10,15 +10,13 @@
 		0A108BB92217929300A12FA1 /* GameboyClassicReadROMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BB82217929300A12FA1 /* GameboyClassicReadROMTests.swift */; };
 		0A108BBF22179F1400A12FA1 /* CartridgeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BBE22179F1400A12FA1 /* CartridgeController.swift */; };
 		0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11DB6122127E1600C7DD13 /* Data+Ext.swift */; };
-		0A11E6DD2242DEB6007F60E3 /* GBxSerialPortController+Cartridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11E6DC2242DEB6007F60E3 /* GBxSerialPortController+Cartridge.swift */; };
-		0A11E6E32242DEE3007F60E3 /* GBxSerialPortController+Timeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11E6E22242DEE3007F60E3 /* GBxSerialPortController+Timeout.swift */; };
+		0A11E6E72242F7EF007F60E3 /* ThreadSafeSerialPortController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11E6E62242F7EF007F60E3 /* ThreadSafeSerialPortController.swift */; };
 		0A16C141223FE7DF005FF1FA /* SerialPacketOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A16C140223FE7DF005FF1FA /* SerialPacketOperation.swift */; };
 		0A4707D4223C0358007C3F1E /* GBxCartridgeControllerClassic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4707D3223C0358007C3F1E /* GBxCartridgeControllerClassic.swift */; };
 		0A4707D7223C03E9007C3F1E /* GBxCartridgeControllerAdvance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4707D6223C03E9007C3F1E /* GBxCartridgeControllerAdvance.swift */; };
 		0A541AFF223FEB9C0071B1EB /* SerialPacketOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A541AFE223FEB9C0071B1EB /* SerialPacketOperationTests.swift */; };
 		0A61C750223711BA001D653D /* SwiftCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */; };
 		0A61C76522371701001D653D /* SerialPortController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A61C76422371701001D653D /* SerialPortController.swift */; };
-		0A61C76B22371925001D653D /* GBxSerialPortController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A61C76A22371925001D653D /* GBxSerialPortController.swift */; };
 		0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */; };
 		0A93D3892241D14300A141EA /* SerialPacketOperationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A93D3882241D14300A141EA /* SerialPacketOperationDelegate.swift */; };
 		0AA6E27E223B2B35003F4721 /* FlashCart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA6E27D223B2B35003F4721 /* FlashCart.swift */; };
@@ -69,15 +67,13 @@
 		0A108BBB221792C000A12FA1 /* GBxCartridgeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxCartridgeController.swift; sourceTree = "<group>"; };
 		0A108BBE22179F1400A12FA1 /* CartridgeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartridgeController.swift; sourceTree = "<group>"; };
 		0A11DB6122127E1600C7DD13 /* Data+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Ext.swift"; sourceTree = "<group>"; };
-		0A11E6DC2242DEB6007F60E3 /* GBxSerialPortController+Cartridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GBxSerialPortController+Cartridge.swift"; sourceTree = "<group>"; };
-		0A11E6E22242DEE3007F60E3 /* GBxSerialPortController+Timeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GBxSerialPortController+Timeout.swift"; sourceTree = "<group>"; };
+		0A11E6E62242F7EF007F60E3 /* ThreadSafeSerialPortController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadSafeSerialPortController.swift; sourceTree = "<group>"; };
 		0A16C140223FE7DF005FF1FA /* SerialPacketOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialPacketOperation.swift; sourceTree = "<group>"; };
 		0A3DD4D021F2A64800BCC6D4 /* ORSSerial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ORSSerial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A4707D3223C0358007C3F1E /* GBxCartridgeControllerClassic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxCartridgeControllerClassic.swift; sourceTree = "<group>"; };
 		0A4707D6223C03E9007C3F1E /* GBxCartridgeControllerAdvance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxCartridgeControllerAdvance.swift; sourceTree = "<group>"; };
 		0A541AFE223FEB9C0071B1EB /* SerialPacketOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialPacketOperationTests.swift; sourceTree = "<group>"; };
 		0A61C76422371701001D653D /* SerialPortController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialPortController.swift; sourceTree = "<group>"; };
-		0A61C76A22371925001D653D /* GBxSerialPortController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxSerialPortController.swift; sourceTree = "<group>"; };
 		0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+Ext.swift"; sourceTree = "<group>"; };
 		0A93D3882241D14300A141EA /* SerialPacketOperationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialPacketOperationDelegate.swift; sourceTree = "<group>"; };
 		0AA6E27D223B2B35003F4721 /* FlashCart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashCart.swift; sourceTree = "<group>"; };
@@ -119,18 +115,9 @@
 			children = (
 				0A61C76422371701001D653D /* SerialPortController.swift */,
 				0A108BBE22179F1400A12FA1 /* CartridgeController.swift */,
+				0A11E6E62242F7EF007F60E3 /* ThreadSafeSerialPortController.swift */,
 			);
 			path = Controller;
-			sourceTree = "<group>";
-		};
-		0A11E6E42242E070007F60E3 /* GBxSerialPortController */ = {
-			isa = PBXGroup;
-			children = (
-				0A61C76A22371925001D653D /* GBxSerialPortController.swift */,
-				0A11E6DC2242DEB6007F60E3 /* GBxSerialPortController+Cartridge.swift */,
-				0A11E6E22242DEE3007F60E3 /* GBxSerialPortController+Timeout.swift */,
-			);
-			path = GBxSerialPortController;
 			sourceTree = "<group>";
 		};
 		0A11E6E52242E095007F60E3 /* GBxCartridgeController */ = {
@@ -152,15 +139,6 @@
 				0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */,
 			);
 			path = Utils;
-			sourceTree = "<group>";
-		};
-		0A1381B721F685E50071E293 /* GBxCart */ = {
-			isa = PBXGroup;
-			children = (
-				0A11E6E42242E070007F60E3 /* GBxSerialPortController */,
-				0A11E6E52242E095007F60E3 /* GBxCartridgeController */,
-			);
-			path = GBxCart;
 			sourceTree = "<group>";
 		};
 		0A3DD4BB21F2A60B00BCC6D4 = {
@@ -206,7 +184,7 @@
 			isa = PBXGroup;
 			children = (
 				0ADA13E1223ABE6300333E3A /* Flash Carts */,
-				0A1381B721F685E50071E293 /* GBxCart */,
+				0A11E6E52242E095007F60E3 /* GBxCartridgeController */,
 			);
 			path = Devices;
 			sourceTree = "<group>";
@@ -436,17 +414,15 @@
 				0ABD40E2221A10D000C6F656 /* GBxCartridgeController.swift in Sources */,
 				0AA6E284223B3021003F4721 /* AM29F016B.swift in Sources */,
 				0A61C750223711BA001D653D /* SwiftCrypto.swift in Sources */,
-				0A61C76B22371925001D653D /* GBxSerialPortController.swift in Sources */,
 				0A61C76522371701001D653D /* SerialPortController.swift in Sources */,
 				0AA6E27E223B2B35003F4721 /* FlashCart.swift in Sources */,
 				0AC59C562234A5180040BAA4 /* OpenPortOperation.swift in Sources */,
+				0A11E6E72242F7EF007F60E3 /* ThreadSafeSerialPortController.swift in Sources */,
 				0A4707D4223C0358007C3F1E /* GBxCartridgeControllerClassic.swift in Sources */,
 				0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */,
 				0A93D3892241D14300A141EA /* SerialPacketOperationDelegate.swift in Sources */,
 				0A4707D7223C03E9007C3F1E /* GBxCartridgeControllerAdvance.swift in Sources */,
 				0A108BBF22179F1400A12FA1 /* CartridgeController.swift in Sources */,
-				0A11E6DD2242DEB6007F60E3 /* GBxSerialPortController+Cartridge.swift in Sources */,
-				0A11E6E32242DEE3007F60E3 /* GBxSerialPortController+Timeout.swift in Sources */,
 				0AE7F270221D942A00D86827 /* NSCondition+Ext.swift in Sources */,
 				0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */,
 				0A16C141223FE7DF005FF1FA /* SerialPacketOperation.swift in Sources */,
