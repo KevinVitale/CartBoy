@@ -136,7 +136,7 @@ open class GBxSerialPortController: NSObject, SerialPortController, SerialPacket
             // print("Continuing...")
             self.delegate = delegate
             //------------------------------------------------------------------
-            DispatchQueue.main.async {
+            DispatchQueue.main.sync {
                 if self.reader.isOpen == false {
                     self.open()
                     self.reader.configuredAsGBxCart()
