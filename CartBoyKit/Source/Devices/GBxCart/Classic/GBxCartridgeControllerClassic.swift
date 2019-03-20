@@ -163,20 +163,21 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
     }
     
     @objc override func packetOperation(_ operation: Operation, didComplete intent: Any?) {
-        guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
-            operation.cancel()
+        defer {
+            super.packetOperation(operation, didComplete: intent)
+        }
+        
+        guard intent is Intent<GBxCartridgeController<Cartridge>> else {
             return
         }
         
-        if case let .read(_, context) = intent {
+        if case let .read(_, context)? = intent as? Intent<GBxCartridgeController<Cartridge>> {
             switch context {
             case .saveFile(_):
                 self.toggle(ram: false)
             default: (/* do nothing */)
             }
         }
-        
-        super.packetOperation(operation, didComplete: intent)
     }
 }
 
