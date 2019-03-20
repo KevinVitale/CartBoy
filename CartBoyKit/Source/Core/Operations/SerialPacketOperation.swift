@@ -89,7 +89,7 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
         }
     }
 
-    public override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+    @objc public override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
         super.serialPortWasClosed(serialPort)
         let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
         let data = self.buffer.prefix(upTo: Int(upToCount))
@@ -101,8 +101,7 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
         }
     }
     
-    public override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
-        super.serialPort(serialPort, didReceive: data)
+    @objc public override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
         self.buffer.append(data)
     }
 }

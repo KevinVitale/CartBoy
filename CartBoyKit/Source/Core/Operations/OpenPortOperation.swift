@@ -91,15 +91,6 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         print(#file, #function, #line)
     }
     
-    public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
-    }
-    
-    public func serialPort(_ serialPort: ORSSerialPort, requestDidTimeout request: ORSSerialRequest) {
-    }
-    
-    public func serialPort(_ serialPort: ORSSerialPort, didEncounterError error: Error) {
-    }
-    
-    public func serialPort(_ serialPort: ORSSerialPort, didReceivePacket packetData: Data, matching descriptor: ORSSerialPacketDescriptor) {
+    @objc public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
     }
 }
