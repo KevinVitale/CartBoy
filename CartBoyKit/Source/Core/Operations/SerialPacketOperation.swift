@@ -16,23 +16,10 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
         }
     }
     
-    enum Context: Equatable {
+    enum Context {
         case header
         case cartridge(Controller.Cartridge.Header)
         case saveFile(Controller.Cartridge.Header)
-        
-        static func ==(lhs: Context, rhs: Context) -> Bool {
-            switch (lhs, rhs) {
-            case (.header, .header):
-                return true
-            case (.cartridge(let h1), .cartridge(let h2)):
-                return Data(h1[h1.startIndex..<h1.endIndex]) == Data(h2[h2.startIndex..<h2.endIndex])
-            case (.saveFile(let h1), .saveFile(let h2)):
-                return Data(h1[h1.startIndex..<h1.endIndex]) == Data(h2[h2.startIndex..<h2.endIndex])
-            default:
-                return false
-            }
-        }
     }
     
     override private init(controller: Controller, block: (() -> ())? = nil) {
