@@ -5,7 +5,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
     fileprivate var dataToSend: Data? {
         didSet {
             if let data = dataToSend {
-                if data != Data([0x31]), printStacktrace {
+                if data != Data([0x31]) {
                     print(#function, #line, "Data: \(data.hexString())")
                 }
                 self.send(data)
@@ -154,10 +154,8 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     //----------------------------------------------------------
                     // DEBUG
                     //----------------------------------------------------------
-                    if printProgress {
-                        print("#\(bank), \(progress.fractionCompleted)%")
-                    }
-                    
+                    print("#\(bank), \(progress.fractionCompleted)%")
+
                     //----------------------------------------------------------
                     // START
                     //----------------------------------------------------------
@@ -176,9 +174,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     //----------------------------------------------------------
                     // DEBUG
                     //----------------------------------------------------------
-                    if printProgress {
-                        print("#\(bank), \(progress.fractionCompleted)%")
-                    }
+                    print("#\(bank), \(progress.fractionCompleted)%")
                 }
                 fallthrough
             default:

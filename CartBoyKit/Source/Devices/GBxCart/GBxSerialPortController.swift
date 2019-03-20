@@ -11,10 +11,6 @@ open class GBxSerialPortController: NSObject, SerialPortController {
         super.init()
     }
     
-    /// DEBUG
-    public var printStacktrace: Bool = false
-    public var printProgress: Bool = false
-
     ///
     final let reader: ORSSerialPort
     
