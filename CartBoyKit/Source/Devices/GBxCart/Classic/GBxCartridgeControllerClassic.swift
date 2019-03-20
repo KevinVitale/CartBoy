@@ -162,7 +162,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         }
     }
     
-    @objc override func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
+    @objc override func packetOperation(_ operation: Operation, didComplete intent: Any?) {
         guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
@@ -176,7 +176,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
             }
         }
         
-        super.packetOperation(operation, didComplete: buffer, with: intent)
+        super.packetOperation(operation, didComplete: intent)
     }
 }
 

@@ -32,10 +32,8 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
         self.result   = result
         self.intent   = intent
         self.progress = Progress(totalUnitCount: Int64(intent.count))
-        self.delegate = delegate
     }
     
-    private weak var delegate: SerialPacketOperationDelegate? = nil
     private var intent: Intent! = nil
     private var progress: Progress! = nil
     private var result: ((Data?) -> ())! = nil
@@ -68,15 +66,16 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
     }
 
     @objc public override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
-        super.serialPortWasClosed(serialPort)
         let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
         let data = self.buffer.prefix(upTo: Int(upToCount))
         
         self.result(data)
         
-        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didComplete:with:))) {
-            delegate.packetOperation?(self, didComplete: data, with: self.intent)
+        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didComplete:))) {
+            delegate.packetOperation?(self, didComplete: self.intent)
         }
+        
+        super.serialPortWasClosed(serialPort)
     }
     
     @objc public override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {

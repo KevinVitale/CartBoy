@@ -9,7 +9,7 @@ import Gibby
  - note: ROM files are _"read"_ & _"written"_, or _"erased"_ (the latter two, if they are a `FlashCart`).
  - note: Save files are _"backed-up"_, _"restored"_, or _"deleted"_, if the `Cartridge` has **SRAM** support.
  */
-public protocol CartridgeController: SerialPortController, SerialPacketOperationDelegate {
+public protocol CartridgeController: SerialPortController {
     /// The associated platform that the adopter relates to.
     associatedtype Cartridge: Gibby.Cartridge
 }

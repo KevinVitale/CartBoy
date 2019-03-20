@@ -2,6 +2,7 @@ import ORSSerial
 
 public class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSerialPortDelegate {
     init(controller: Controller, block: (() -> ())? = nil) {
+        self.delegate = controller
         self.controller = controller
         self.transactionID = UUID()
         super.init()
@@ -16,6 +17,7 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         }
     }
     
+    private(set) weak var delegate: SerialPacketOperationDelegate? = nil
     let controller: Controller
     let transactionID: UUID
     

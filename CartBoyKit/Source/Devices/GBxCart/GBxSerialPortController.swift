@@ -147,7 +147,7 @@ open class GBxSerialPortController: NSObject, SerialPortController, SerialPacket
     
     /**
      */
-    @objc public func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
+    @objc public func packetOperation(_ operation: Operation, didComplete intent: Any?) {
         self.isOpenCondition.whileLocked {
             self.delegate = nil
             self.isOpenCondition.signal()
