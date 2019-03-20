@@ -11,7 +11,7 @@ public protocol SerialPortController: class, NSObjectProtocol {
     
     /**
      */
-    func addOperation(_ operation: Operation)
+    func addOperation<Operation: SerialPacketOperation<Self>>(_ operation: Operation)
     
     /**
      */

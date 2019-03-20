@@ -29,7 +29,7 @@ enum OperationContext {
     case saveFile
 }
 
-final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOperation<Controller> {
+public final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOperation<Controller> {
     required init(controller: Controller, delegate: SerialPacketOperationDelegate? = nil, intent: PacketIntent, result: @escaping ((Data?) -> ())) {
         self.result   = result
         self.intent   = intent
@@ -69,7 +69,7 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
         self.controller.close()
     }
     
-    override func main() {
+    public override func main() {
         super.main()
 
         self.isReadyCondition.whileLocked {
@@ -88,7 +88,7 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
         }
     }
     
-    override func serialPortWasOpened(_ serialPort: ORSSerialPort) {
+    public override func serialPortWasOpened(_ serialPort: ORSSerialPort) {
         defer {
             self.isReadyCondition.whileLocked {
                 self._isReady = true
@@ -97,7 +97,7 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
         }
     }
     
-    override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+    public override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
         let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
         let data = self.buffer.prefix(upTo: Int(upToCount))
         
@@ -108,7 +108,7 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
         }
     }
     
-    override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+    public override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
         self.buffer.append(data)
     }
 }

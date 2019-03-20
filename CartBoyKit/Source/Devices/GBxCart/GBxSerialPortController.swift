@@ -71,7 +71,7 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     
     /**
      */
-    public final func addOperation(_ operation: Operation) {
+    public final func addOperation<Operation: SerialPacketOperation<GBxSerialPortController>>(_ operation: Operation) {
         operation.start()
     }
     
