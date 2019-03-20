@@ -87,7 +87,7 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         print(#file, #function, #line)
     }
 
-    public func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+    @objc public func serialPortWasClosed(_ serialPort: ORSSerialPort) {
         print(#file, #function, #line)
     }
     
