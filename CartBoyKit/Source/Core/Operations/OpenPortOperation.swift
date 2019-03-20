@@ -1,10 +1,14 @@
 import ORSSerial
 
-public class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialPortDelegate {
-    init(controller: Controller) {
+public class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSerialPortDelegate {
+    init(controller: Controller, block: (() -> ())? = nil) {
         self.controller = controller
         self.transactionID = UUID()
         super.init()
+        
+        if let block = block {
+            addExecutionBlock(block)
+        }
     }
     
     let controller: Controller
