@@ -55,6 +55,11 @@ class SerialPacketOperationTests: XCTestCase {
         controller.detect {
             print($0!)
             exp.fulfill()
+            controller.whileOpened(perform: {
+                return controller.send("0".bytes())
+            }) {
+                print("Data Sent?", $0!)
+            }
             controller.header {
                 print($0!)
                 exp.fulfill()

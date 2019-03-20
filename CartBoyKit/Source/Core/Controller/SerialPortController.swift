@@ -35,7 +35,15 @@ public protocol SerialPortController: SerialPacketOperationDelegate {
 
 extension SerialPortController {
     /**
-     Peforms an asychronous `block` operation while the serial port is opened.
+     Peforms an asychronous `block` operation while the serial port is open.
+     
+     - parameters:
+       - block: The block executed while the serial port is opened.
+       - callback: An optional value returned by `block`.
+     
+     - note:
+     By the time `block` completes execution, the serial port will have
+     been closed.
      */
     func whileOpened<T>(perform block: @escaping () -> T?, _ callback: @escaping (T?) -> ()) {
         var operation: OpenPortOperation<Self>! = nil {
