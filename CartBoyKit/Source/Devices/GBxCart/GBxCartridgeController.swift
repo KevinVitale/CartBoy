@@ -36,7 +36,7 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: GBxSerialPortCo
         }
     }
     
-    public func packetLength(for intent: Any?) -> UInt {
+    @objc public func packetLength(for intent: Any?) -> UInt {
         guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
             fatalError()
         }

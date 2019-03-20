@@ -47,7 +47,7 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
             }
             else {
                 if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didUpdate:with:))) {
-                    if case let packetLength = Int64(self.delegate?.packetLength(for: self.intent) ?? 0), progress.completedUnitCount % packetLength == 0 {
+                    if case let packetLength = Int64(self.delegate?.packetLength?(for: self.intent) ?? 1), progress.completedUnitCount % packetLength == 0 {
                         delegate.packetOperation?(self, didUpdate: progress, with: self.intent)
                     }
                 }

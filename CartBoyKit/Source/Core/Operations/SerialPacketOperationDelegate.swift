@@ -5,5 +5,5 @@ import Foundation
     @objc optional func packetOperation(_ operation: Operation, didUpdate progress: Progress, with intent: Any?)
     @objc optional func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?)
     
-    @objc func packetLength(for intent: Any?) -> UInt
+    @objc optional func packetLength(for intent: Any?) -> UInt
 }

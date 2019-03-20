@@ -3,7 +3,7 @@ import Gibby
 
 /**
  */
-open class GBxSerialPortController: NSObject, SerialPortController {
+open class GBxSerialPortController: NSObject, SerialPortController, SerialPacketOperationDelegate {
     /**
      */
     public struct Version: Equatable, Codable, CustomDebugStringConvertible {
