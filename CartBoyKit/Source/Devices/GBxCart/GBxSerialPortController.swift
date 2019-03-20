@@ -83,8 +83,16 @@ open class GBxSerialPortController: NSObject, SerialPortController {
                     group.leave()
                     return true
             }))
+            //------------------------------------------------------------------
+            // WAIT
+            //------------------------------------------------------------------
             group.wait()
-            callback(version, voltage)
+            //------------------------------------------------------------------
+            // CALLBACK
+            //------------------------------------------------------------------
+            DispatchQueue.main.async {
+                callback(version, voltage)
+            }
         }.start()
     }
 

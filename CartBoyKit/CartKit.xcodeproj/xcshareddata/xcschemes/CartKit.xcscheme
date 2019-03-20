@@ -48,9 +48,6 @@
                   Identifier = "GameboyClassicReadROMTests/testWriteSaveFile()">
                </Test>
                <Test
-                  Identifier = "SerialPacketOperationTests/testDetect()">
-               </Test>
-               <Test
                   Identifier = "SerialPacketOperationTests/testReadSaveFilePerformance()">
                </Test>
             </SkippedTests>
