@@ -1,14 +1,6 @@
 import Foundation
 import ORSSerial
 
-@objc public protocol SerialPacketOperationDelegate: class, NSObjectProtocol {
-    @objc func packetOperation(_ operation: Operation, didBeginWith intent: Any?)
-    @objc func packetOperation(_ operation: Operation, didUpdate progress: Progress, with intent: Any?)
-    @objc func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?)
-    
-    @objc func packetLength(for intent: Any?) -> UInt
-}
-
 enum PacketIntent {
     case read(count: Int, context: Any?)
     case write(data: Data)
