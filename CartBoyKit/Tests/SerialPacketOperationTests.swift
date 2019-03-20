@@ -21,7 +21,7 @@ class SerialPacketOperationTests: XCTestCase {
         
         let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
         controller.detect {
-            print($0, $1)
+            print($0!)
             exp.fulfill()
         }
         
@@ -49,12 +49,18 @@ class SerialPacketOperationTests: XCTestCase {
     
     func testSerialPacketBlockOperation() {
         let exp = expectation(description: "opened")
+        exp.expectedFulfillmentCount = 2
         let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
-        OpenPortOperation(controller: controller) {
-            print("hello", controller.isOpen)
-            exp.fulfill()
-        }.start()
         
+        controller.detect {
+            print($0!)
+            exp.fulfill()
+            controller.header {
+                print($0!)
+                exp.fulfill()
+            }
+        }
+
         waitForExpectations(timeout: 5)
     }
 
