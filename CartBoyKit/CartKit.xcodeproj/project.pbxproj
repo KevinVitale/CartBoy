@@ -133,6 +133,16 @@
 			path = GBxSerialPortController;
 			sourceTree = "<group>";
 		};
+		0A11E6E52242E095007F60E3 /* GBxCartridgeController */ = {
+			isa = PBXGroup;
+			children = (
+				0A108BBB221792C000A12FA1 /* GBxCartridgeController.swift */,
+				0A4707D6223C03E9007C3F1E /* GBxCartridgeControllerAdvance.swift */,
+				0A4707D3223C0358007C3F1E /* GBxCartridgeControllerClassic.swift */,
+			);
+			path = GBxCartridgeController;
+			sourceTree = "<group>";
+		};
 		0A1381B421F685C00071E293 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -148,9 +158,7 @@
 			isa = PBXGroup;
 			children = (
 				0A11E6E42242E070007F60E3 /* GBxSerialPortController */,
-				0A108BBB221792C000A12FA1 /* GBxCartridgeController.swift */,
-				0A4707CE223C0343007C3F1E /* Classic */,
-				0A4707D5223C03D9007C3F1E /* Advance */,
+				0A11E6E52242E095007F60E3 /* GBxCartridgeController */,
 			);
 			path = GBxCart;
 			sourceTree = "<group>";
@@ -182,22 +190,6 @@
 				0A3DD4D021F2A64800BCC6D4 /* ORSSerial.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		0A4707CE223C0343007C3F1E /* Classic */ = {
-			isa = PBXGroup;
-			children = (
-				0A4707D3223C0358007C3F1E /* GBxCartridgeControllerClassic.swift */,
-			);
-			path = Classic;
-			sourceTree = "<group>";
-		};
-		0A4707D5223C03D9007C3F1E /* Advance */ = {
-			isa = PBXGroup;
-			children = (
-				0A4707D6223C03E9007C3F1E /* GBxCartridgeControllerAdvance.swift */,
-			);
-			path = Advance;
 			sourceTree = "<group>";
 		};
 		0A61C77422382D66001D653D /* Core */ = {
