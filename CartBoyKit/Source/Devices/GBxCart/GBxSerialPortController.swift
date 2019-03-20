@@ -115,9 +115,9 @@ open class GBxSerialPortController: NSObject, SerialPortController, SerialPacket
         return self.reader.close()
     }
     
-    let isOpenCondition = NSCondition()
+    private let isOpenCondition = NSCondition()
     private var currentDelegate: ORSSerialPortDelegate? = nil // Prevents 'deinit'
-    var delegate: ORSSerialPortDelegate?  {
+    private var delegate: ORSSerialPortDelegate?  {
         get { return reader.delegate     }
         set {
             currentDelegate = newValue
@@ -142,6 +142,15 @@ open class GBxSerialPortController: NSObject, SerialPortController, SerialPacket
                     self.reader.configuredAsGBxCart()
                 }
             }
+        }
+    }
+    
+    /**
+     */
+    @objc public func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
+        self.isOpenCondition.whileLocked {
+            self.delegate = nil
+            self.isOpenCondition.signal()
         }
     }
     

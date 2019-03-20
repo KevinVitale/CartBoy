@@ -23,19 +23,7 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: GBxSerialPortCo
             }
         }
     }
-    
-    @objc public func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
-        guard let _ = intent as? Intent<GBxCartridgeController<Cartridge>> else {
-            operation.cancel()
-            return
-        }
-        
-        self.isOpenCondition.whileLocked {
-            self.delegate = nil
-            self.isOpenCondition.signal()
-        }
-    }
-    
+
     @objc public func packetLength(for intent: Any?) -> UInt {
         guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
             fatalError()
