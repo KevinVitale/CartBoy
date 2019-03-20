@@ -1,6 +1,6 @@
 import ORSSerial
 
-public class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSerialPortDelegate {
+class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSerialPortDelegate {
     init(controller: Controller, block: (() -> ())? = nil) {
         self.delegate = controller
         self.controller = controller
@@ -55,19 +55,19 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         didSet  {  self.didChangeValue(forKey: "isReady") }
     }
 
-    override public var isExecuting: Bool {
+    override var isExecuting: Bool {
         return _isExecuting
     }
     
-    override public var isFinished: Bool {
+    override var isFinished: Bool {
         return _isFinished
     }
     
-    override public var isReady: Bool {
+    override var isReady: Bool {
         return _isReady && super.isReady
     }
     
-    public override var isAsynchronous: Bool {
+    override var isAsynchronous: Bool {
         return true
     }
 
@@ -84,7 +84,7 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         }
     }
     
-    @objc public override func start() {
+    @objc override func start() {
         if self.isAsynchronous {
             Thread(target: self, selector: #selector(self.main), object: nil).start()
         }
@@ -93,7 +93,7 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         }
     }
 
-    @objc override public func main() {
+    @objc override func main() {
         self.controller.openReader(delegate: self)
         self.isReadyCondition.whileLocked {
             while !self.isReady {
@@ -104,11 +104,11 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         }
     }
 
-    public func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
+    func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
         self.cancel()
     }
     
-    public func serialPortWasOpened(_ serialPort: ORSSerialPort) {
+    func serialPortWasOpened(_ serialPort: ORSSerialPort) {
         defer {
             self.isReadyCondition.whileLocked {
                 self._isReady = true
@@ -118,7 +118,7 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         print(#file, #function, #line)
     }
 
-    @objc public func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+    @objc func serialPortWasClosed(_ serialPort: ORSSerialPort) {
         print(#file, #function, #line)
         
         if !self.executionBlocks.isEmpty, let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didComplete:))) {
@@ -126,6 +126,6 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         }
     }
     
-    @objc public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+    @objc func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
     }
 }

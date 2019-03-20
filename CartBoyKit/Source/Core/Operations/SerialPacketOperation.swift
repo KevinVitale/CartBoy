@@ -1,7 +1,7 @@
 import Foundation
 import ORSSerial
 
-public final class SerialPacketOperation<Controller: CartridgeController>: OpenPortOperation<Controller> {
+final class SerialPacketOperation<Controller: CartridgeController>: OpenPortOperation<Controller> {
     enum Intent {
         case read(count: Int, context: Context)
         case write(data: Data, context: Context)
@@ -53,7 +53,7 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
         }
     }
 
-    public override func main() {
+    override func main() {
         super.main()
 
         self.progress.becomeCurrent(withPendingUnitCount: 0)
@@ -65,7 +65,7 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
         }
     }
 
-    @objc public override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+    @objc override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
         let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
         let data = self.buffer.prefix(upTo: Int(upToCount))
         
@@ -78,7 +78,7 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
         super.serialPortWasClosed(serialPort)
     }
     
-    @objc public override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+    @objc override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
         self.buffer.append(data)
     }
 }
