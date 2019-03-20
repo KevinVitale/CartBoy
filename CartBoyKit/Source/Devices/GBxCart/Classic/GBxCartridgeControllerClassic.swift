@@ -218,24 +218,3 @@ extension GBxCartridgeControllerClassic {
         self.bank(address: mode ? 0x0A : 0x00, radix: 10)
     }
 }
-
-fileprivate extension BinaryInteger {
-    func bytes(radix: Int = 16, uppercase: Bool = true, using encoding: String.Encoding = .ascii) -> Data? {
-        guard let data = String(self, radix: radix, uppercase: uppercase).data(using: encoding) else {
-            return nil
-        }
-        if radix == 10 {
-            print(">>> \(data.hexString(radix: radix))")
-        }
-        return data
-    }
-}
-
-fileprivate extension String {
-    func bytes(using encoding: String.Encoding = .ascii) -> Data? {
-        guard let data = self.data(using: encoding) else {
-            return nil
-        }
-        return data
-    }
-}

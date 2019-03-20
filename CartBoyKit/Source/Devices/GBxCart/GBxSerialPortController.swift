@@ -6,6 +6,30 @@ import Gibby
 open class GBxSerialPortController: NSObject, SerialPortController {
     /**
      */
+    public struct Version: Equatable, Codable, CustomDebugStringConvertible {
+        public let major: String
+        public let minor: String
+        public let revision: String
+        
+        public var debugDescription: String {
+            return "v\(major).\(minor)\(revision)"
+        }
+        
+        fileprivate mutating func change(major value: String) {
+            self = .init(major: value, minor: minor, revision: revision)
+        }
+        
+        fileprivate mutating func change(minor value: String) {
+            self = .init(major: major, minor: value, revision: revision)
+        }
+        
+        fileprivate mutating func change(revision value: String) {
+            self = .init(major: major, minor: minor, revision: value)
+        }
+    }
+    
+    /**
+     */
     required public init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
         super.init()
@@ -15,10 +39,54 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     final let reader: ORSSerialPort
     
     ///
-    public private(set) var version: SerialPortControllerVendorVersion = .init(major: "1", minor: "1", revision: "a")
-    
-    ///
-    public private(set) var voltage: Voltage = .high
+    public func detect(_ callback: @escaping (Version, Voltage) -> ()) {
+        OpenPortOperation(controller: self) {
+            var version = Version(major: "1", minor: "", revision: "")
+            let group = DispatchGroup()
+            //------------------------------------------------------------------
+            // PCB Version
+            //------------------------------------------------------------------
+            group.enter()
+            self.reader.send(ORSSerialRequest(
+                dataToSend: "h\0".bytes()!
+              , userInfo: nil
+              , timeoutInterval: 5
+              , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 3, userInfo: nil) {
+                version.change(minor: $0!.hexString().lowercased())
+                group.leave()
+                return true
+            }))
+            //------------------------------------------------------------------
+            // Firmware Version
+            //------------------------------------------------------------------
+            group.enter()
+            self.reader.send(ORSSerialRequest(
+                dataToSend: "V\0".bytes()!
+                , userInfo: nil
+                , timeoutInterval: 5
+                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 3, userInfo: nil) {
+                    version.change(revision: $0!.hexString().lowercased())
+                    group.leave()
+                    return true
+            }))
+            //------------------------------------------------------------------
+            // Voltage Version
+            //------------------------------------------------------------------
+            var voltage: Voltage = .high
+            group.enter()
+            self.reader.send(ORSSerialRequest(
+                dataToSend: "C\0".bytes()!
+                , userInfo: nil
+                , timeoutInterval: 5
+                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 3, userInfo: nil) {
+                    voltage = ($0!.hexString() == "1") ? .high : .low
+                    group.leave()
+                    return true
+            }))
+            group.wait()
+            callback(version, voltage)
+        }.start()
+    }
 
     ///
     public var isOpen: Bool {
@@ -74,7 +142,10 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     /**
      */
     @discardableResult
-    public final func send(_ data: Data) -> Bool {
+    public final func send(_ data: Data?) -> Bool {
+        guard let data = data else {
+            return false
+        }
         return self.reader.send(data)
     }
 }

@@ -14,12 +14,26 @@ class SerialPacketOperationTests: XCTestCase {
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
+    
+    func testDetect() {
+        let exp = expectation(description: "opened")
+        exp.expectedFulfillmentCount = 1
+        
+        let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
+        controller.detect {
+            print($0, $1)
+            exp.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5)
+    }
 
     func testExample() {
         let exp = expectation(description: "opened")
         exp.expectedFulfillmentCount = 10
         
         let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
+        
         
         for _ in 0..<exp.expectedFulfillmentCount {
             controller.read {
