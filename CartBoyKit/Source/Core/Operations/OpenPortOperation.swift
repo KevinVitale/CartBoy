@@ -7,14 +7,31 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         self.transactionID = UUID()
         super.init()
         
-        self.completionBlock = { [weak self] in
-            self?.complete()
+        /**
+         After calling 'self.complete()', the operation *must* close the port.
+         This will have the side-effect of causing this operation to receive the
+         `serialPort(_:wasClosed:)` method, at which point this operation can
+         inform the controller that it has _definitely_ completed.
+         
+         `self.complete()`
+            -> `controller.close()`
+            -> `self.serialPort(_:wasClosed:)`
+            -> `controller.packetOperation(_:didComplete:)`
+         */
+        self.completionBlock = {
             controller.close()
         }
         
         if let block = block {
-            addExecutionBlock(block)
+            addExecutionBlock { [weak self] in
+                block()
+                self?.complete()
+            }
         }
+    }
+    
+    deinit {
+        print(#file, #function, #line)
     }
     
     private(set) weak var delegate: SerialPacketOperationDelegate? = nil
@@ -103,6 +120,10 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
 
     @objc public func serialPortWasClosed(_ serialPort: ORSSerialPort) {
         print(#file, #function, #line)
+        
+        if !self.executionBlocks.isEmpty, let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didComplete:))) {
+            delegate.packetOperation?(self, didComplete: nil)
+        }
     }
     
     @objc public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
