@@ -32,3 +32,19 @@ public protocol SerialPortController: SerialPacketOperationDelegate {
     @discardableResult
     func send(_ data: Data?) -> Bool
 }
+
+extension SerialPortController {
+    /**
+     Peforms an asychronous `block` operation while the serial port is opened.
+     */
+    func whileOpened<T>(block: @escaping () -> T?, _ callback: @escaping (T?) -> ()) {
+        var operation: OpenPortOperation<Self>! = nil {
+            didSet {
+                operation.start()
+            }
+        }
+        operation = OpenPortOperation<Self>(controller: self) {
+            callback(block())
+        }
+    }
+}
