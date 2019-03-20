@@ -39,7 +39,7 @@ open class GBxSerialPortController: NSObject, SerialPortController, SerialPacket
     final let reader: ORSSerialPort
     
     public func detect(_ callback: @escaping ((Version, Voltage)?) -> ()) {
-        self.whileOpened(block: { () -> ((Version, Voltage)) in
+        self.whileOpened(perform: { () -> ((Version, Voltage)) in
             var version = Version(major: "1", minor: "", revision: "")
             let group = DispatchGroup()
             //------------------------------------------------------------------

@@ -37,7 +37,7 @@ extension SerialPortController {
     /**
      Peforms an asychronous `block` operation while the serial port is opened.
      */
-    func whileOpened<T>(block: @escaping () -> T?, _ callback: @escaping (T?) -> ()) {
+    func whileOpened<T>(perform block: @escaping () -> T?, _ callback: @escaping (T?) -> ()) {
         var operation: OpenPortOperation<Self>! = nil {
             didSet {
                 operation.start()
