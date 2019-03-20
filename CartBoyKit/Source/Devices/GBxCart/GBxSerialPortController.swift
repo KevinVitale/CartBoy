@@ -50,7 +50,6 @@ open class GBxSerialPortController: NSObject, SerialPortController {
     public final func openReader(delegate: ORSSerialPortDelegate?) {
         self.isOpenCondition.whileLocked {
             while self.currentDelegate != nil {
-                // print(NSString(string: #file).lastPathComponent, #function, #line, "Waiting...")
                 self.isOpenCondition.wait()
             }
             
