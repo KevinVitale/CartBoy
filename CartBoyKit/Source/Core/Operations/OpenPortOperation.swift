@@ -14,6 +14,8 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
     let controller: Controller
     let transactionID: UUID
     
+    private let isReadyCondition = NSCondition()
+    
     @objc var _isExecuting: Bool = false {
         willSet { self.willChangeValue(forKey: "isExecuting") }
         didSet  {  self.didChangeValue(forKey: "isExecuting") }
@@ -61,8 +63,14 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
     }
 
     @objc override public func main() {
-        super.main()
         self.controller.openReader(delegate: self)
+        self.isReadyCondition.whileLocked {
+            while !self.isReady {
+                self.isReadyCondition.wait()
+            }
+            self._isExecuting = true
+            super.main()
+        }
     }
 
     public func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
@@ -70,9 +78,17 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
     }
     
     public func serialPortWasOpened(_ serialPort: ORSSerialPort) {
+        defer {
+            self.isReadyCondition.whileLocked {
+                self._isReady = true
+                self.isReadyCondition.signal()
+            }
+        }
+        print(#file, #function, #line)
     }
 
     public func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+        print(#file, #function, #line)
     }
     
     public func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {

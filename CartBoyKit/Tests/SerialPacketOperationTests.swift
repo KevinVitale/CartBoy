@@ -32,6 +32,17 @@ class SerialPacketOperationTests: XCTestCase {
 
         waitForExpectations(timeout: 100)
     }
+    
+    func testSerialPacketBlockOperation() {
+        let exp = expectation(description: "opened")
+        let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
+        OpenPortOperation(controller: controller) {
+            print("hello", controller.isOpen)
+            exp.fulfill()
+        }.start()
+        
+        waitForExpectations(timeout: 5)
+    }
 
     func testPerformanceExample() {
         self.measure {

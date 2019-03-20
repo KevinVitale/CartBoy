@@ -43,7 +43,6 @@ public final class SerialPacketOperation<Controller: SerialPortController>: Open
     private let intent: PacketIntent
     private let progress: Progress
     private let result: (Data?) -> ()
-    private let isReadyCondition = NSCondition()
     private var buffer: Data = .init() {
         didSet {
             progress.completedUnitCount = Int64(buffer.count)
@@ -72,32 +71,17 @@ public final class SerialPacketOperation<Controller: SerialPortController>: Open
     public override func main() {
         super.main()
 
-        self.isReadyCondition.whileLocked {
-            while !self.isReady {
-                self.isReadyCondition.wait()
-            }
-            
-            self.progress.becomeCurrent(withPendingUnitCount: 0)
-            self._isExecuting = true
+        self.progress.becomeCurrent(withPendingUnitCount: 0)
 
-            if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didBeginWith:))) {
-                DispatchQueue.main.async {
-                    delegate.packetOperation(self, didBeginWith: self.intent)
-                }
+        if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didBeginWith:))) {
+            DispatchQueue.main.async {
+                delegate.packetOperation(self, didBeginWith: self.intent)
             }
         }
     }
-    
-    public override func serialPortWasOpened(_ serialPort: ORSSerialPort) {
-        defer {
-            self.isReadyCondition.whileLocked {
-                self._isReady = true
-                self.isReadyCondition.signal()
-            }
-        }
-    }
-    
+
     public override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+        super.serialPortWasClosed(serialPort)
         let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
         let data = self.buffer.prefix(upTo: Int(upToCount))
         
@@ -109,6 +93,7 @@ public final class SerialPacketOperation<Controller: SerialPortController>: Open
     }
     
     public override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+        super.serialPort(serialPort, didReceive: data)
         self.buffer.append(data)
     }
 }
