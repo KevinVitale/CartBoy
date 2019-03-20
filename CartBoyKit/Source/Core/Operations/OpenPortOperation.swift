@@ -6,8 +6,12 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         self.transactionID = UUID()
         super.init()
         
-        if let block = block {
-            addExecutionBlock(block)
+        addExecutionBlock { [weak self] in
+            if let block = block {
+                block()
+            }
+            self?._isExecuting = false
+            self?._isFinished = true
         }
     }
     
