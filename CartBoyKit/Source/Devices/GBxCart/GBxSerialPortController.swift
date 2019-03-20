@@ -39,8 +39,18 @@ open class GBxSerialPortController: NSObject, SerialPortController, SerialPacket
     final let reader: ORSSerialPort
     
     ///
-    public func detect(_ callback: @escaping (Version, Voltage) -> ()) {
-        OpenPortOperation(controller: self) {
+    func perform<T>(block: @escaping () -> T?, _ callback: @escaping (T?) -> ()) {
+        var operation: OpenPortOperation<GBxSerialPortController>! = nil {
+            didSet {
+                operation.start()
+            }
+        }
+        operation = OpenPortOperation(controller: self) {
+            callback(block())
+        }
+    }
+    public func detect(_ callback: @escaping ((Version, Voltage)?) -> ()) {
+        self.perform(block: { () -> ((Version, Voltage)) in
             var version = Version(major: "1", minor: "", revision: "")
             let group = DispatchGroup()
             //------------------------------------------------------------------
@@ -53,12 +63,12 @@ open class GBxSerialPortController: NSObject, SerialPortController, SerialPacket
             group.enter()
             self.reader.send(ORSSerialRequest(
                 dataToSend: "h\0".bytes()!
-              , userInfo: nil
-              , timeoutInterval: 5
-              , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 3, userInfo: nil) {
-                version.change(minor: $0!.hexString().lowercased())
-                group.leave()
-                return true
+                , userInfo: nil
+                , timeoutInterval: 5
+                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 3, userInfo: nil) {
+                    version.change(minor: $0!.hexString().lowercased())
+                    group.leave()
+                    return true
             }))
             //------------------------------------------------------------------
             // Firmware Version
@@ -94,10 +104,8 @@ open class GBxSerialPortController: NSObject, SerialPortController, SerialPacket
             //------------------------------------------------------------------
             // CALLBACK
             //------------------------------------------------------------------
-            DispatchQueue.main.async {
-                callback(version, voltage)
-            }
-        }.start()
+            return (version, voltage)
+        }, callback)
     }
 
     ///

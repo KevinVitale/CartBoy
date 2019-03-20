@@ -16,7 +16,7 @@ public protocol SerialPortController: SerialPacketOperationDelegate {
     var isOpen: Bool { get }
     
     ///
-    func detect(_ callback: @escaping (_ version: Version, _ voltage: Voltage) -> ())
+    func detect(_ callback: @escaping ((Version, Voltage)?) -> ())
 
     /**
      */
