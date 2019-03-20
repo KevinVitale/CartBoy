@@ -18,7 +18,7 @@ extension CartridgeController {
     typealias Intent<Controller: CartridgeController> = SerialPacketOperation<Controller>.Intent
     typealias Context<Controller: CartridgeController> = SerialPacketOperation<Controller>.Context
     
-    func start(intent: Intent<Self>, result: @escaping ((Data?) -> ())) {
+    fileprivate func perform(_ intent: Intent<Self>, result: @escaping ((Data?) -> ())) {
         SerialPacketOperation(delegate: self, intent: intent, result: result).start()
     }
 }
@@ -26,7 +26,7 @@ extension CartridgeController {
 extension CartridgeController {
     public func header(result: @escaping ((Cartridge.Header?) -> ())) {
         let headerSize = Cartridge.Platform.headerRange.count
-        start(intent: .read(count: headerSize, context: .header)) {
+        self.perform(.read(count: headerSize, context: .header)) {
             guard let data = $0 else {
                 result(nil)
                 return
@@ -43,7 +43,7 @@ extension CartridgeController {
             return
         }
 
-        start(intent: .read(count: header.romSize, context: .cartridge(header))) {
+        self.perform(.read(count: header.romSize, context: .cartridge(header))) {
             guard let data = $0 else {
                 result(nil)
                 return
@@ -58,7 +58,7 @@ extension CartridgeController {
                 result(nil, header)
                 return
             }
-            start(intent: .read(count: header.ramSize, context: .saveFile(header))) {
+            self.perform(.read(count: header.ramSize, context: .saveFile(header))) {
                 guard let data = $0 else {
                     result(nil, header)
                     return
@@ -79,7 +79,7 @@ extension CartridgeController {
                 result(false)
                 return
             }
-            start(intent: .write(data: backup, context: .saveFile(header))) { _ in
+            self.perform(.write(data: backup, context: .saveFile(header))) { _ in
                 result(true)
             }
         }
