@@ -6,12 +6,13 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         self.transactionID = UUID()
         super.init()
         
-        addExecutionBlock { [weak self] in
-            if let block = block {
-                block()
-            }
-            self?._isExecuting = false
-            self?._isFinished = true
+        self.completionBlock = { [weak self] in
+            self?.complete()
+            controller.close()
+        }
+        
+        if let block = block {
+            addExecutionBlock(block)
         }
     }
     
@@ -55,6 +56,13 @@ public class OpenPortOperation<Controller: SerialPortController>: BlockOperation
         super.cancel()
         self._isExecuting = false
         self._isFinished = true
+    }
+    
+    @objc final func complete() {
+        if !self.isCancelled {
+            self._isExecuting = false
+            self._isFinished = true
+        }
     }
     
     @objc public override func start() {

@@ -54,16 +54,7 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
             }
         }
     }
-    
-    private func complete() {
-        if self.isCancelled == false {
-            self._isExecuting = false
-            self._isFinished  = true
-        }
-        
-        self.controller.close()
-    }
-    
+
     public override func main() {
         super.main()
 
