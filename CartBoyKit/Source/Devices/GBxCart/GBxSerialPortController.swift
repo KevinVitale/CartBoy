@@ -44,6 +44,10 @@ open class GBxSerialPortController: NSObject, SerialPortController {
             var version = Version(major: "1", minor: "", revision: "")
             let group = DispatchGroup()
             //------------------------------------------------------------------
+            // STOP
+            //------------------------------------------------------------------
+            self.send("0".bytes())
+            //------------------------------------------------------------------
             // PCB Version
             //------------------------------------------------------------------
             group.enter()
