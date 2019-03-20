@@ -82,7 +82,6 @@ public final class SerialPacketOperation<Controller: CartridgeController>: OpenP
 
         self.progress.becomeCurrent(withPendingUnitCount: 0)
 
-        print(delegate)
         if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didBeginWith:))) {
             DispatchQueue.main.async {
                 delegate.packetOperation?(self, didBeginWith: self.intent)
