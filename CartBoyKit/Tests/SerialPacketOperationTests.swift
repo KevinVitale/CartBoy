@@ -30,7 +30,7 @@ class SerialPacketOperationTests: XCTestCase {
 
     func testExample() {
         let exp = expectation(description: "opened")
-        exp.expectedFulfillmentCount = 10
+        exp.expectedFulfillmentCount = 2
         
         let controller = try! GBxSerialPortController.controller(for: GameboyClassic.Cartridge.self)
         

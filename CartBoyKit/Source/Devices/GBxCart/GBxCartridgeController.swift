@@ -7,26 +7,28 @@ import Gibby
  platform-specific serial port operations.
  */
 public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: GBxSerialPortController, CartridgeController {
-    private(set) var header: Cartridge.Header? = nil
-    
-    public func header(result: @escaping ((Cartridge.Header?) -> ())) {
-        self.addOperation(SerialPacketOperation(controller: self, delegate: self, intent: .read(count: Cartridge.Platform.headerRange.count, context: OperationContext.header)) { [weak self] in
-            guard let data = $0 else {
-                result(nil)
-                return
-            }
-            self?.header = .init(bytes: data)
-            result(self?.header)
-        })
-    }
-}
-
-extension GBxCartridgeController where Cartridge: FlashCart {
-    func write(to flashCart: Cartridge, result: @escaping (Bool) ->()) {
+    public func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
+        guard let _ = intent as? Intent<GBxCartridgeController<Cartridge>> else {
+            operation.cancel()
+            return
+        }
         
+        self.isOpenCondition.whileLocked {
+            self.delegate = nil
+            self.isOpenCondition.signal()
+        }
     }
     
-    func erase(flashCart: Cartridge, result: @escaping (Bool) ->()) {
+    public func packetLength(for intent: Any?) -> UInt {
+        guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
+            fatalError()
+        }
         
+        switch intent {
+        case .read:
+            return 64
+        case .write:
+            return 1
+        }
     }
 }

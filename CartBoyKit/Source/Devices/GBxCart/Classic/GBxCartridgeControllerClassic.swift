@@ -13,51 +13,29 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
             }
         }
     }
-    
-    public override func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
-        guard let intent = intent as? PacketIntent, case .read(_, let context?) = intent, context is OperationContext else {
+
+    @objc func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
+        guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
         }
         
         self.dataToSend = "0".bytes()
         timeout(.veryLong)
-        
-        //----------------------------------------------------------------------
-        // HEADER CHECK
-        //----------------------------------------------------------------------
-        if case let .read(_, context as OperationContext) = intent, context != .header {
-            guard let header = self.header, header.isLogoValid else {
-                print("WARNING: invalid header detected!")
-                print(self.header!)
-                operation.cancel()
-                return
-            }
-        }
-        
-        let header: GameboyClassic.Cartridge.Header! = {
-            if case let .read(_, context as OperationContext) = intent, context != .header {
-                return self.header as? GameboyClassic.Cartridge.Header
-            }
-            else {
-                return nil
-            }
-        }()
-        
+
         //----------------------------------------------------------------------
         // READ
         //----------------------------------------------------------------------
-        if case let .read(_, context as OperationContext) = intent {
+        if case let .read(_, context) = intent {
             switch context {
             case .header:
                 self.dataToSend = "A100\0".bytes()
                 self.dataToSend = "R".bytes()
             case .cartridge:
-                print(NSString(string: #file).lastPathComponent, #function, #line, "\n\(header!)")
                 self.dataToSend = "A0\0".bytes()
                 timeout(.veryLong)
                 self.dataToSend = "R".bytes()
-            case .saveFile:
+            case .saveFile(let header as GameboyClassic.Cartridge.Header):
                 switch header.configuration {
                 //--------------------------------------------------------------
                 // MBC2 "fix"
@@ -95,6 +73,9 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 self.dataToSend = "AA000\0".bytes()
                 timeout(.veryLong)
                 self.dataToSend = "R".bytes()
+            default:
+                operation.cancel()
+                return
             }
         }
         //----------------------------------------------------------------------
@@ -105,8 +86,8 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         }
     }
     
-    public override func packetOperation(_ operation: Operation, didUpdate progress: Progress, with intent: Any?) {
-        guard let intent = intent as? PacketIntent else {
+    @objc func packetOperation(_ operation: Operation, didUpdate progress: Progress, with intent: Any?) {
+        guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
         }
@@ -114,22 +95,14 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         // READ
         //----------------------------------------------------------------------
-        if case let .read(_, context as OperationContext) = intent {
-            let header: GameboyClassic.Cartridge.Header! = {
-                if case let .read(_, context as OperationContext) = intent, context != .header {
-                    return self.header as? GameboyClassic.Cartridge.Header
-                }
-                else {
-                    return nil
-                }
-            }()
+        if case let .read(_, context) = intent {
             let completedUnitCount = Int(progress.completedUnitCount)
             
             //------------------------------------------------------------------
             // OPERATION
             //------------------------------------------------------------------
             switch context {
-            case .cartridge:
+            case .cartridge(let header as GameboyClassic.Cartridge.Header):
                 if case let bank = completedUnitCount / header.romBankSize, bank >= 1, completedUnitCount % header.romBankSize == 0 {
                     //----------------------------------------------------------
                     // STOP
@@ -169,7 +142,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     //----------------------------------------------------------
                     self.dataToSend = "1".bytes()
                 }
-            case .saveFile:
+            case .saveFile(let header):
                 if case let bank = completedUnitCount / header.ramBankSize, completedUnitCount % header.ramBankSize == 0 {
                     //----------------------------------------------------------
                     // DEBUG
@@ -177,8 +150,11 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     print("#\(bank), \(progress.fractionCompleted)%")
                 }
                 fallthrough
-            default:
+            case .header:
                 self.dataToSend = "1".bytes()
+            default:
+                operation.cancel()
+                return
             }
         }
         //----------------------------------------------------------------------
@@ -189,14 +165,18 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         }
     }
     
-    override func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
-        guard let intent = intent as? PacketIntent else {
+    @objc override func packetOperation(_ operation: Operation, didComplete buffer: Data, with intent: Any?) {
+        guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
             operation.cancel()
             return
         }
         
-        if case let .read(_, context as OperationContext) = intent, context == .saveFile {
-            self.toggle(ram: false)
+        if case let .read(_, context) = intent {
+            switch context {
+            case .saveFile(_):
+                self.toggle(ram: false)
+            default: (/* do nothing */)
+            }
         }
         
         super.packetOperation(operation, didComplete: buffer, with: intent)

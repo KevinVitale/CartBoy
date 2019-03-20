@@ -1,6 +1,13 @@
 import ORSSerial
 
 /**
+ This contract implies the receiver is managing an `ORSSerialPort` instance.
+ 
+ A `SerialPortController` instance can:
+    - `open` and `close` a serial port; and
+    - `send` arbitruary data to said serial port; and
+    - execute `SerialPacketOperations` submitted as operations; and
+    - detect hardware features, such as board revision and voltage settings.
  */
 public protocol SerialPortController: class, NSObjectProtocol {
     associatedtype Version: Equatable, Codable, CustomDebugStringConvertible
@@ -10,11 +17,7 @@ public protocol SerialPortController: class, NSObjectProtocol {
     
     ///
     func detect(_ callback: @escaping (_ version: Version, _ voltage: Voltage) -> ())
-    
-    /**
-     */
-    func addOperation<Operation: SerialPacketOperation<Self>>(_ operation: Operation)
-    
+
     /**
      */
     func openReader(delegate: ORSSerialPortDelegate?)
@@ -29,4 +32,3 @@ public protocol SerialPortController: class, NSObjectProtocol {
     @discardableResult
     func send(_ data: Data?) -> Bool
 }
-
