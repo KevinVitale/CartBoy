@@ -43,7 +43,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     //----------------------------------------------------------
                     self.dataToSend = "A0\0".bytes()
                     self.dataToSend = "R".bytes()
-                    self.dataToSend = "0".bytes()
+                    self.dataToSend = "0\0".bytes()
                 default: (/* do nothing */)
                 }
                 
