@@ -1,7 +1,7 @@
 import ORSSerial
 
 class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSerialPortDelegate {
-    init(controller: Controller, block: ((Data?) -> ())? = nil) {
+    init(controller: Controller, block: (() -> ())? = nil) {
         self.delegate = controller
         self.controller = controller
         self.transactionID = UUID()
@@ -24,7 +24,7 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
         
         if let block = block {
             addExecutionBlock { [weak self] in
-                block(self?.buffer)
+                block()
                 self?.complete()
             }
         }
@@ -33,8 +33,6 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
     private(set) weak var delegate: SerialPacketOperationDelegate? = nil
     let controller: Controller
     let transactionID: UUID
-    
-    var buffer: Data = .init()
 
     private let isReadyCondition = NSCondition()
     
@@ -122,6 +120,5 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
     }
     
     @objc func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
-        self.buffer += data
     }
 }

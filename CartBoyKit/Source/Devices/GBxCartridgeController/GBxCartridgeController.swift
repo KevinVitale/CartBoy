@@ -45,6 +45,7 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
     public func version(_ callback: @escaping ((String?) -> ())) {
         whileOpened(perform: {
             let group = DispatchGroup()
+            var dataReceived: Data = .init()
             //------------------------------------------------------------------
             self.send("0".bytes())
             //------------------------------------------------------------------
@@ -55,8 +56,10 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
                 dataToSend: "h\0".bytes()!
                 , userInfo: nil
                 , timeoutInterval: 1
-                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) { _ in
-                    self.timeout(.veryLong)
+                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) {
+                    if let data = $0 {
+                        dataReceived.append(data)
+                    }
                     group.leave()
                     return true
             }))
@@ -68,8 +71,10 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
                 dataToSend: "V\0".bytes()!
                 , userInfo: nil
                 , timeoutInterval: 5
-                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) { _ in
-                    self.timeout(.veryLong)
+                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) {
+                    if let data = $0 {
+                        dataReceived.append(data)
+                    }
                     group.leave()
                     return true
             }))
@@ -81,8 +86,10 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
                 dataToSend: "C\0".bytes()!
                 , userInfo: nil
                 , timeoutInterval: 5
-                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) { _ in
-                    self.timeout(.veryLong)
+                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) {
+                    if let data = $0 {
+                        dataReceived.append(data)
+                    }
                     group.leave()
                     return true
             }))
@@ -90,6 +97,8 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
             // WAIT
             //------------------------------------------------------------------
             group.wait()
+            //------------------------------------------------------------------
+            return dataReceived
         }) { data in
             guard let data = data else {
                 callback(nil)

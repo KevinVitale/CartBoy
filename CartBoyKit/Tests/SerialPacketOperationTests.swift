@@ -54,21 +54,20 @@ class SerialPacketOperationTests: XCTestCase {
         
         
         let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
-        controller.whileOpened(perform: {
-            exp.fulfill()
-            /*
-            try! GBxCartridgeController<GameboyClassic.Cartridge>.whileOpened(perform: {
-                return $0.send("0".bytes())
-            }) {
-                print("Data Sent?", $0!)
-            }
-             */
-            controller.header {
-                print($0!)
+        var header: GameboyClassic.Cartridge.Header? = nil {
+            didSet {
+                print(header!)
                 exp.fulfill()
             }
-        }) {
-            print($0)
+        }
+        controller.whileOpened(perform: {
+            exp.fulfill()
+            
+            controller.header {
+                header = $0
+            }
+            return nil
+        }) { _ in
         }
 
         waitForExpectations(timeout: 5)

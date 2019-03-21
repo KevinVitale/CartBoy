@@ -33,7 +33,7 @@ final class SerialPacketOperation<Controller: CartridgeController>: OpenPortOper
     private var intent: Intent! = nil
     private var progress: Progress! = nil
     private var result: ((Data?) -> ())! = nil
-    override var buffer: Data {
+    private var buffer: Data = .init() {
         didSet {
             progress.completedUnitCount = Int64(buffer.count)
             if progress.isFinished {
@@ -72,5 +72,9 @@ final class SerialPacketOperation<Controller: CartridgeController>: OpenPortOper
         }
         
         super.serialPortWasClosed(serialPort)
+    }
+    
+    @objc override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+        self.buffer.append(data)
     }
 }
