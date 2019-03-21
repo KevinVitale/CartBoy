@@ -2,8 +2,6 @@ import Foundation
 import ORSSerial
 
 open class ThreadSafeSerialPortController: NSObject, SerialPortController, SerialPacketOperationDelegate {
-    public typealias Version = String
-    
     /**
      */
     public required init(matching portProfile: ORSSerialPortManager.PortProfile) throws {
@@ -58,14 +56,6 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController, Seria
             return false
         }
         return self.reader.send(data)
-    }
-    
-    open func version(_ callback: @escaping ((Version?) -> ())) {
-        callback(nil)
-    }
-    
-    open func voltage(_ callback: @escaping ((Voltage?) -> ())) {
-        callback(nil)
     }
 }
 

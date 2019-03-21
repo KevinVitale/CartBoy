@@ -42,7 +42,7 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
         }
     }
     
-    public override func version(_ callback: @escaping ((String?) -> ())) {
+    func version(_ callback: @escaping ((Version?) -> ())) {
         whileOpened(perform: {
             let group = DispatchGroup()
             var dataReceived: Data = .init()
@@ -85,16 +85,16 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
             //------------------------------------------------------------------
             return dataReceived
         }) { data in
-            guard let data = data else {
+            guard let data = data, let minorVersion = data.first, let firmware = data.last else {
                 callback(nil)
                 return
             }
             
-            callback("\("v1.\(data.hexString(separator: ""))".lowercased())")
+            callback(.init(minor: Int(minorVersion), revision: String(firmware, radix: 16, uppercase: false)))
         }
     }
     
-    public override func voltage(_ callback: @escaping ((Voltage?) -> ())) {
+    public func voltage(_ callback: @escaping ((Voltage?) -> ())) {
         whileOpened(perform: {
             let group = DispatchGroup()
             var dataReceived: Data = .init()
@@ -142,6 +142,25 @@ extension GBxCartridgeController where Cartridge.Platform == GameboyAdvance {
     public static func controller() throws -> GBxCartridgeController<Cartridge> {
         return try GBxCartridgeControllerAdvance<Cartridge>(matching: .prefix("/dev/cu.usbserial-14"))
     }
+}
+
+extension GBxCartridgeController {
+    public struct Version: CustomStringConvertible {
+        fileprivate init(major: Int = 1, minor: Int, revision: String) {
+            self.major = major
+            self.minor = minor
+            self.revision = revision.lowercased()
+        }
+        
+        let major: Int
+        let minor: Int
+        let revision: String
+        
+        public var description: String {
+            return "v\(major).\(minor)\(revision)"
+        }
+    }
+    
 }
 
 extension GBxCartridgeController {

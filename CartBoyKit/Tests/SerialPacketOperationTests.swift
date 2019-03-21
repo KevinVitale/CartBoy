@@ -17,14 +17,12 @@ class SerialPacketOperationTests: XCTestCase {
     
     func testDetect() {
         let exp = expectation(description: "opened")
-        exp.expectedFulfillmentCount = 1
+        exp.expectedFulfillmentCount = 2
         
         
         let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
-        controller.version { (version: String?) in
-            print(version)
-            exp.fulfill()
-        }
+        controller.version { print($0!); exp.fulfill() }
+        controller.voltage { print($0!); exp.fulfill() }
 
         waitForExpectations(timeout: 5)
     }
