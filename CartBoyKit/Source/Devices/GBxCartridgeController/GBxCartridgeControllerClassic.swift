@@ -124,7 +124,8 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     //----------------------------------------------------------
                     // DEBUG
                     //----------------------------------------------------------
-                    print("#\(bank), \(progress.fractionCompleted)%")
+                    // print("#\(bank), \(progress.fractionCompleted)%")
+                    print(".", separator: "", terminator: "")
 
                     //----------------------------------------------------------
                     // START
