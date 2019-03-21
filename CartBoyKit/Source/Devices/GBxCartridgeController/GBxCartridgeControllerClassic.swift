@@ -9,7 +9,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     print(#function, #line, "Data: \(data.hexString())")
                 }
                 self.send(data)
-                timeout()
+                timeout(.medium)
             }
         }
     }
@@ -18,7 +18,6 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         super.packetOperation(operation, didBeginWith: intent)
 
         self.dataToSend = "0\0".bytes()
-        timeout(.veryLong)
 
         //----------------------------------------------------------------------
         // READ
@@ -30,7 +29,6 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 self.dataToSend = "R".bytes()
             case .cartridge:
                 self.dataToSend = "A0\0".bytes()
-                timeout(.veryLong)
                 self.dataToSend = "R".bytes()
             case .saveFile(let header as GameboyClassic.Cartridge.Header):
                 switch header.configuration {
@@ -68,7 +66,6 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 // START
                 //--------------------------------------------------------------
                 self.dataToSend = "AA000\0".bytes()
-                timeout(.veryLong)
                 self.dataToSend = "R".bytes()
             default:
                 operation.cancel()
@@ -131,7 +128,6 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     // START
                     //----------------------------------------------------------
                     self.dataToSend = "A4000\0".bytes()
-                    timeout(.short)
                     self.dataToSend = "R".bytes()
                 }
                 else {
