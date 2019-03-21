@@ -42,7 +42,7 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
         }
     }
     
-    public func version(_ callback: @escaping ((String?) -> ())) {
+    public override func version(_ callback: @escaping ((String?) -> ())) {
         whileOpened(perform: {
             let group = DispatchGroup()
             var dataReceived: Data = .init()

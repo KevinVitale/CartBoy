@@ -10,11 +10,14 @@ import ORSSerial
     - detect hardware features, such as board revision and voltage settings.
  */
 public protocol SerialPortController: SerialPacketOperationDelegate {
+    associatedtype Version
+    
     ///
     var isOpen: Bool { get }
     
-    ///
-    func version<Version>(_ callback: @escaping ((Version?) -> ()))
+    /**
+     */
+    func version(_ callback: @escaping ((Version?) -> ()))
 
     /**
      */
