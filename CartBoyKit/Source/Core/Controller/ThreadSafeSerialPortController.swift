@@ -25,12 +25,6 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController, Seria
         }
     }
     
-    /**
-     */
-    open class var portProfile: ORSSerialPortManager.PortProfile {
-        return .prefix("/dev/cu.usbserial-14")
-    }
-    
     open func open() {
         self.reader.open()
     }

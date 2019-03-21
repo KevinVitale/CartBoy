@@ -42,10 +42,6 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
         }
     }
     
-    override public class var portProfile: ORSSerialPortManager.PortProfile {
-        return .prefix("/dev/cu.usbserial-14")
-    }
-
     public func version(_ callback: @escaping ((String?) -> ())) {
         whileOpened(perform: {
             let group = DispatchGroup()
@@ -109,13 +105,13 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
 
 extension GBxCartridgeController where Cartridge.Platform == GameboyClassic {
     public static func controller() throws -> GBxCartridgeController<Cartridge> {
-        return try GBxCartridgeControllerClassic<Cartridge>(matching: portProfile)
+        return try GBxCartridgeControllerClassic<Cartridge>(matching: .prefix("/dev/cu.usbserial-14"))
     }
 }
 
 extension GBxCartridgeController where Cartridge.Platform == GameboyAdvance {
     public static func controller() throws -> GBxCartridgeController<Cartridge> {
-        return try GBxCartridgeControllerAdvance<Cartridge>(matching: portProfile)
+        return try GBxCartridgeControllerAdvance<Cartridge>(matching: .prefix("/dev/cu.usbserial-14"))
     }
 }
 
