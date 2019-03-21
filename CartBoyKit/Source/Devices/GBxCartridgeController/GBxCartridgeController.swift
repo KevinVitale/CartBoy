@@ -126,10 +126,11 @@ extension GBxCartridgeController where Cartridge.Platform == GameboyAdvance {
 
 extension GBxCartridgeController {
     enum Timeout: UInt32 {
-        case short    = 250
-        case medium   = 1000
-        case long     = 5000
-        case veryLong = 10000
+        case veryShort = 100
+        case short     = 250
+        case medium    = 1000
+        case long      = 5000
+        case veryLong  = 10000
     }
     
     final func timeout(_ timeout: Timeout = .short) {
