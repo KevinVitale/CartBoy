@@ -16,7 +16,9 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
 
     @objc override func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
         super.packetOperation(operation, didBeginWith: intent)
-
+        //----------------------------------------------------------------------
+        // BREAK LOOPS
+        //----------------------------------------------------------------------
         self.dataToSend = "0\0".bytes()
 
         //----------------------------------------------------------------------
