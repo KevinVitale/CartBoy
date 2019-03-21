@@ -63,6 +63,10 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController, Seria
     open func version(_ callback: @escaping ((Version?) -> ())) {
         callback(nil)
     }
+    
+    open func voltage(_ callback: @escaping ((Voltage?) -> ())) {
+        callback(nil)
+    }
 }
 
 extension ThreadSafeSerialPortController {

@@ -18,6 +18,10 @@ public protocol SerialPortController: SerialPacketOperationDelegate {
     /**
      */
     func version(_ callback: @escaping ((Version?) -> ()))
+    
+    /**
+     */
+    func voltage(_ callback: @escaping ((Voltage?) -> ()))
 
     /**
      */

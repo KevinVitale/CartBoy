@@ -79,6 +79,28 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
                     return true
             }))
             //------------------------------------------------------------------
+            // WAIT
+            //------------------------------------------------------------------
+            group.wait()
+            //------------------------------------------------------------------
+            return dataReceived
+        }) { data in
+            guard let data = data else {
+                callback(nil)
+                return
+            }
+            
+            callback("\("v1.\(data.hexString(separator: ""))".lowercased())")
+        }
+    }
+    
+    public override func voltage(_ callback: @escaping ((Voltage?) -> ())) {
+        whileOpened(perform: {
+            let group = DispatchGroup()
+            var dataReceived: Data = .init()
+            //------------------------------------------------------------------
+            self.send("0".bytes())
+            //------------------------------------------------------------------
             // Voltage Version
             //------------------------------------------------------------------
             group.enter()
@@ -105,9 +127,7 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
                 return
             }
             
-            let pcbVersion = "v1.\(data.prefix(2).hexString(separator: ""))".lowercased()
-            let voltage: Voltage = data.suffix(1).hexString() == "1" ? .high : .low
-            callback("\(pcbVersion), \(voltage)")
+            callback(data.hexString() == "1" ? .high : .low)
         }
     }
 }
