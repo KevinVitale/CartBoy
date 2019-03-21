@@ -74,12 +74,16 @@ class SerialPacketOperationTests: XCTestCase {
     }
 
     func testPerformanceExample() {
+        let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
         self.measure {
             let exp = expectation(description: "did read")
-            let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
             controller.header {
+                defer { exp.fulfill() }
+                guard $0!.isLogoValid else {
+                    XCTFail($0!.debugDescription)
+                    return
+                }
                 print($0!)
-                exp.fulfill()
             }
             waitForExpectations(timeout: 10)
         }
