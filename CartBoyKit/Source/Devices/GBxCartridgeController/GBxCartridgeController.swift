@@ -42,12 +42,12 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
         }
     }
     
-    func version(_ callback: @escaping ((Version?) -> ())) {
-        whileOpened(perform: {
+    public func boardInfo(_ callback: @escaping (((Version, Voltage)?) -> ())) {
+        whileOpened(perform: { reader -> (Version, Voltage)? in
             let group = DispatchGroup()
             var dataReceived: Data = .init()
             //------------------------------------------------------------------
-            self.send("0".bytes())
+            reader.send("0\0".data(using: .ascii)!)
             //------------------------------------------------------------------
             // PCB Version
             //------------------------------------------------------------------
@@ -79,32 +79,10 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
                     return true
             }))
             //------------------------------------------------------------------
-            // WAIT
-            //------------------------------------------------------------------
-            group.wait()
-            //------------------------------------------------------------------
-            return dataReceived
-        }) { data in
-            guard let data = data, let minorVersion = data.first, let firmware = data.last else {
-                callback(nil)
-                return
-            }
-            
-            callback(.init(minor: Int(minorVersion), revision: String(firmware, radix: 16, uppercase: false)))
-        }
-    }
-    
-    public func voltage(_ callback: @escaping ((Voltage?) -> ())) {
-        whileOpened(perform: {
-            let group = DispatchGroup()
-            var dataReceived: Data = .init()
-            //------------------------------------------------------------------
-            self.send("0".bytes())
-            //------------------------------------------------------------------
             // Voltage Version
             //------------------------------------------------------------------
             group.enter()
-            self.reader.send(ORSSerialRequest(
+            reader.send(ORSSerialRequest(
                 dataToSend: "C\0".bytes()!
                 , userInfo: nil
                 , timeoutInterval: 5
@@ -120,15 +98,41 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
             //------------------------------------------------------------------
             group.wait()
             //------------------------------------------------------------------
-            return dataReceived
-        }) { data in
-            guard let data = data else {
-                callback(nil)
-                return
+            let versionBytes = dataReceived.prefix(upTo: 2)
+            guard let minorVersion = versionBytes.first, let firmware = versionBytes.last else {
+                return nil
             }
-            
-            callback(data.hexString() == "1" ? .high : .low)
-        }
+            //------------------------------------------------------------------
+            return (.init(minor: Int(minorVersion), revision: String(firmware, radix: 16, uppercase: false)), dataReceived.dropFirst(dataReceived.count).hexString() == "1" ? .high : .low)
+        }, callback)
+    }
+    
+    public func voltage(_ callback: @escaping ((Voltage?) -> ())) {
+        whileOpened(perform: { reader -> Voltage? in
+            let group = DispatchGroup()
+            var dataReceived: Data = .init()
+            //------------------------------------------------------------------
+            // Voltage Version
+            //------------------------------------------------------------------
+            group.enter()
+            reader.send(ORSSerialRequest(
+                dataToSend: "0\0C\0".bytes()!
+                , userInfo: nil
+                , timeoutInterval: 5
+                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) {
+                    if let data = $0 {
+                        dataReceived.append(data)
+                    }
+                    group.leave()
+                    return true
+            }))
+            //------------------------------------------------------------------
+            // WAIT
+            //------------------------------------------------------------------
+            group.wait()
+            //------------------------------------------------------------------
+            return dataReceived.hexString() == "1" ? .high : .low
+        }, callback)
     }
 }
 

@@ -96,14 +96,14 @@ extension SerialPortController where Self: ThreadSafeSerialPortController {
     By the time `block` completes execution, the serial port will have
     been closed.
     */
-    func whileOpened(perform block: @escaping () -> (Data?), _ callback: @escaping (Data?) -> ()) {
+    func whileOpened<T>(perform block: @escaping (ORSSerialPort) -> (T?), _ callback: @escaping (T?) -> ()) {
         var operation: OpenPortOperation<Self>! = nil {
             didSet {
                 operation.start()
             }
         }
         operation = OpenPortOperation<Self>(controller: self) {
-            callback(block())
+            callback(block(self.reader))
         }
     }
 }

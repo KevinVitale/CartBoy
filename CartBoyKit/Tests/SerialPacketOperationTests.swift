@@ -1,7 +1,7 @@
 import XCTest
 import ORSSerial
 import Gibby
-@testable import CartKit
+import CartKit
 
 
 
@@ -17,12 +17,10 @@ class SerialPacketOperationTests: XCTestCase {
     
     func testDetect() {
         let exp = expectation(description: "opened")
-        exp.expectedFulfillmentCount = 2
-        
+
         
         let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
-        controller.version { print($0!); exp.fulfill() }
-        controller.voltage { print($0!); exp.fulfill() }
+        controller.boardInfo { print($0!); exp.fulfill() }
 
         waitForExpectations(timeout: 5)
     }
@@ -46,31 +44,6 @@ class SerialPacketOperationTests: XCTestCase {
         waitForExpectations(timeout: 100)
     }
     
-    func testSerialPacketBlockOperation() {
-        let exp = expectation(description: "opened")
-        exp.expectedFulfillmentCount = 2
-        
-        
-        let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
-        var header: GameboyClassic.Cartridge.Header? = nil {
-            didSet {
-                print(header!)
-                exp.fulfill()
-            }
-        }
-        controller.whileOpened(perform: {
-            exp.fulfill()
-            
-            controller.header {
-                header = $0
-            }
-            return nil
-        }) { _ in
-        }
-
-        waitForExpectations(timeout: 5)
-    }
-
     func testPerformanceExample() {
         let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
         self.measure {
