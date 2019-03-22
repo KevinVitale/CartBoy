@@ -2,24 +2,18 @@ import ORSSerial
 import Gibby
 
 final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartridgeController<Cartridge> where Cartridge.Platform == GameboyClassic {
-    fileprivate var dataToSend: Data? {
-        didSet {
-            if let data = dataToSend {
-                if data != Data([0x31]), false {
-                    print(#function, #line, "Data: \(data.hexString())")
-                }
-                self.send(data)
-                timeout(.medium)
-            }
-        }
+    @discardableResult
+    override func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
+        defer { usleep(250) }
+        return super.send(data, timeout: timeout)
     }
-
+    
     @objc override func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
         super.packetOperation(operation, didBeginWith: intent)
         //----------------------------------------------------------------------
         // BREAK LOOPS
         //----------------------------------------------------------------------
-        self.dataToSend = "0\0".bytes()
+        self.send("0\0".bytes(), timeout: 250)
 
         //----------------------------------------------------------------------
         // READ
@@ -27,11 +21,11 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         if case let .read(_, context)? = intent as? Intent<GBxCartridgeController<Cartridge>> {
             switch context {
             case .header:
-                self.dataToSend = "A100\0".bytes()
-                self.dataToSend = "R".bytes()
+                self.send("A100\0".bytes())
+                self.send("R".bytes())
             case .cartridge:
-                self.dataToSend = "A0\0".bytes()
-                self.dataToSend = "R".bytes()
+                self.send("A0\0".bytes())
+                self.send("R".bytes())
             case .saveFile(let header as GameboyClassic.Cartridge.Header):
                 switch header.configuration {
                 //--------------------------------------------------------------
@@ -41,9 +35,9 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     //----------------------------------------------------------
                     // START; STOP
                     //----------------------------------------------------------
-                    self.dataToSend = "A0\0".bytes()
-                    self.dataToSend = "R".bytes()
-                    self.dataToSend = "0\0".bytes()
+                    self.send("A0\0".bytes())
+                    self.send("R".bytes())
+                    self.send("0\0".bytes())
                 default: (/* do nothing */)
                 }
                 
@@ -67,8 +61,8 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 //--------------------------------------------------------------
                 // START
                 //--------------------------------------------------------------
-                self.dataToSend = "AA000\0".bytes()
-                self.dataToSend = "R".bytes()
+                self.send("AA000\0".bytes())
+                self.send("R".bytes())
             default:
                 operation.cancel()
                 return
@@ -103,7 +97,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     //----------------------------------------------------------
                     // STOP
                     //----------------------------------------------------------
-                    self.dataToSend = "0\0".bytes()
+                    self.send("0\0".bytes())
                     
                     //----------------------------------------------------------
                     // BANK SWITCH
@@ -129,14 +123,14 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     //----------------------------------------------------------
                     // START
                     //----------------------------------------------------------
-                    self.dataToSend = "A4000\0".bytes()
-                    self.dataToSend = "R".bytes()
+                    self.send("A4000\0".bytes())
+                    self.send("R".bytes())
                 }
                 else {
                     //----------------------------------------------------------
                     // CONTINUE
                     //----------------------------------------------------------
-                    self.dataToSend = "1".bytes()
+                    self.send("1".bytes())
                 }
             case .saveFile(let header):
                 if case let bank = completedUnitCount / header.ramBankSize, completedUnitCount % header.ramBankSize == 0 {
@@ -147,7 +141,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 }
                 fallthrough
             case .header:
-                self.dataToSend = "1".bytes()
+                self.send("1".bytes(), timeout: 250)
             default:
                 operation.cancel()
                 return
@@ -182,7 +176,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
 
 extension GBxCartridgeControllerClassic {
     private func bank(_ command: String = "B", address: Int, radix: Int = 16) {
-        self.dataToSend = "\(command)\(String(address, radix: radix, uppercase: true))\0".bytes()
+        self.send("\(command)\(String(address, radix: radix, uppercase: true))\0".bytes())
     }
     
     fileprivate func `switch`(to bank: Int, at address: Int) {

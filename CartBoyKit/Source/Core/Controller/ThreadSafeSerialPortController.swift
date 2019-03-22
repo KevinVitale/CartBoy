@@ -51,7 +51,12 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController, Seria
     /**
      */
     @discardableResult
-    public final func send(_ data: Data?) -> Bool {
+    public func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
+        defer {
+            if let timeout = timeout {
+                usleep(timeout)
+            }
+        }
         guard let data = data else {
             return false
         }

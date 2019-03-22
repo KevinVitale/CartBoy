@@ -25,5 +25,5 @@ public protocol SerialPortController: SerialPacketOperationDelegate {
     /**
      */
     @discardableResult
-    func send(_ data: Data?) -> Bool
+    func send(_ data: Data?, timeout: UInt32?) -> Bool
 }
