@@ -6,13 +6,15 @@ import Gibby
  platform-specific serial port operations.
  */
 public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSerialPortController, CartridgeController {
+    typealias Intent = SerialPacketOperation<GBxCartridgeController<Cartridge>>.Intent
+    
     public override func open() {
         super.open()
         self.reader.configuredAsGBxCart()
     }
     
     @objc public func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
-        guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
+        guard let intent = intent as? Intent else {
             operation.cancel()
             return
         }
@@ -27,7 +29,7 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
     }
 
     @objc public func packetLength(for intent: Any?) -> UInt {
-        guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
+        guard let intent = intent as? Intent else {
             fatalError()
         }
         

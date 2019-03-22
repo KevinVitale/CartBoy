@@ -1,7 +1,7 @@
 import Foundation
 import ORSSerial
 
-final class SerialPacketOperation<Controller: CartridgeController>: OpenPortOperation<Controller> {
+final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOperation<Controller> where Controller: CartridgeController {
     enum Intent {
         case read(count: Int, context: Context)
         case write(data: Data, context: Context)

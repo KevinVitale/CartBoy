@@ -9,21 +9,24 @@ import Gibby
  - note: ROM files are _"read"_ & _"written"_, or _"erased"_ (the latter two, if they are a `FlashCart`).
  - note: Save files are _"backed-up"_, _"restored"_, or _"deleted"_, if the `Cartridge` has **SRAM** support.
  */
-public protocol CartridgeController: SerialPortController {
+public protocol CartridgeController {
     /// The associated platform that the adopter relates to.
     associatedtype Cartridge: Gibby.Cartridge
+    
+    func header(result: @escaping ((Cartridge.Header?) -> ()))
+    func read(header: Cartridge.Header?, result: @escaping ((Cartridge?) -> ()))
+    func backup(header: Cartridge.Header?, result: @escaping (Data?, Cartridge.Header) -> ())
+    func restore(from backup: Data, header: Cartridge.Header?, result: @escaping (Bool) -> ())
+    func delete(header: Cartridge.Header?, result: @escaping (Bool) -> ())
 }
 
-extension CartridgeController {
-    typealias Intent<Controller: CartridgeController> = SerialPacketOperation<Controller>.Intent
-    typealias Context<Controller: CartridgeController> = SerialPacketOperation<Controller>.Context
-    
-    fileprivate func perform(_ intent: Intent<Self>, result: @escaping ((Data?) -> ())) {
+extension SerialPacketOperationDelegate where Self: SerialPortController, Self: CartridgeController {
+    func perform(_ intent: SerialPacketOperation<Self>.Intent, result: @escaping ((Data?) -> ())) {
         SerialPacketOperation(delegate: self, intent: intent, result: result).start()
     }
 }
 
-extension CartridgeController {
+extension SerialPortController where Self: CartridgeController {
     public func header(result: @escaping ((Cartridge.Header?) -> ())) {
         let headerSize = Cartridge.Platform.headerRange.count
         self.perform(.read(count: headerSize, context: .header)) {

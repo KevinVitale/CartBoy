@@ -18,7 +18,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         // READ
         //----------------------------------------------------------------------
-        if case let .read(_, context)? = intent as? Intent<GBxCartridgeController<Cartridge>> {
+        if case let .read(_, context)? = intent as? Intent {
             switch context {
             case .header:
                 self.send("A100\0".bytes())
@@ -71,13 +71,13 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         // WRITE
         //----------------------------------------------------------------------
-        else if case .write(let data, _)? = intent as? Intent<GBxCartridgeController<Cartridge>> {
+        else if case .write(let data, _)? = intent as? Intent {
             print(data)
         }
     }
     
     @objc func packetOperation(_ operation: Operation, didUpdate progress: Progress, with intent: Any?) {
-        guard let intent = intent as? Intent<GBxCartridgeController<Cartridge>> else {
+        guard let intent = intent as? Intent else {
             operation.cancel()
             return
         }
@@ -151,6 +151,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         // WRITE
         //----------------------------------------------------------------------
         else if case .write(let data, _) = intent {
+            
             print(data)
         }
     }
@@ -160,11 +161,11 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
             super.packetOperation(operation, didComplete: intent)
         }
         
-        guard intent is Intent<GBxCartridgeController<Cartridge>> else {
+        guard let intent = intent as? Intent else {
             return
         }
         
-        if case let .read(_, context)? = intent as? Intent<GBxCartridgeController<Cartridge>> {
+        if case let .read(_, context) = intent {
             switch context {
             case .saveFile(_):
                 self.toggle(ram: false)
