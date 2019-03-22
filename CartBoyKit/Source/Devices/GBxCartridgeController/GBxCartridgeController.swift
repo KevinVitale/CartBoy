@@ -1,7 +1,6 @@
 import ORSSerial
 import Gibby
 
-
 /**
  An opaque `GBxSerialPortController` subclass, capable of performing
  platform-specific serial port operations.
@@ -21,9 +20,7 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
         if case .read(_, let context) = intent {
             switch context {
             case .cartridge(let header) where !header.isLogoValid: fallthrough
-            case  .saveFile(let header) where !header.isLogoValid:
-                operation.cancel()
-                return
+            case  .saveFile(let header) where !header.isLogoValid: return operation.cancel()
             default: (/* do nothing */)
             }
         }
