@@ -5,7 +5,7 @@ import CartKit
 
 @objc(GameboyClassicReadROMTests)
 fileprivate final class GameboyClassicReadROMTests: XCTestCase {
-    private typealias Cartridge = AM29F016B
+    private typealias Cartridge = GameboyClassic.Cartridge
     private typealias Header    = Cartridge.Header
     
     private private(set) var controller: GBxCartridgeController<Cartridge>!
