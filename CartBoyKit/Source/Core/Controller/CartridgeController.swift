@@ -20,21 +20,54 @@ public protocol CartridgeController {
     func delete(header: Cartridge.Header?, result: @escaping (Bool) -> ())
 }
 
+public protocol FlashCartridgeController {
+    associatedtype Cartridge: Gibby.Cartridge
+}
+
 extension SerialPacketOperationDelegate where Self: SerialPortController, Self: CartridgeController {
-    func perform(_ intent: SerialPacketOperation<Self>.Intent, result: @escaping ((Data?) -> ())) {
-        SerialPacketOperation(delegate: self, intent: intent, result: result).start()
+    fileprivate func read(_ context: SerialPacketOperation<Self>.Context, result: @escaping ((Data?) -> ())) {
+        switch context {
+        case .header:
+            let headerSize = Cartridge.Platform.headerRange.count
+            let intent = SerialPacketOperation<Self>.Intent.read(count: headerSize, context: context)
+            SerialPacketOperation(delegate: self, intent: intent, result: result).start()
+        case .cartridge(let header):
+            let intent = SerialPacketOperation<Self>.Intent.read(count: header.romSize, context: context)
+            SerialPacketOperation(delegate: self, intent: intent, result: result).start()
+        case .saveFile(let header):
+            let intent = SerialPacketOperation<Self>.Intent.read(count: header.ramSize, context: context)
+            SerialPacketOperation(delegate: self, intent: intent, result: result).start()
+        }
+    }
+    
+    fileprivate func write(_ context: SerialPacketOperation<Self>.Context, data: Data, result: @escaping ((Data?) -> ())) {
+        switch context {
+        case .header:
+            return result(nil)
+        case .cartridge:
+            let intent = SerialPacketOperation<Self>.Intent.write(data: data, context: context)
+            SerialPacketOperation(delegate: self, intent: intent, result: result).start()
+        case .saveFile:
+            let intent = SerialPacketOperation<Self>.Intent.write(data: data, context: context)
+            SerialPacketOperation(delegate: self, intent: intent, result: result).start()
+        }
     }
 }
 
 extension SerialPortController where Self: CartridgeController {
     public func header(result: @escaping ((Cartridge.Header?) -> ())) {
-        let headerSize = Cartridge.Platform.headerRange.count
-        self.perform(.read(count: headerSize, context: .header)) {
+        self.read(.header) {
             guard let data = $0 else {
                 result(nil)
                 return
             }
-            result(.init(bytes: data))
+            let header = Cartridge.Header(bytes: data)
+            guard header.isLogoValid else {
+                result(nil)
+                return
+            }
+            print(header)
+            result(header)
         }
     }
     
@@ -45,8 +78,7 @@ extension SerialPortController where Self: CartridgeController {
             }
             return
         }
-
-        self.perform(.read(count: header.romSize, context: .cartridge(header))) {
+        self.read(.cartridge(header)) {
             guard let data = $0 else {
                 result(nil)
                 return
@@ -56,55 +88,48 @@ extension SerialPortController where Self: CartridgeController {
     }
     
     public func backup(header: Cartridge.Header? = nil, result: @escaping (Data?, Cartridge.Header) -> ()) {
-        if let header = header {
-            guard header.ramSize > 0 else {
-                result(nil, header)
-                return
-            }
-            self.perform(.read(count: header.ramSize, context: .saveFile(header))) {
-                guard let data = $0 else {
-                    result(nil, header)
-                    return
-                }
-                result(data, header)
-            }
-        }
-        else {
+        guard let header = header else {
             self.header {
                 self.backup(header: $0, result: result)
             }
+            return
+        }
+        self.read(.saveFile(header)) {
+            guard let data = $0 else {
+                result(nil, header)
+                return
+            }
+            result(data, header)
         }
     }
     
     public func restore(from backup: Data, header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) {
-        if let header = header {
-            guard header.ramSize == backup.count else {
-                result(false)
-                return
-            }
-            self.perform(.write(data: backup, context: .saveFile(header))) { _ in
-                result(true)
-            }
-        }
-        else {
+        guard let header = header else {
             self.header {
                 self.restore(from: backup, header: $0, result: result)
             }
+            return
+        }
+        guard header.ramSize == backup.count else {
+            result(false)
+            return
+        }
+        self.write(.saveFile(header), data: backup) {
+            guard let _ = $0 else {
+                result(false)
+                return
+            }
+            result(true)
         }
     }
     
     public func delete(header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) {
-        if let header = header {
-            self.restore(from: Data(count: header.ramSize), header: header, result: result)
-        }
-        else {
+        guard let header = header else {
             self.header {
-                guard let header = $0 else {
-                    result(false)
-                    return
-                }
-                self.delete(header: header, result: result)
+                self.delete(header: $0, result: result)
             }
+            return
         }
+        self.restore(from: Data(count: header.ramSize), header: header, result: result)
     }
 }
