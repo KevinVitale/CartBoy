@@ -56,8 +56,6 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                     print(rom)
                     print("MD5:", Data(rom[0..<rom.endIndex]).md5.hexString(separator: "").lowercased())
                     if rom.header.isLogoValid {
-                        XCTAssertTrue(rom.header.isLogoValid)
-                        print(rom.header)
                         try! rom.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(rom.header.title).gb"))
                     }
                     else {
