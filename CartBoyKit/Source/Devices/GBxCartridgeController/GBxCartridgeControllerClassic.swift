@@ -8,6 +8,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         // BREAK LOOPS
         //----------------------------------------------------------------------
         self.send("0\0".bytes(), timeout: 250)
+        self.switch(to: 0x00, at: 0x0000)
 
         //----------------------------------------------------------------------
         // READ
@@ -21,6 +22,10 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 self.send("A0\0".bytes())
                 self.send("R".bytes())
             case .saveFile(let header as GameboyClassic.Cartridge.Header):
+                guard header.configuration.hardware.contains(.ram) else {
+                    operation.cancel()
+                    return
+                }
                 switch header.configuration {
                 //--------------------------------------------------------------
                 // MBC2 "fix"
@@ -34,7 +39,6 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     self.send("0\0".bytes())
                 default: (/* do nothing */)
                 }
-                
                 //--------------------------------------------------------------
                 // SET: the 'RAM' mode (MBC1-ONLY)
                 //--------------------------------------------------------------
@@ -45,12 +49,12 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 //--------------------------------------------------------------
                 // TOGGLE
                 //--------------------------------------------------------------
-                self.toggle(ram: true)
-                
+                self.switch(to: 0x0A, at: 0x0000)
+
                 //--------------------------------------------------------------
                 // BANK SWITCH
                 //--------------------------------------------------------------
-                self.switch(to: 0, at: 0x4000)
+                self.switch(to: 0x0, at: 0x4000)
                 
                 //--------------------------------------------------------------
                 // START
@@ -134,8 +138,15 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     // DEBUG
                     //----------------------------------------------------------
                     print("#\(bank), \(progress.fractionCompleted)%")
+                    
+                    self.send("0\0".bytes())
+                    self.switch(to: bank, at: 0x4000)
+                    self.send("AA000\0".bytes())
+                    self.send("R".bytes())
                 }
-                fallthrough
+                else {
+                    self.send("1".bytes(), timeout: 250)
+                }
             case .header:
                 self.send("1".bytes(), timeout: 250)
             case .boardInfo:
@@ -153,24 +164,6 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
             print(data)
         }
     }
-    
-    @objc override func packetOperation(_ operation: Operation, didComplete intent: Any?) {
-        defer {
-            super.packetOperation(operation, didComplete: intent)
-        }
-        
-        guard let intent = intent as? Intent else {
-            return
-        }
-        
-        if case let .read(_, context) = intent {
-            switch context {
-            case .saveFile(_):
-                self.toggle(ram: false)
-            default: (/* do nothing */)
-            }
-        }
-    }
 }
 
 extension GBxCartridgeControllerClassic {
@@ -181,10 +174,5 @@ extension GBxCartridgeControllerClassic {
     fileprivate func `switch`(to bank: Int, at address: Int) {
         self.bank(address: address)
         self.bank(address: bank, radix: 10)
-    }
-    
-    fileprivate func toggle(ram mode: Bool) {
-        self.bank(address: 0x0000)
-        self.bank(address: mode ? 0x0A : 0x00, radix: 10)
     }
 }

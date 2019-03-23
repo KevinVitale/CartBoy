@@ -24,7 +24,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         let exp = expectation(description: "Test Cartridge")
         controller.header {
             print($0!)
-            controller.read {
+            controller.read(header: $0!) {
                 defer { exp.fulfill() }
                 guard let cartridge = $0 else {
                     XCTFail()
@@ -40,7 +40,6 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         waitForExpectations(timeout: 16)
     }
     
-    /*
     func testBackup() {
         let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
         let exp = expectation(description: "Test Backup")
@@ -50,19 +49,17 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             }
             controller.backup(header: header) { data, _ in
                 defer { exp.fulfill() }
-                if !header.configuration.hardware.contains(.ram) {
-                    print("WARNING: Cartridge does not support SRAM")
-                }
-                else {
-                    let MD5 = (data ?? Data()).md5.hexString(separator: "").lowercased()
-                    print("MD5: \(MD5)")
-                }
+                let data = data ?? Data()
+                let MD5 = data.md5.hexString(separator: "").lowercased()
+                print("MD5: \(MD5)")
+                
+                let saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav")
+                try! data.write(to: saveFileURL)
             }
         }
         waitForExpectations(timeout: 1)
     }
-     */
-    
+
     func testBoardInfo() {
         let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
         let exp = expectation(description: "Test Board Info")
