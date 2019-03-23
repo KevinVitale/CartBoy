@@ -109,7 +109,11 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
             }
             //------------------------------------------------------------------
             return (.init(minor: Int(minorVersion), revision: String(firmware, radix: 16, uppercase: false)), dataReceived.dropFirst(dataReceived.count).hexString() == "1" ? .high : .low)
-        }, callback)
+        }) { boardInfo in
+            DispatchQueue.main.async {
+                callback(boardInfo)
+            }
+        }
     }
 }
 
