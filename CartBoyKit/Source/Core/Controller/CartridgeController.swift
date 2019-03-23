@@ -32,9 +32,17 @@ extension SerialPacketOperationDelegate where Self: SerialPortController, Self: 
             let intent = SerialPacketOperation<Self>.Intent.read(count: headerSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         case .cartridge(let header):
+            guard header.isLogoValid, header.romSize > 0 else {
+                result(nil)
+                return
+            }
             let intent = SerialPacketOperation<Self>.Intent.read(count: header.romSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         case .saveFile(let header):
+            guard header.isLogoValid, header.ramSize > 0 else {
+                result(nil)
+                return
+            }
             let intent = SerialPacketOperation<Self>.Intent.read(count: header.ramSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         }
