@@ -18,7 +18,7 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController, Seria
     ///
     private var currentDelegate: ORSSerialPortDelegate? = nil // Prevents 'deinit'
     private var        delegate: ORSSerialPortDelegate? {
-        get { return reader.delegate     }
+        get { return reader.delegate }
         set {
             currentDelegate = newValue
             reader.delegate = newValue

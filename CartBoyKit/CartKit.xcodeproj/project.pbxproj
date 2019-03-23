@@ -15,7 +15,6 @@
 		0A16C141223FE7DF005FF1FA /* SerialPacketOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A16C140223FE7DF005FF1FA /* SerialPacketOperation.swift */; };
 		0A4707D4223C0358007C3F1E /* GBxCartridgeControllerClassic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4707D3223C0358007C3F1E /* GBxCartridgeControllerClassic.swift */; };
 		0A4707D7223C03E9007C3F1E /* GBxCartridgeControllerAdvance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4707D6223C03E9007C3F1E /* GBxCartridgeControllerAdvance.swift */; };
-		0A541AFF223FEB9C0071B1EB /* SerialPacketOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A541AFE223FEB9C0071B1EB /* SerialPacketOperationTests.swift */; };
 		0A61C750223711BA001D653D /* SwiftCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */; };
 		0A61C76522371701001D653D /* SerialPortController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A61C76422371701001D653D /* SerialPortController.swift */; };
 		0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */; };
@@ -72,7 +71,6 @@
 		0A3DD4D021F2A64800BCC6D4 /* ORSSerial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ORSSerial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A4707D3223C0358007C3F1E /* GBxCartridgeControllerClassic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxCartridgeControllerClassic.swift; sourceTree = "<group>"; };
 		0A4707D6223C03E9007C3F1E /* GBxCartridgeControllerAdvance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxCartridgeControllerAdvance.swift; sourceTree = "<group>"; };
-		0A541AFE223FEB9C0071B1EB /* SerialPacketOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialPacketOperationTests.swift; sourceTree = "<group>"; };
 		0A61C76422371701001D653D /* SerialPortController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialPortController.swift; sourceTree = "<group>"; };
 		0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+Ext.swift"; sourceTree = "<group>"; };
 		0A93D3882241D14300A141EA /* SerialPacketOperationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialPacketOperationDelegate.swift; sourceTree = "<group>"; };
@@ -201,7 +199,6 @@
 			isa = PBXGroup;
 			children = (
 				0A108BB82217929300A12FA1 /* GameboyClassicReadROMTests.swift */,
-				0A541AFE223FEB9C0071B1EB /* SerialPacketOperationTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -391,7 +388,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A541AFF223FEB9C0071B1EB /* SerialPacketOperationTests.swift in Sources */,
 				0A108BB92217929300A12FA1 /* GameboyClassicReadROMTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

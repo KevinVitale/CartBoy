@@ -66,7 +66,6 @@ extension SerialPortController where Self: CartridgeController {
                 result(nil)
                 return
             }
-            print(header)
             result(header)
         }
     }

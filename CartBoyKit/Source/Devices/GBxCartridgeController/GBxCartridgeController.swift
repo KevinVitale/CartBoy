@@ -104,13 +104,13 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
             group.wait()
             //------------------------------------------------------------------
             let versionBytes = dataReceived.prefix(upTo: 2)
-            guard let minorVersion = versionBytes.first, let firmware = versionBytes.last else {
+            guard let minorVersion = versionBytes.first, let firmware = versionBytes.last, let voltage = dataReceived.last else {
                 return nil
             }
             //------------------------------------------------------------------
-            return (.init(minor: Int(minorVersion), revision: String(firmware, radix: 16, uppercase: false)), dataReceived.dropFirst(dataReceived.count).hexString() == "1" ? .high : .low)
+            return (.init(minor: Int(minorVersion), revision: String(firmware, radix: 16, uppercase: false)), String(voltage, radix: 16, uppercase: true) == "1" ? .high : .low)
         }) { boardInfo in
-            DispatchQueue.main.async {
+            DispatchQueue.main.sync {
                 callback(boardInfo)
             }
         }
