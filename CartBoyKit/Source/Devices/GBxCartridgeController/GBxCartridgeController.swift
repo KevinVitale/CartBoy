@@ -111,34 +111,6 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
             return (.init(minor: Int(minorVersion), revision: String(firmware, radix: 16, uppercase: false)), dataReceived.dropFirst(dataReceived.count).hexString() == "1" ? .high : .low)
         }, callback)
     }
-    
-    public func voltage(_ callback: @escaping ((Voltage?) -> ())) {
-        whileOpened(perform: { reader -> Voltage? in
-            let group = DispatchGroup()
-            var dataReceived: Data = .init()
-            //------------------------------------------------------------------
-            // Voltage Version
-            //------------------------------------------------------------------
-            group.enter()
-            reader.send(ORSSerialRequest(
-                dataToSend: "0\0C\0".bytes()!
-                , userInfo: nil
-                , timeoutInterval: 5
-                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) {
-                    if let data = $0 {
-                        dataReceived.append(data)
-                    }
-                    group.leave()
-                    return true
-            }))
-            //------------------------------------------------------------------
-            // WAIT
-            //------------------------------------------------------------------
-            group.wait()
-            //------------------------------------------------------------------
-            return dataReceived.hexString() == "1" ? .high : .low
-        }, callback)
-    }
 }
 
 extension GBxCartridgeController where Cartridge.Platform == GameboyClassic {
