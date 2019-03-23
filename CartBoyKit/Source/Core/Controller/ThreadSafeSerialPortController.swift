@@ -10,7 +10,7 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController, Seria
     }
     
     ///
-    let reader: ORSSerialPort
+    fileprivate let reader: ORSSerialPort
     
     ///
     private let isOpenCondition = NSCondition()
@@ -25,8 +25,10 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController, Seria
         }
     }
     
-    open func open() {
+    @discardableResult
+    open func open() -> ORSSerialPort {
         self.reader.open()
+        return self.reader
     }
 
     /**
@@ -91,24 +93,9 @@ extension ThreadSafeSerialPortController {
 
 extension SerialPortController where Self: ThreadSafeSerialPortController {
     /**
-    Peforms an asychronous `block` operation while the serial port is open.
-    
-    - parameters:
-    - block: The block executed while the serial port is opened.
-    - callback: An optional value returned by `block`.
-    
-    - note:
-    By the time `block` completes execution, the serial port will have
-    been closed.
-    */
-    func whileOpened<T>(perform block: @escaping (ORSSerialPort) -> (T?), _ callback: @escaping (T?) -> ()) {
-        var operation: OpenPortOperation<Self>! = nil {
-            didSet {
-                operation.start()
-            }
-        }
-        operation = OpenPortOperation<Self>(controller: self) {
-            callback(block(self.reader))
-        }
+     Peforms a `block` operation while the serial port is open.
+     */
+    func whileOpened<Context>(_ intent: SerialPacketOperation<Self, Context>.Intent, perform block: @escaping (_ progress: Progress) -> (), callback: @escaping (Data?) -> ()) throws {
+        SerialPacketOperation<Self, Context>(delegate: self, intent: intent, perform: block, result: callback).start()
     }
 }

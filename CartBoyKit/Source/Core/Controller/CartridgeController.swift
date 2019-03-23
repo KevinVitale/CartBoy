@@ -12,7 +12,7 @@ import Gibby
 public protocol CartridgeController {
     /// The associated platform that the adopter relates to.
     associatedtype Cartridge: Gibby.Cartridge
-    
+
     func header(result: @escaping ((Cartridge.Header?) -> ()))
     func read(header: Cartridge.Header?, result: @escaping ((Cartridge?) -> ()))
     func backup(header: Cartridge.Header?, result: @escaping (Data?, Cartridge.Header) -> ())
@@ -24,40 +24,55 @@ public protocol FlashCartridgeController {
     associatedtype Cartridge: Gibby.Cartridge
 }
 
+enum CartridgeControllerContext<Cartridge: Gibby.Cartridge> {
+    case header
+    case cartridge(Cartridge.Header)
+    case saveFile(Cartridge.Header)
+    case boardInfo
+}
+
 extension SerialPacketOperationDelegate where Self: SerialPortController, Self: CartridgeController {
-    fileprivate func read(_ context: SerialPacketOperation<Self>.Context, result: @escaping ((Data?) -> ())) {
+    typealias Context = CartridgeControllerContext<Cartridge>
+    
+    fileprivate func read(_ context: Context, result: @escaping ((Data?) -> ())) {
         switch context {
         case .header:
             let headerSize = Cartridge.Platform.headerRange.count
-            let intent = SerialPacketOperation<Self>.Intent.read(count: headerSize, context: context)
+            let intent = SerialPacketOperation<Self, Context>.Intent.read(count: headerSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         case .cartridge(let header):
             guard header.isLogoValid, header.romSize > 0 else {
                 result(nil)
                 return
             }
-            let intent = SerialPacketOperation<Self>.Intent.read(count: header.romSize, context: context)
+            let intent = SerialPacketOperation<Self, Context>.Intent.read(count: header.romSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         case .saveFile(let header):
             guard header.isLogoValid, header.ramSize > 0 else {
                 result(nil)
                 return
             }
-            let intent = SerialPacketOperation<Self>.Intent.read(count: header.ramSize, context: context)
+            let intent = SerialPacketOperation<Self, Context>.Intent.read(count: header.ramSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
+        default:
+            result(nil)
+            return
         }
     }
     
-    fileprivate func write(_ context: SerialPacketOperation<Self>.Context, data: Data, result: @escaping ((Data?) -> ())) {
+    fileprivate func write(_ context: Context, data: Data, result: @escaping ((Data?) -> ())) {
         switch context {
         case .header:
             return result(nil)
         case .cartridge:
-            let intent = SerialPacketOperation<Self>.Intent.write(data: data, context: context)
+            let intent = SerialPacketOperation<Self, Context>.Intent.write(data: data, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         case .saveFile:
-            let intent = SerialPacketOperation<Self>.Intent.write(data: data, context: context)
+            let intent = SerialPacketOperation<Self, Context>.Intent.write(data: data, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
+        default:
+            result(nil)
+            return
         }
     }
 }

@@ -23,7 +23,8 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
         let exp = expectation(description: "Test Cartridge")
         controller.header {
-            controller.read(header: $0!) {
+            print($0!)
+            controller.read {
                 defer { exp.fulfill() }
                 guard let cartridge = $0 else {
                     XCTFail()
@@ -39,6 +40,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         waitForExpectations(timeout: 16)
     }
     
+    /*
     func testBackup() {
         let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
         let exp = expectation(description: "Test Backup")
@@ -59,11 +61,12 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
     }
+     */
     
     func testBoardInfo() {
         let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
         let exp = expectation(description: "Test Board Info")
-        controller.boardInfo {
+        try! controller.boardInfo {
             defer { exp.fulfill() }
             print($0!)
         }
@@ -81,7 +84,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                     XCTFail($0!.debugDescription)
                     return
                 }
-                print($0!)
+                // print($0!)
             }
             waitForExpectations(timeout: 10)
         }

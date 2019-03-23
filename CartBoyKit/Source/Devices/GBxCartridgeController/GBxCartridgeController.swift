@@ -6,7 +6,7 @@ import Gibby
  platform-specific serial port operations.
  */
 public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSerialPortController, CartridgeController {
-    typealias Intent = SerialPacketOperation<GBxCartridgeController<Cartridge>>.Intent
+    typealias Intent = SerialPacketOperation<GBxCartridgeController<Cartridge>, Context>.Intent
     
     @discardableResult
     public override final func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
@@ -14,11 +14,10 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
         return super.send(data, timeout: timeout)
     }
 
-    public override func open() {
-        super.open()
-        self.reader.configuredAsGBxCart()
+    public override func open() -> ORSSerialPort {
+        return super.open().configuredAsGBxCart()
     }
-    
+
     @objc public func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
         guard let intent = intent as? Intent else {
             operation.cancel()
@@ -46,73 +45,21 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
             return 1
         }
     }
-    
-    public func boardInfo(_ callback: @escaping (((Version, Voltage)?) -> ())) {
-        whileOpened(perform: { reader -> (Version, Voltage)? in
-            let group = DispatchGroup()
-            var dataReceived: Data = .init()
-            //------------------------------------------------------------------
-            reader.send("0\0".data(using: .ascii)!)
-            //------------------------------------------------------------------
-            // PCB Version
-            //------------------------------------------------------------------
-            group.enter()
-            self.reader.send(ORSSerialRequest(
-                dataToSend: "h\0".bytes()!
-                , userInfo: nil
-                , timeoutInterval: 1
-                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) {
-                    if let data = $0 {
-                        dataReceived.append(data)
-                    }
-                    group.leave()
-                    return true
-            }))
-            //------------------------------------------------------------------
-            // Firmware Version
-            //------------------------------------------------------------------
-            group.enter()
-            self.reader.send(ORSSerialRequest(
-                dataToSend: "V\0".bytes()!
-                , userInfo: nil
-                , timeoutInterval: 5
-                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) {
-                    if let data = $0 {
-                        dataReceived.append(data)
-                    }
-                    group.leave()
-                    return true
-            }))
-            //------------------------------------------------------------------
-            // Voltage Version
-            //------------------------------------------------------------------
-            group.enter()
-            reader.send(ORSSerialRequest(
-                dataToSend: "C\0".bytes()!
-                , userInfo: nil
-                , timeoutInterval: 5
-                , responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: 1, userInfo: nil) {
-                    if let data = $0 {
-                        dataReceived.append(data)
-                    }
-                    group.leave()
-                    return true
-            }))
-            //------------------------------------------------------------------
-            // WAIT
-            //------------------------------------------------------------------
-            group.wait()
-            //------------------------------------------------------------------
-            let versionBytes = dataReceived.prefix(upTo: 2)
-            guard let minorVersion = versionBytes.first, let firmware = versionBytes.last, let voltage = dataReceived.last else {
-                return nil
+
+    public func boardInfo(_ callback: @escaping (((Version, Voltage)?) -> ())) throws {
+        try whileOpened(.read(count: 3, context: Context.boardInfo), perform: { _ in
+            self.send("0\0".bytes())
+            self.send("h\0".bytes())
+            self.send("V\0".bytes())
+            self.send("C\0".bytes())
+        }) { dataReceived in
+            let versionBytes = dataReceived?.prefix(upTo: 2)
+            guard let minorVersion = versionBytes?.first, let firmware = versionBytes?.last, let voltage = dataReceived?.last else {
+                callback(nil)
+                return
             }
             //------------------------------------------------------------------
-            return (.init(minor: Int(minorVersion), revision: String(firmware, radix: 16, uppercase: false)), String(voltage, radix: 16, uppercase: true) == "1" ? .high : .low)
-        }) { boardInfo in
-            DispatchQueue.main.sync {
-                callback(boardInfo)
-            }
+            callback((.init(minor: Int(minorVersion), revision: String(firmware, radix: 16, uppercase: false)), String(voltage, radix: 16, uppercase: true) == "1" ? .high : .low))
         }
     }
 }

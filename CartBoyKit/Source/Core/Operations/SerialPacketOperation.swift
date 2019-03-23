@@ -1,7 +1,7 @@
 import Foundation
 import ORSSerial
 
-final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOperation<Controller> where Controller: CartridgeController {
+final class SerialPacketOperation<Controller: SerialPortController, Context>: OpenPortOperation<Controller> {
     enum Intent {
         case read(count: Int, context: Context)
         case write(data: Data, context: Context)
@@ -15,24 +15,20 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
             }
         }
     }
-    
-    enum Context {
-        case header
-        case cartridge(Controller.Cartridge.Header)
-        case saveFile(Controller.Cartridge.Header)
-    }
-    
-    convenience init(delegate: Controller, intent: Intent, result: @escaping ((Data?) -> ())) {
+
+    convenience init(delegate: Controller, intent: Intent, perform block: ((Progress) -> ())? = nil, result: @escaping ((Data?) -> ())) {
         self.init(controller: delegate)
 
         self.result   = result
         self.intent   = intent
         self.progress = Progress(totalUnitCount: Int64(intent.count))
+        self.performBlock = block
     }
     
     private var intent: Intent! = nil
     private var progress: Progress! = nil
     private var result: ((Data?) -> ())! = nil
+    private var performBlock: ((Progress) -> ())? = nil
     private var buffer: Data = .init() {
         didSet {
             progress.completedUnitCount = Int64(buffer.count)
@@ -44,6 +40,7 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
                     if case let packetLength = Int64(self.delegate?.packetLength?(for: self.intent) ?? 1), progress.completedUnitCount % packetLength == 0 {
                         delegate.packetOperation?(self, didUpdate: progress, with: self.intent)
                     }
+                    self.performBlock?(self.progress)
                 }
             }
         }
@@ -59,6 +56,8 @@ final class SerialPacketOperation<Controller: SerialPortController>: OpenPortOpe
                 delegate.packetOperation?(self, didBeginWith: self.intent)
             }
         }
+        
+        self.performBlock?(self.progress)
     }
 
     @objc override func serialPortWasClosed(_ serialPort: ORSSerialPort) {

@@ -57,6 +57,8 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 //--------------------------------------------------------------
                 self.send("AA000\0".bytes())
                 self.send("R".bytes())
+            case .boardInfo:
+                return
             default:
                 operation.cancel()
                 return
@@ -136,6 +138,8 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 fallthrough
             case .header:
                 self.send("1".bytes(), timeout: 250)
+            case .boardInfo:
+                return
             default:
                 operation.cancel()
                 return
