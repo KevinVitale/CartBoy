@@ -2,12 +2,6 @@ import ORSSerial
 import Gibby
 
 final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartridgeController<Cartridge> where Cartridge.Platform == GameboyClassic {
-    @discardableResult
-    override func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
-        defer { usleep(250) }
-        return super.send(data, timeout: timeout)
-    }
-    
     @objc override func packetOperation(_ operation: Operation, didBeginWith intent: Any?) {
         super.packetOperation(operation, didBeginWith: intent)
         //----------------------------------------------------------------------

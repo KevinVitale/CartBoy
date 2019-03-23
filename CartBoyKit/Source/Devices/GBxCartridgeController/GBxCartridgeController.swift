@@ -8,6 +8,12 @@ import Gibby
 public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSerialPortController, CartridgeController {
     typealias Intent = SerialPacketOperation<GBxCartridgeController<Cartridge>>.Intent
     
+    @discardableResult
+    public override final func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
+        defer { usleep(250) }
+        return super.send(data, timeout: timeout)
+    }
+
     public override func open() {
         super.open()
         self.reader.configuredAsGBxCart()
