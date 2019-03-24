@@ -39,7 +39,8 @@ enum CartridgeControllerContext<Cartridge: Gibby.Cartridge> {
 
 extension SerialPacketOperationDelegate where Self: SerialPortController, Self: CartridgeController {
     typealias Context = CartridgeControllerContext<Cartridge>
-    private typealias Intent = SerialPacketOperation<Self, Context>.Intent
+    fileprivate typealias Intent = SerialPacketOperation<Self, Context>.Intent
+    
     
     fileprivate func read(_ context: Context, result: @escaping ((Data?) -> ())) {
         switch context {
