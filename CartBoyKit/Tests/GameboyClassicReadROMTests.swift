@@ -38,7 +38,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 try! cartridge.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(cartridge.header.title).gb"))
             }
         }
-        waitForExpectations(timeout: 16)
+        waitForExpectations(timeout: 35)
     }
     
     func testBackup() {
