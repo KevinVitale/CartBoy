@@ -13,8 +13,13 @@ public protocol CartridgeController {
     /// The associated platform that the adopter relates to.
     associatedtype Cartridge: Gibby.Cartridge
 
+    // Cart
     func header(result: @escaping ((Cartridge.Header?) -> ()))
+    
+    // ROM
     func read(header: Cartridge.Header?, result: @escaping ((Cartridge?) -> ()))
+
+    // RAM
     func backup(header: Cartridge.Header?, result: @escaping (Data?, Cartridge.Header) -> ())
     func restore(from backup: Data, header: Cartridge.Header?, result: @escaping (Bool) -> ())
     func delete(header: Cartridge.Header?, result: @escaping (Bool) -> ())
