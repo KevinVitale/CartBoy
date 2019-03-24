@@ -103,7 +103,7 @@ extension SerialPortController where Self: ThreadSafeSerialPortController {
     /**
      Peforms a `block` operation while the serial port is open.
      */
-    func whileOpened<Context>(_ intent: SerialPacketOperation<Self, Context>.Intent, perform block: @escaping (_ progress: Progress) -> (), callback: @escaping (Data?) -> ()) throws {
-        SerialPacketOperation<Self, Context>(delegate: self, intent: intent, perform: block, result: callback).start()
+    func whileOpened<Context>(_ intent: SerialPacketOperation<Self, Context>.Intent, perform block: @escaping (_ progress: Progress) -> (), appendData: (((Data) -> Bool))? = nil, callback: @escaping (Data?) -> ()) throws {
+        SerialPacketOperation<Self, Context>(delegate: self, intent: intent, perform: block, appendData: appendData, result: callback).start()
     }
 }

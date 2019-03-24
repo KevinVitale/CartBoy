@@ -19,12 +19,13 @@ final class SerialPacketOperation<Controller: SerialPortController, Context>: Op
         }
     }
 
-    convenience init(delegate: Controller, intent: Intent, perform block: ((Progress) -> ())? = nil, result: @escaping ((Data?) -> ())) {
+    convenience init(delegate: Controller, intent: Intent, perform block: ((Progress) -> ())? = nil, appendData: (((Data) -> Bool))? = nil, result: @escaping ((Data?) -> ())) {
         self.init(controller: delegate)
 
         self.result   = result
         self.intent   = intent
         self.progress = Progress(totalUnitCount: Int64(intent.count))
+        self.appendData = appendData
         self.performBlock = block
     }
     
@@ -32,6 +33,7 @@ final class SerialPacketOperation<Controller: SerialPortController, Context>: Op
     private var progress: Progress! = nil
     private var result: ((Data?) -> ())! = nil
     private var performBlock: ((Progress) -> ())? = nil
+    private var appendData: ((Data) -> (Bool))? = nil
     private var buffer: Data = .init() {
         didSet {
             progress.completedUnitCount = Int64(buffer.count)
@@ -77,6 +79,11 @@ final class SerialPacketOperation<Controller: SerialPortController, Context>: Op
     }
     
     @objc override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
-        self.buffer.append(data)
+        if let appendData = self.appendData {
+            appendData(data) ? self.buffer.append(data) : ()
+        }
+        else {
+            self.buffer.append(data)
+        }
     }
 }
