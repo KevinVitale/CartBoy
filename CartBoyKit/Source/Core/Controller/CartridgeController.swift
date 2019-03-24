@@ -25,8 +25,9 @@ public protocol CartridgeController {
     func delete(header: Cartridge.Header?, result: @escaping (Bool) -> ())
 }
 
-public protocol FlashCartridgeController {
-    associatedtype Cartridge: Gibby.Cartridge
+public protocol FlashCartridge: Gibby.Cartridge {
+    init(contentsOf url: URL) throws
+    func prepare<Controller: SerialPortController>(controller: Controller, progress: Progress) where Controller: CartridgeController, Controller.Cartridge == Self
 }
 
 enum CartridgeControllerContext<Cartridge: Gibby.Cartridge> {
