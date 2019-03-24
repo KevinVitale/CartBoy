@@ -64,6 +64,14 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController, Seria
         }
         return self.reader.send(data)
     }
+    
+    @discardableResult
+    public func send<Number>(_ command: String, number: Number, radix: Int = 16, terminate: Bool = true, timeout: UInt32? = nil) -> Bool where Number : FixedWidthInteger {
+        let numberAsString = String(number, radix: radix, uppercase: true)
+        let data = ("\(command)\(numberAsString)" + (terminate ? "\0" : "")).data(using: .ascii)!
+        return self.send(data, timeout: timeout)
+    }
+    
 }
 
 extension ThreadSafeSerialPortController {

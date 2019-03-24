@@ -229,12 +229,8 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
 }
 
 extension GBxCartridgeControllerClassic {
-    private func bank(_ command: String = "B", address: Int, radix: Int = 16) {
-        self.send("\(command)\(String(address, radix: radix, uppercase: true))\0".bytes())
-    }
-    
     fileprivate func `switch`(to bank: Int, at address: Int) {
-        self.bank(address: address)
-        self.bank(address: bank, radix: 10)
+        self.send("B", number: address)
+        self.send("B", number: bank, radix: 10)
     }
 }
