@@ -35,6 +35,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 print(String(repeating: "-", count: 45), "|", separator: "")
                 print(cartridge)
                 print(String(repeating: "-", count: 45), "|", separator: "")
+                try! cartridge.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(cartridge.header.title).gb"))
             }
         }
         waitForExpectations(timeout: 16)
@@ -53,7 +54,9 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 let MD5 = data.md5.hexString(separator: "").lowercased()
                 print("MD5: \(MD5)")
                 
-                let saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav")
+                var saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav")
+                try! data.write(to: saveFileURL)
+                saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav.bak")
                 try! data.write(to: saveFileURL)
             }
         }
@@ -70,7 +73,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             }
             var saveFileData: Data = .init()
             do {
-                saveFileData = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav"))
+                saveFileData = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav.bak"))
             } catch {
                 XCTFail("No such save file")
                 exp.fulfill()
@@ -93,6 +96,8 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         let exp = expectation(description: "Test Delete")
         controller.header {
             guard let header = $0 else {
+                print($0!)
+                exp.fulfill()
                 return
             }
             controller.delete(header: header) {
