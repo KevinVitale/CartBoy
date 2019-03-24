@@ -71,7 +71,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         // WRITE
         //----------------------------------------------------------------------
-        else if case .write(let data, let context)? = intent as? Intent {
+        else if case .write(let data, _, let context)? = intent as? Intent {
             switch context {
             case .saveFile(let header as GameboyClassic.Cartridge.Header):
                 guard header.configuration.hardware.contains(.ram) else {
@@ -202,11 +202,11 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         // WRITE
         //----------------------------------------------------------------------
-        else if case .write(let data, let context) = intent {
+        else if case .write(let data, let count, let context) = intent {
             switch context {
             case .saveFile(let header as GameboyClassic.Cartridge.Header):
-                let startAddress = completedUnitCount * 64
-                let range = startAddress..<startAddress + 64
+                let startAddress = completedUnitCount * count
+                let range = startAddress..<startAddress + count
                 if case let bank = startAddress / header.ramBankSize, startAddress % header.ramBankSize == 0 {
                     //----------------------------------------------------------
                     // DEBUG

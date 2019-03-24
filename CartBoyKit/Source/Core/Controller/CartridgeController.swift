@@ -33,26 +33,27 @@ enum CartridgeControllerContext<Cartridge: Gibby.Cartridge> {
 
 extension SerialPacketOperationDelegate where Self: SerialPortController, Self: CartridgeController {
     typealias Context = CartridgeControllerContext<Cartridge>
+    private typealias Intent = SerialPacketOperation<Self, Context>.Intent
     
     fileprivate func read(_ context: Context, result: @escaping ((Data?) -> ())) {
         switch context {
         case .header:
             let headerSize = Cartridge.Platform.headerRange.count
-            let intent = SerialPacketOperation<Self, Context>.Intent.read(count: headerSize, context: context)
+            let intent = Intent.read(count: headerSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         case .cartridge(let header):
             guard header.isLogoValid, header.romSize > 0 else {
                 result(nil)
                 return
             }
-            let intent = SerialPacketOperation<Self, Context>.Intent.read(count: header.romSize, context: context)
+            let intent = Intent.read(count: header.romSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         case .saveFile(let header):
             guard header.isLogoValid, header.ramSize > 0 else {
                 result(nil)
                 return
             }
-            let intent = SerialPacketOperation<Self, Context>.Intent.read(count: header.ramSize, context: context)
+            let intent = Intent.read(count: header.ramSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         default:
             result(nil)
@@ -61,14 +62,15 @@ extension SerialPacketOperationDelegate where Self: SerialPortController, Self: 
     }
     
     fileprivate func write(_ context: Context, data: Data, result: @escaping ((Data?) -> ())) {
+        let packetSize = Int(packetLength!(for: Intent.read(count: 0, context: context)))
         switch context {
         case .header:
             return result(nil)
         case .cartridge:
-            let intent = SerialPacketOperation<Self, Context>.Intent.write(data: data, context: context)
+            let intent = Intent.write(data: data, count: packetSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         case .saveFile:
-            let intent = SerialPacketOperation<Self, Context>.Intent.write(data: data, context: context)
+            let intent = Intent.write(data: data, count: packetSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         default:
             result(nil)

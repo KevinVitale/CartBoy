@@ -4,14 +4,17 @@ import ORSSerial
 final class SerialPacketOperation<Controller: SerialPortController, Context>: OpenPortOperation<Controller> {
     enum Intent {
         case read(count: Int, context: Context)
-        case write(data: Data, context: Context)
+        case write(data: Data, count: Int, context: Context)
         
         fileprivate var count: Int {
             switch self {
             case .read(let count, _):
                 return count
-            case .write(let data, _):
-                return data.count / 64 /* Remove this assumption */
+            case .write(let data, let count, _):
+                guard count != 0 else {
+                    return data.count
+                }
+                return data.count / count
             }
         }
     }
