@@ -47,7 +47,7 @@ public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSeria
     }
 
     public func boardInfo(_ callback: @escaping (((Version, Voltage)?) -> ())) throws {
-        try whileOpened(.read(count: 3, context: Context.boardInfo), perform: { _ in
+        try whileOpened(.read(count: 3, context: Context.whileOpened), perform: { _ in
             self.send("0\0".bytes())
             self.send("h\0".bytes())
             self.send("V\0".bytes())

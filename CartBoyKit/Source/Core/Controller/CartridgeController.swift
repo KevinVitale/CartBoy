@@ -18,6 +18,7 @@ public protocol CartridgeController {
     
     // ROM
     func read(header: Cartridge.Header?, result: @escaping ((Cartridge?) -> ()))
+    func erase<FlashCart: FlashCartridge>(_ flashCart: FlashCart, result: @escaping (Bool) -> ()) where FlashCart.Platform == Cartridge.Platform
 
     // RAM
     func backup(header: Cartridge.Header?, result: @escaping (Data?, Cartridge.Header) -> ())
@@ -27,14 +28,14 @@ public protocol CartridgeController {
 
 public protocol FlashCartridge: Gibby.Cartridge {
     init(contentsOf url: URL) throws
-    func prepare<Controller: SerialPortController>(controller: Controller, progress: Progress) where Controller: CartridgeController, Controller.Cartridge == Self
+    // func prepare<Controller: SerialPortController>(controller: Controller, progress: Progress) where Controller: CartridgeController, Controller.Cartridge == Self
 }
 
 enum CartridgeControllerContext<Cartridge: Gibby.Cartridge> {
     case header
     case cartridge(Cartridge.Header)
     case saveFile(Cartridge.Header)
-    case boardInfo
+    case whileOpened
 }
 
 extension SerialPacketOperationDelegate where Self: SerialPortController, Self: CartridgeController {
@@ -63,8 +64,8 @@ extension SerialPacketOperationDelegate where Self: SerialPortController, Self: 
     fileprivate func write(_ context: Context, data: Data, result: @escaping ((Data?) -> ())) {
         let packetSize = Int(packetLength!(for: Intent.read(count: 0, context: context)))
         switch context {
-        case .boardInfo: fallthrough
-        case    .header: return result(nil)
+        case .whileOpened: fallthrough
+        case .header: return result(nil)
         default:
             let intent = Intent.write(data: data, count: packetSize, context: context)
             SerialPacketOperation(delegate: self, intent: intent, result: result).start()
