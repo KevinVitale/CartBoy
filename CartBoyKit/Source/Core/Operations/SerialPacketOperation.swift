@@ -39,11 +39,12 @@ final class SerialPacketOperation<Controller: SerialPortController, Context>: Op
                 complete()
             }
             else {
+                self.performBlock?(self.progress)
+                
                 if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didUpdate:with:))) {
                     if case let packetLength = Int64(self.delegate?.packetLength?(for: self.intent) ?? 1), progress.completedUnitCount % packetLength == 0 {
                         delegate.packetOperation?(self, didUpdate: progress, with: self.intent)
                     }
-                    self.performBlock?(self.progress)
                 }
             }
         }
@@ -53,14 +54,13 @@ final class SerialPacketOperation<Controller: SerialPortController, Context>: Op
         super.main()
 
         self.progress.becomeCurrent(withPendingUnitCount: 0)
+        self.performBlock?(self.progress)
 
         if let delegate = self.delegate, delegate.responds(to: #selector(SerialPacketOperationDelegate.packetOperation(_:didBeginWith:))) {
             DispatchQueue.main.async {
                 delegate.packetOperation?(self, didBeginWith: self.intent)
             }
         }
-        
-        self.performBlock?(self.progress)
     }
 
     @objc override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
