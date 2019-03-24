@@ -63,17 +63,11 @@ extension SerialPacketOperationDelegate where Self: SerialPortController, Self: 
     fileprivate func write(_ context: Context, data: Data, result: @escaping ((Data?) -> ())) {
         let packetSize = Int(packetLength!(for: Intent.read(count: 0, context: context)))
         switch context {
-        case .header:
-            return result(nil)
-        case .cartridge:
-            let intent = Intent.write(data: data, count: packetSize, context: context)
-            SerialPacketOperation(delegate: self, intent: intent, result: result).start()
-        case .saveFile:
-            let intent = Intent.write(data: data, count: packetSize, context: context)
-            SerialPacketOperation(delegate: self, intent: intent, result: result).start()
+        case .boardInfo: fallthrough
+        case    .header: return result(nil)
         default:
-            result(nil)
-            return
+            let intent = Intent.write(data: data, count: packetSize, context: context)
+            SerialPacketOperation(delegate: self, intent: intent, result: result).start()
         }
     }
 }
