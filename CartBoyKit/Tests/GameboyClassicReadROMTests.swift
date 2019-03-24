@@ -59,6 +59,52 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
     }
+    
+    func testRestore() {
+        let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        let exp = expectation(description: "Test Restore")
+        
+        controller.header {
+            guard let header = $0 else {
+                return
+            }
+            var saveFileData: Data = .init()
+            do {
+                saveFileData = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav"))
+            } catch {
+                XCTFail("No such save file")
+                exp.fulfill()
+                return
+            }
+            
+            controller.restore(from: saveFileData, header: header) {
+                defer { exp.fulfill() }
+                guard $0 else {
+                    XCTFail()
+                    return
+                }
+            }
+        }
+        waitForExpectations(timeout: 10)
+    }
+    
+    func testDelete() {
+        let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        let exp = expectation(description: "Test Delete")
+        controller.header {
+            guard let header = $0 else {
+                return
+            }
+            controller.delete(header: header) {
+                defer { exp.fulfill() }
+                guard $0 else {
+                    XCTFail()
+                    return
+                }
+            }
+        }
+        waitForExpectations(timeout: 10)
+    }
 
     func testBoardInfo() {
         let controller = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()

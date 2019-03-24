@@ -11,7 +11,7 @@ final class SerialPacketOperation<Controller: SerialPortController, Context>: Op
             case .read(let count, _):
                 return count
             case .write(let data, _):
-                return data.count
+                return data.count / 64 /* Remove this assumption */
             }
         }
     }

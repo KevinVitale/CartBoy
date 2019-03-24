@@ -71,8 +71,51 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         // WRITE
         //----------------------------------------------------------------------
-        else if case .write(let data, _)? = intent as? Intent {
-            print(data)
+        else if case .write(let data, let context)? = intent as? Intent {
+            switch context {
+            case .saveFile(let header as GameboyClassic.Cartridge.Header):
+                guard header.configuration.hardware.contains(.ram) else {
+                    operation.cancel()
+                    return
+                }
+                switch header.configuration {
+                    //--------------------------------------------------------------
+                    // MBC2 "fix"
+                //--------------------------------------------------------------
+                case .one, .two:
+                    //----------------------------------------------------------
+                    // START; STOP
+                    //----------------------------------------------------------
+                    self.send("A0\0".bytes())
+                    self.send("R".bytes())
+                    self.send("0\0".bytes())
+                default: (/* do nothing */)
+                }
+                //--------------------------------------------------------------
+                // SET: the 'RAM' mode (MBC1-ONLY)
+                //--------------------------------------------------------------
+                if case .one = header.configuration {
+                    self.switch(to: 1, at: 0x6000)
+                }
+                
+                //--------------------------------------------------------------
+                // TOGGLE
+                //--------------------------------------------------------------
+                self.switch(to: 0x0A, at: 0x0000)
+                
+                //--------------------------------------------------------------
+                // BANK SWITCH
+                //--------------------------------------------------------------
+                self.switch(to: 0x0, at: 0x4000)
+                
+                //--------------------------------------------------------------
+                // START
+                //--------------------------------------------------------------
+                self.send("AA000\0".bytes())
+                self.send("W".data(using: .ascii)! + data[..<64])
+            default:
+                print(data)
+            }
         }
     }
     
@@ -82,12 +125,12 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
             return
         }
         
+        let completedUnitCount = Int(progress.completedUnitCount)
+        
         //----------------------------------------------------------------------
         // READ
         //----------------------------------------------------------------------
         if case let .read(_, context) = intent {
-            let completedUnitCount = Int(progress.completedUnitCount)
-            
             //------------------------------------------------------------------
             // OPERATION
             //------------------------------------------------------------------
@@ -159,9 +202,28 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         // WRITE
         //----------------------------------------------------------------------
-        else if case .write(let data, _) = intent {
-            
-            print(data)
+        else if case .write(let data, let context) = intent {
+            switch context {
+            case .saveFile(let header as GameboyClassic.Cartridge.Header):
+                let startAddress = completedUnitCount * 64
+                let range = startAddress..<startAddress + 64
+                if case let bank = startAddress / header.ramBankSize, startAddress % header.ramBankSize == 0 {
+                    //----------------------------------------------------------
+                    // DEBUG
+                    //----------------------------------------------------------
+                    print("#\(bank), \(progress.fractionCompleted)%")
+                    
+                    self.send("0\0".bytes())
+                    self.switch(to: bank, at: 0x4000)
+                    self.send("AA000\0".bytes())
+                    self.send("W".data(using: .ascii)! + data[range])
+                }
+                else {
+                    self.send("W".data(using: .ascii)! + data[range])
+                }
+            default:
+                print(data)
+            }
         }
     }
 }
