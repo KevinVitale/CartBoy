@@ -29,7 +29,7 @@ public protocol FlashCartridge: Gibby.Cartridge {
     init(contentsOf url: URL) throws
     
     static func erase<Controller: ThreadSafeSerialPortController>(controller: Controller, result: @escaping (Bool) -> ()) throws where Controller: CartridgeController, Controller.Cartridge == Self
-    static func prepare<Controller>(controller: Controller) throws where Self == Controller.Cartridge, Controller: ThreadSafeSerialPortController, Controller : CartridgeController
+    static func prepare<Controller>(controller: Controller, complete: (() -> ())?) throws where Self == Controller.Cartridge, Controller: ThreadSafeSerialPortController, Controller : CartridgeController
 }
 
 enum CartridgeControllerContext<Cartridge: Gibby.Cartridge> {
@@ -155,7 +155,9 @@ extension SerialPortController where Self: CartridgeController {
 
 extension SerialPortController where Self: ThreadSafeSerialPortController, Self: CartridgeController, Self.Cartridge: FlashCartridge {
     public func write(flashCart: Cartridge, result: @escaping ((Bool) -> ())) {
-        try! Self.Cartridge.prepare(controller: self)
+        try! Self.Cartridge.prepare(controller: self) {
+            print("\(Cartridge.self) prepared...")
+        }
         let data = Data(flashCart[flashCart.startIndex..<flashCart.endIndex])
         self.write(.cartridge(flashCart.header), data: data) { _ in
             return result(true)

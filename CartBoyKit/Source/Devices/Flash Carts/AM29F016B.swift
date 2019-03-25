@@ -45,7 +45,7 @@ extension AM29F016B {
         return .high
     }
     
-    public static func prepare<Controller>(controller: Controller) throws where AM29F016B == Controller.Cartridge, Controller: ThreadSafeSerialPortController, Controller : CartridgeController {
+    public static func prepare<Controller>(controller: Controller, complete: (() -> ())? = nil) throws where AM29F016B == Controller.Cartridge, Controller: ThreadSafeSerialPortController, Controller : CartridgeController {
         typealias Operation = SerialPacketOperation<Controller, Controller.Context>
         try controller.whileOpened(
             Operation.Intent.read(count: 6, context: Controller.Context.whileOpened)
@@ -66,7 +66,7 @@ extension AM29F016B {
                 }
         }) { _ in
             controller.send("0\0".bytes())
-            print("done")
+            complete?()
         }
     }
     
@@ -86,7 +86,6 @@ extension AM29F016B {
                 }
         }) { _ in
             controller.send("0\0".bytes())
-            print("done")
         }
     }
 
@@ -96,7 +95,9 @@ extension AM29F016B {
         try AM29F016B.prepare(controller: controller)
         try AM29F016B.erase(controller: controller)
 
+        print("Erasing \(AM29F016B.self)")
         var buffer = Data()
+        var sectorCount = 0
         try controller.whileOpened(Operation.Intent.read(count: 1, context: Controller.Context.whileOpened)
             , perform: { progress in
                 guard progress.completedUnitCount > 0 else {
@@ -106,17 +107,26 @@ extension AM29F016B {
                 }
         } , appendData: { data in
             buffer += data
+            // Don't stop reading until we receive '0xFF' as the first byte.
             guard buffer.starts(with: [0xFF]) else {
+                // Wait for 'buffer' to fill with 64 bytes
                 guard buffer.count % 64 == 0 else {
                     return false
                 }
+                // Reset 'buffer' and update metrics (sector count)
                 buffer.removeAll()
+                sectorCount += 1
+                
+                // Continue to read the next 64 bytes...
                 controller.send("1".bytes())
+                
+                // Returning 'false' means we haven't received 0xFF as a byte
                 return false
             }
             return true
         }
         ) { _ in
+            print("\(AM29F016B.self) erased \(sectorCount) sectors")
             result(true)
         }
     }
