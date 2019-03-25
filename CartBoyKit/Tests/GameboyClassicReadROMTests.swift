@@ -71,9 +71,12 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             guard let header = $0 else {
                 return
             }
+            print(header)
             var saveFileData: Data = .init()
             do {
                 saveFileData = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav.bak"))
+                let MD5 = saveFileData.md5.hexString(separator: "").lowercased()
+                print(saveFileData, "MD5: \(MD5)")
             } catch {
                 XCTFail("No such save file")
                 exp.fulfill()
