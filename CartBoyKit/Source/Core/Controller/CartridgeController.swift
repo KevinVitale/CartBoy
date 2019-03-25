@@ -18,7 +18,6 @@ public protocol CartridgeController {
     
     // ROM
     func read(header: Cartridge.Header?, result: @escaping ((Cartridge?) -> ()))
-    func erase<FlashCart: FlashCartridge>(_ flashCart: FlashCart, result: @escaping (Bool) -> ()) where FlashCart.Platform == Cartridge.Platform
 
     // RAM
     func backup(header: Cartridge.Header?, result: @escaping (Data?, Cartridge.Header) -> ())
@@ -28,7 +27,9 @@ public protocol CartridgeController {
 
 public protocol FlashCartridge: Gibby.Cartridge {
     init(contentsOf url: URL) throws
-    // func prepare<Controller: SerialPortController>(controller: Controller, progress: Progress) where Controller: CartridgeController, Controller.Cartridge == Self
+    
+    static func erase<Controller: ThreadSafeSerialPortController>(controller: Controller, result: @escaping (Bool) -> ()) throws where Controller: CartridgeController, Controller.Cartridge == Self
+    static func prepare<Controller>(controller: Controller) throws where Self == Controller.Cartridge, Controller: ThreadSafeSerialPortController, Controller : CartridgeController
 }
 
 enum CartridgeControllerContext<Cartridge: Gibby.Cartridge> {
@@ -40,7 +41,7 @@ enum CartridgeControllerContext<Cartridge: Gibby.Cartridge> {
 
 extension SerialPacketOperationDelegate where Self: SerialPortController, Self: CartridgeController {
     typealias Context = CartridgeControllerContext<Cartridge>
-    fileprivate typealias Intent = SerialPacketOperation<Self, Context>.Intent
+    typealias Intent = SerialPacketOperation<Self, Context>.Intent
     
     
     fileprivate func read(_ context: Context, result: @escaping ((Data?) -> ())) {
@@ -149,5 +150,15 @@ extension SerialPortController where Self: CartridgeController {
             return
         }
         self.restore(from: Data(count: header.ramSize), header: header, result: result)
+    }
+}
+
+extension SerialPortController where Self: ThreadSafeSerialPortController, Self: CartridgeController, Self.Cartridge: FlashCartridge {
+    public func write(flashCart: Cartridge, result: @escaping ((Bool) -> ())) {
+        try! Self.Cartridge.prepare(controller: self)
+        let data = Data(flashCart[flashCart.startIndex..<flashCart.endIndex])
+        self.write(.cartridge(flashCart.header), data: data) { _ in
+            return result(true)
+        }
     }
 }

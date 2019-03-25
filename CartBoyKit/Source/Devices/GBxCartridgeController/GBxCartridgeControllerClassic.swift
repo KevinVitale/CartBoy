@@ -70,8 +70,11 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         // WRITE
         //----------------------------------------------------------------------
-        else if case .write(let data, _, let context)? = intent as? Intent {
+        else if case .write(let data, let count, let context)? = intent as? Intent {
             switch context {
+            case .cartridge:
+                self.send("A0\0".bytes())
+                self.send("T".data(using: .ascii)! + data[0..<count])
             case .saveFile(let header as GameboyClassic.Cartridge.Header):
                 guard header.configuration.hardware.contains(.ram) else {
                     operation.cancel()
@@ -113,7 +116,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                 self.send("AA000\0".bytes())
                 self.send("W".data(using: .ascii)! + data[..<64])
             default:
-                print(data)
+                print(#file, #function, #line, data)
             }
         }
     }
@@ -202,6 +205,27 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
         //----------------------------------------------------------------------
         else if case .write(let data, let count, let context) = intent {
             switch context {
+            case .cartridge(let header as GameboyClassic.Cartridge.Header):
+                let startAddress = completedUnitCount * count
+                let range = startAddress..<startAddress + count
+                if case let bank = startAddress / header.romBankSize, bank > 1, startAddress % header.romBankSize == 0 {
+                    //----------------------------------------------------------
+                    // DEBUG
+                    //----------------------------------------------------------
+                    print("#\(bank), \(progress.fractionCompleted)%")
+                    self.switch(to: bank, at: 0x2100)
+                    if bank >= 0x100 {
+                        self.switch(to: 1, at: 0x3000)
+                    }
+
+                    self.send("0\0".bytes())
+                    self.send("A4000\0".bytes())
+                    self.switch(to: bank, at: 0x4000)
+                    self.send("T".data(using: .ascii)! + data[range])
+                }
+                else {
+                    self.send("T".data(using: .ascii)! + data[range])
+                }
             case .saveFile(let header as GameboyClassic.Cartridge.Header):
                 let startAddress = completedUnitCount * count
                 let range = startAddress..<startAddress + count
@@ -220,7 +244,7 @@ final class GBxCartridgeControllerClassic<Cartridge: Gibby.Cartridge>: GBxCartri
                     self.send("W".data(using: .ascii)! + data[range])
                 }
             default:
-                print(data)
+                print(#file, #function, #line, data)
             }
         }
     }

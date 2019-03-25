@@ -1,7 +1,7 @@
 import XCTest
 import ORSSerial
 import Gibby
-import CartKit
+@testable import CartKit
 
 @objc(GameboyClassicReadROMTests)
 fileprivate final class GameboyClassicReadROMTests: XCTestCase {
@@ -60,7 +60,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
                 try! data.write(to: saveFileURL)
             }
         }
-        waitForExpectations(timeout: 1)
+        waitForExpectations(timeout: 5)
     }
     
     func testRestore() {
@@ -136,5 +136,44 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
             }
             waitForExpectations(timeout: 10)
         }
+    }
+    
+    func testEraseFlashCart() {
+        let controller = try! GBxCartridgeController<AM29F016B>.controller()
+        let exp = expectation(description: "Test Board Info")
+        exp.expectedFulfillmentCount = 1
+        try! AM29F016B.erase(controller: controller) {
+            defer { exp.fulfill() }
+            print(#function)
+            XCTAssertTrue($0)
+        }
+        waitForExpectations(timeout: 300)
+    }
+    
+    private typealias Operation = SerialPacketOperation<GBxCartridgeController<AM29F016B>, GBxCartridgeController<AM29F016B>.Context>
+    func testWriteFlashCart() {
+        let controller = try! GBxCartridgeController<AM29F016B>.controller()
+        let exp = expectation(description: "Test Write Flash Cart")
+        let romTitle = "POKEMON YELLOW"
+        let romFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/\(romTitle).gb")
+        let flashCart = try! AM29F016B(contentsOf: romFileURL)
+        
+        print(flashCart, "MD5:", Data(flashCart[0..<flashCart.endIndex]).md5.hexString(separator: "").lowercased())
+        print(flashCart.header)
+
+        try! AM29F016B.erase(controller: controller) {
+            XCTAssertTrue($0)
+            guard $0 else {
+                return
+            }
+            controller.write(flashCart: flashCart) {
+                XCTAssertTrue($0)
+                controller.header {
+                    defer { exp.fulfill() }
+                    print($0!)
+                }
+            }
+        }
+        waitForExpectations(timeout: 300)
     }
 }

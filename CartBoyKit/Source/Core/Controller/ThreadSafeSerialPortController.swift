@@ -62,6 +62,11 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController, Seria
         guard let data = data else {
             return false
         }
+        /*
+        if data != Data([0x31]) {
+            print(#function, data.hexString(), String(data: data, encoding: .ascii)!)
+        }
+         */
         return self.reader.send(data)
     }
     
