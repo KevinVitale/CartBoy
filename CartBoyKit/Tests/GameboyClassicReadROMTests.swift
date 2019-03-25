@@ -157,7 +157,7 @@ fileprivate final class GameboyClassicReadROMTests: XCTestCase {
     func testWriteFlashCart() {
         let controller = try! GBxCartridgeController<AM29F016B>.controller()
         let exp = expectation(description: "Test Write Flash Cart")
-        let romTitle = "POKEMON YELLOW"
+        let romTitle = "POKEMON_CRYSTAL_CLEAR"
         let romFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/\(romTitle).gb")
         let flashCart = try! AM29F016B(contentsOf: romFileURL)
         
