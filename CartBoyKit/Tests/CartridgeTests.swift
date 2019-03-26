@@ -69,4 +69,16 @@ class CartridgeTests: XCTestCase {
         saveFileURL = URL(fileURLWithPath: "/Users/kevin/Desktop/\(header.title).sav.bak")
         try! data.write(to: saveFileURL)
     }
+    
+    func testEraseCartridge() {
+        let serialPort = try! GBxCartridgeController<AM29F016B>.controller()
+        let controller = InsideGadgetsWriter<AM29F016B>.self
+        let exp = expectation(description: "Test Board Info")
+        controller.erase(using: serialPort) {
+            defer { exp.fulfill() }
+            print(#function)
+            XCTAssertTrue($0)
+        }.start()
+        waitForExpectations(timeout: 300)
+    }
 }
