@@ -164,6 +164,11 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
             }
         }
         print(header)
+        guard header.isLogoValid, header.ramBankSize != 0 else {
+            return BlockOperation {
+                result(false)
+            }
+        }
         return SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: Int64(data.count / 64)), perform: { progress in
             guard progress.completedUnitCount > 0 else {
                 controller.send("0\0".bytes(),  timeout: 0)

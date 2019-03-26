@@ -103,6 +103,11 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
         let data = Data(flashCartridge[flashCartridge.startIndex..<flashCartridge.endIndex])
         let header = flashCartridge.header
         print(header)
+        guard header.isLogoValid, header.romBankSize != 0 else {
+            return BlockOperation {
+                result(false)
+            }
+        }
         let write = SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: Int64(header.romSize / 64)), perform: { progress in
             guard progress.completedUnitCount > 0 else {
                 controller.send("0".bytes(),  timeout: 0)
@@ -116,7 +121,7 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
             let range = startAddress..<Int(startAddress + 64)
             if case let bank = startAddress / header.romBankSize, bank > 1, startAddress % header.romBankSize == 0 {
                 print("#\(bank), \(progress.fractionCompleted)%")
-                controller.send("0".bytes(), timeout: 0)
+                controller.send("0".bytes(), timeout: 100)
                 controller.send("B", number: 0x2100, radix: 16, terminate: true, timeout: 0)
                 controller.send("B", number: bank, radix: 10, terminate: true, timeout: 0)
                 if bank >= 0x100 {
