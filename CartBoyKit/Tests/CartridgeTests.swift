@@ -35,7 +35,7 @@ class CartridgeTests: XCTestCase {
         }
         print("MD5:", Data(cartridge[0..<cartridge.endIndex]).md5.hexString(separator: "").lowercased())
         print(String(repeating: "-", count: 45), "|", separator: "")
-        print(cartridge)
+        print(cartridge!)
         print(String(repeating: "-", count: 45), "|", separator: "")
         try! cartridge.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(cartridge.header.title).gb"))
     }
