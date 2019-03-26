@@ -22,7 +22,6 @@ public protocol SerialPortController: SerialPacketOperationDelegate {
     @discardableResult
     func close() -> Bool
     
-    @discardableResult
     func close(delegate: ORSSerialPortDelegate)
 
     /**

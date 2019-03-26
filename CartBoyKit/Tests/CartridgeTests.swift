@@ -140,4 +140,42 @@ class CartridgeTests: XCTestCase {
         waitForExpectations(timeout: 300)
         //----------------------------------------------------------------------
     }
+    
+    func testWriteCartridge() {
+        let exp = expectation(description: "Erase Cartridge")
+        exp.expectedFulfillmentCount = 3
+        //----------------------------------------------------------------------
+        let serialPort = try! GBxCartridgeController<AM29F016B>.controller()
+        let writer = InsideGadgetsWriter<AM29F016B>()
+        let reader = InsideGadgetsReader<GameboyClassic.Cartridge>()
+        //----------------------------------------------------------------------
+        // TODO: Extend 'CartridgeWrite' so that it loads flash carts!
+        //----------------------------------------------------------------------
+        func romFileURL(named title: String, extension fileExtension: String = "gb") -> URL {
+            return URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)")
+        }
+        let flashCart = try! writer.read(contentsOf: romFileURL(named: "ZELDA"))
+        //----------------------------------------------------------------------
+        InsideGadgetsWriter<AM29F016B>.erase(using: serialPort) {
+            defer { exp.fulfill() }
+            print(#function)
+            XCTAssertTrue($0)
+            writer.write(flashCartridge: flashCart, using: serialPort) {
+                defer { exp.fulfill() }
+                XCTAssertTrue($0)
+                reader.readHeader(using: serialPort) {
+                    defer { exp.fulfill() }
+                    print(#function)
+                    XCTAssertNotNil($0)
+                    guard let header = $0 else {
+                        return
+                    }
+                    XCTAssertEqual(header.title, flashCart.header.title)
+                    }.start()
+                }.start()
+        }.start()
+        //----------------------------------------------------------------------
+        waitForExpectations(timeout: 300)
+        //----------------------------------------------------------------------
+    }
 }
