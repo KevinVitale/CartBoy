@@ -2,7 +2,7 @@ import Foundation
 import ORSSerial
 
 
-final class SerialPortOperation<Controller: SerialPortController, Context>: OpenPortOperation<Controller> {
+final class SerialPortOperation<Controller: SerialPortController>: OpenPortOperation<Controller> {
     // MARK: - Initialization
     //--------------------------------------------------------------------------
     convenience init(controller: Controller, progress: Progress, perform block: @escaping ((Progress) -> ()), appendData: @escaping (((Data) -> Bool)) = { _ in return true }, result: @escaping ((Data?) -> ())) {
@@ -30,7 +30,7 @@ final class SerialPortOperation<Controller: SerialPortController, Context>: Open
             }
         }
     }
-    
+
     // MARK: - Main
     //--------------------------------------------------------------------------
     override func main() {

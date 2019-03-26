@@ -91,6 +91,13 @@ extension ThreadSafeSerialPortController {
     public final func close() -> Bool {
         return self.reader.close()
     }
+    
+    public func close(delegate: ORSSerialPortDelegate) {
+        self.isOpenCondition.whileLocked {
+            self.delegate = nil
+            self.isOpenCondition.signal()
+        }
+    }
 }
 
 extension ThreadSafeSerialPortController {

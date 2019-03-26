@@ -7,17 +7,6 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
         self.transactionID = UUID()
         super.init()
         
-        /**
-         After calling 'self.complete()', the operation *must* close the port.
-         This will have the side-effect of causing this operation to receive the
-         `serialPort(_:wasClosed:)` method, at which point this operation can
-         inform the controller that it has _definitely_ completed.
-         
-         `self.complete()`
-            -> `controller.close()`
-            -> `self.serialPort(_:wasClosed:)`
-            -> `controller.packetOperation(_:didComplete:)`
-         */
         self.completionBlock = {
             controller.close()
         }
@@ -81,7 +70,7 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
             main()
         }
     }
-
+    
     @objc override func main() {
         self.controller.openReader(delegate: self)
         self.isReadyCondition.whileLocked {
@@ -107,6 +96,7 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
     }
 
     @objc func serialPortWasClosed(_ serialPort: ORSSerialPort) {
+        controller.close(delegate: self)
     }
     
     @objc func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
