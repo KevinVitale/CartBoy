@@ -28,7 +28,7 @@ class CartridgeTests: XCTestCase {
             cartridge = $0
             }.start()
         //----------------------------------------------------------------------
-        waitForExpectations(timeout: 20)
+        waitForExpectations(timeout: 40)
         //----------------------------------------------------------------------
         guard cartridge != nil else {
             return
@@ -41,7 +41,7 @@ class CartridgeTests: XCTestCase {
     }
     
     func testBackupSaveFile() {
-        let exp = expectation(description: "Backup Save File")
+        let exp = expectation(description: "Backups Save File")
         let serialPort = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
         let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
         //----------------------------------------------------------------------
@@ -70,15 +70,74 @@ class CartridgeTests: XCTestCase {
         try! data.write(to: saveFileURL)
     }
     
+    func testRestoreSaveFile() {
+        let exp = expectation(description: "Restores Save File")
+        exp.expectedFulfillmentCount = 3
+        //----------------------------------------------------------------------
+        let serialPort = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
+        //----------------------------------------------------------------------
+        func saveFileAndMD5(named title: String, extension fileExtension: String = "sav.bak") throws -> (data: Data, md5: String) {
+            let data = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)"))
+            let MD5 = data.md5.hexString(separator: "").lowercased()
+            return (data, MD5)
+        }
+        //----------------------------------------------------------------------
+        let saveFile = try! saveFileAndMD5(named: "PM_CRYSTAL")
+        print("MD5: \(saveFile.md5)")
+        //----------------------------------------------------------------------
+        // Read (cache) the cartridge header
+        controller.readHeader(using: serialPort) { header in
+            defer { exp.fulfill() }
+            XCTAssertNotNil(header)
+            // Write the save file
+            controller.restoreSave(data: saveFile.data, using: serialPort, with: header) {
+                defer { exp.fulfill() }
+                XCTAssertTrue($0)
+                // Sanity-Check
+                controller.backupSave(using: serialPort, with: header) {
+                    defer { exp.fulfill() }
+                    XCTAssertNotNil($0)
+                    let data = $0 ?? Data()
+                    let md5 = data.md5.hexString(separator: "").lowercased()
+                    print("WAS: \(saveFile.md5)")
+                    print("NOW: \(md5)")
+                    }.start()
+                }.start()
+        }.start()
+        //----------------------------------------------------------------------
+        waitForExpectations(timeout: 10)
+        //----------------------------------------------------------------------
+    }
+    
+    func testDeleteSaveFile() {
+        let exp = expectation(description: "Deletes Save File")
+        //----------------------------------------------------------------------
+        let serialPort = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
+        //----------------------------------------------------------------------
+        controller.deleteSave(using: serialPort) {
+            defer { exp.fulfill() }
+            XCTAssertTrue($0)
+        }.start()
+        //----------------------------------------------------------------------
+        waitForExpectations(timeout: 10)
+        //----------------------------------------------------------------------
+    }
+
     func testEraseCartridge() {
+        let exp = expectation(description: "Erase Cartridge")
+        //----------------------------------------------------------------------
         let serialPort = try! GBxCartridgeController<AM29F016B>.controller()
         let controller = InsideGadgetsWriter<AM29F016B>.self
-        let exp = expectation(description: "Test Board Info")
+        //----------------------------------------------------------------------
         controller.erase(using: serialPort) {
             defer { exp.fulfill() }
             print(#function)
             XCTAssertTrue($0)
         }.start()
+        //----------------------------------------------------------------------
         waitForExpectations(timeout: 300)
+        //----------------------------------------------------------------------
     }
 }

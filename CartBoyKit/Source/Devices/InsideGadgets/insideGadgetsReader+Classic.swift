@@ -1,7 +1,7 @@
 import Gibby
 
 extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
-    public func readHeader<Controller>(using controller: Controller, result: @escaping (Cartridge.Header?) -> ()) -> Operation where Controller: SerialPortController {
+    public func readHeader<Controller>(using controller: Controller, result: @escaping (Cartridge.Header?) -> ()) -> Operation where Controller : SerialPortController {
         let timeout: UInt32 = 250
         return SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: Int64(Cartridge.Platform.headerRange.count)), perform: { progress in
             guard progress.completedUnitCount > 0 else {
@@ -164,7 +164,7 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
             }
         }
         print(header)
-        return SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: Int64(header.ramSize)), perform: { progress in
+        return SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: Int64(data.count / 64)), perform: { progress in
             guard progress.completedUnitCount > 0 else {
                 controller.send("0\0".bytes(),  timeout: 0)
                 
@@ -209,9 +209,6 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
                 controller.send("W".data(using: .ascii)! + data[..<64], timeout: 0)
                 return
             }
-            guard progress.completedUnitCount % 64 == 0 else {
-                return
-            }
             let startAddress = Int(progress.completedUnitCount * 64)
             let range = startAddress..<Int(startAddress + 64)
             if case let bank = startAddress / header.ramBankSize, startAddress % header.ramBankSize == 0 {
@@ -224,7 +221,7 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
                 controller.send("W".data(using: .ascii)! + data[range], timeout: 0)
             }
             else {
-                controller.send("1".bytes(), timeout: 0)
+                controller.send("W".data(using: .ascii)! + data[range], timeout: 0)
             }
         }) { _ in
             controller.send("0\0".bytes(), timeout: 0)
