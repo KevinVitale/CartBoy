@@ -6,7 +6,7 @@ import CartKit
 class CartridgeTests: XCTestCase {
     func testReadHeader() {
         let exp = expectation(description: "Reads Header")
-        let serialPort = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        let serialPort = try! InsideGadgetsCartridgeController.controller()
         let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
         controller.readHeader(using: serialPort) { header in
             defer { exp.fulfill() }
@@ -17,7 +17,7 @@ class CartridgeTests: XCTestCase {
     
     func testReadCartridge() {
         let exp = expectation(description: "Reads Cartridge")
-        let serialPort = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        let serialPort = try! InsideGadgetsCartridgeController.controller()
         let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
         //----------------------------------------------------------------------
         var cartridge: GameboyClassic.Cartridge!
@@ -42,7 +42,7 @@ class CartridgeTests: XCTestCase {
     
     func testBackupSaveFile() {
         let exp = expectation(description: "Backups Save File")
-        let serialPort = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        let serialPort = try! InsideGadgetsCartridgeController.controller()
         let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
         //----------------------------------------------------------------------
         var result: (header: GameboyClassic.Cartridge.Header?, saveFile: Data?) = (nil, nil)
@@ -74,7 +74,7 @@ class CartridgeTests: XCTestCase {
         let exp = expectation(description: "Restores Save File")
         exp.expectedFulfillmentCount = 3
         //----------------------------------------------------------------------
-        let serialPort = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        let serialPort = try! InsideGadgetsCartridgeController.controller()
         let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
         //----------------------------------------------------------------------
         func saveFileAndMD5(named title: String, extension fileExtension: String = "sav.bak") throws -> (data: Data, md5: String) {
@@ -113,7 +113,7 @@ class CartridgeTests: XCTestCase {
     func testDeleteSaveFile() {
         let exp = expectation(description: "Deletes Save File")
         //----------------------------------------------------------------------
-        let serialPort = try! GBxCartridgeController<GameboyClassic.Cartridge>.controller()
+        let serialPort = try! InsideGadgetsCartridgeController.controller()
         let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
         //----------------------------------------------------------------------
         controller.deleteSave(using: serialPort) {
@@ -128,7 +128,7 @@ class CartridgeTests: XCTestCase {
     func testEraseCartridge() {
         let exp = expectation(description: "Erase Cartridge")
         //----------------------------------------------------------------------
-        let serialPort = try! GBxCartridgeController<AM29F016B>.controller()
+        let serialPort = try! InsideGadgetsCartridgeController.controller()
         let controller = InsideGadgetsWriter<AM29F016B>.self
         //----------------------------------------------------------------------
         controller.erase(using: serialPort) {
@@ -145,7 +145,7 @@ class CartridgeTests: XCTestCase {
         let exp = expectation(description: "Erase Cartridge")
         exp.expectedFulfillmentCount = 3
         //----------------------------------------------------------------------
-        let serialPort = try! GBxCartridgeController<AM29F016B>.controller()
+        let serialPort = try! InsideGadgetsCartridgeController.controller()
         let writer = InsideGadgetsWriter<AM29F016B>()
         let reader = InsideGadgetsReader<GameboyClassic.Cartridge>()
         //----------------------------------------------------------------------

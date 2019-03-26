@@ -1,13 +1,7 @@
 import ORSSerial
 import Gibby
 
-/**
- An opaque `GBxSerialPortController` subclass, capable of performing
- platform-specific serial port operations.
- */
-public class GBxCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSerialPortController, CartridgeController {
-    typealias Intent = SerialPacketOperation<GBxCartridgeController<Cartridge>, Context>.Intent
-    
+public class InsideGadgetsCartridgeController: ThreadSafeSerialPortController {
     @discardableResult
     public override final func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
         defer { usleep(250) }

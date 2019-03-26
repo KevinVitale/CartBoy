@@ -1,7 +1,7 @@
 import Foundation
 import ORSSerial
 
-open class ThreadSafeSerialPortController: NSObject, SerialPortController, SerialPacketOperationDelegate {
+open class ThreadSafeSerialPortController: NSObject, SerialPortController {
     /**
      */
     public required init(matching portProfile: ORSSerialPortManager.PortProfile) throws {
@@ -97,25 +97,5 @@ extension ThreadSafeSerialPortController {
             self.delegate = nil
             self.isOpenCondition.signal()
         }
-    }
-}
-
-extension ThreadSafeSerialPortController {
-    /**
-     */
-    @objc public func packetOperation(_ operation: Operation, didComplete intent: Any?) {
-        self.isOpenCondition.whileLocked {
-            self.delegate = nil
-            self.isOpenCondition.signal()
-        }
-    }
-}
-
-extension SerialPortController where Self: ThreadSafeSerialPortController {
-    /**
-     Peforms a `block` operation while the serial port is open.
-     */
-    func whileOpened<Context>(_ intent: SerialPacketOperation<Self, Context>.Intent, perform block: @escaping (_ progress: Progress) -> (), appendData: (((Data) -> Bool))? = nil, callback: @escaping (Data?) -> ()) throws {
-        SerialPacketOperation<Self, Context>(delegate: self, intent: intent, perform: block, appendData: appendData, result: callback).start()
     }
 }

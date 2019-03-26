@@ -9,7 +9,7 @@ import ORSSerial
     - execute `SerialPacketOperations` submitted as operations; and
     - detect hardware features, such as board revision and voltage settings.
  */
-public protocol SerialPortController: SerialPacketOperationDelegate {
+public protocol SerialPortController {
     ///
     var isOpen: Bool { get }
 

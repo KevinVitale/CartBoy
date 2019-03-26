@@ -12,7 +12,7 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
         }
     }
 
-    private(set) weak var delegate: SerialPacketOperationDelegate? = nil
+    private(set) var delegate: SerialPortController? = nil
     let controller: Controller
     let transactionID: UUID
 
