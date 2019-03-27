@@ -157,11 +157,10 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
                 result(false)
             }
         }
-        let data = Data(flashCartridge[flashCartridge.startIndex..<flashCartridge.endIndex])
         let write = SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: Int64(header.romSize / 64)), perform: { progress in
             guard progress.completedUnitCount > 0 else {
                 controller.send("A0\0".bytes(), timeout: 250)
-                controller.send("T".data(using: .ascii)! + data[..<64], timeout: 0)
+                controller.send("T".data(using: .ascii)! + flashCartridge[..<64], timeout: 0)
                 return
             }
             let startAddress = Int(progress.completedUnitCount * 64)
@@ -179,10 +178,10 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
                 controller.send("A4000\0".bytes(), timeout: 250)
                 controller.send("B", number: 0x4000, radix: 16, terminate: true, timeout: 0)
                 controller.send("B", number: bank, radix: 10, terminate: true, timeout: 0)
-                controller.send("T".data(using: .ascii)! + data[range], timeout: 0)
+                controller.send("T".data(using: .ascii)! + flashCartridge[range], timeout: 0)
             }
             else {
-                controller.send("T".data(using: .ascii)! + data[range], timeout: 0)
+                controller.send("T".data(using: .ascii)! + flashCartridge[range], timeout: 0)
             }
         }) { _ in
             print("Flash Cart Write Complete")
