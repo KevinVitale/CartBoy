@@ -93,7 +93,7 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
         }) { _ in
             buffer.removeAll()
             print("Read 64 bytes, 'done'")
-            controller.send("0".bytes(), timeout: 0)
+            controller.send("0".bytes(), timeout: 250)
         }
         
         let prepErase = prepareForErase(using: controller) { _ in print("Prep done. Now erasing...") }
