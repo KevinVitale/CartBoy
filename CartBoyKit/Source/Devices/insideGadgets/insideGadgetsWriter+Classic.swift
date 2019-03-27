@@ -185,6 +185,7 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
             }
         }) { _ in
             print("Flash Cart Write Complete")
+            controller.send("0".bytes(), timeout: 0)
             result(true)
         }
         
