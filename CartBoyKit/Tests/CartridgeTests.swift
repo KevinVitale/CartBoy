@@ -28,7 +28,7 @@ class CartridgeTests: XCTestCase {
             cartridge = $0
             }.start()
         //----------------------------------------------------------------------
-        waitForExpectations(timeout: 40)
+        waitForExpectations(timeout: 100)
         //----------------------------------------------------------------------
         guard cartridge != nil else {
             return

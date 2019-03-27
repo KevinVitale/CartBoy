@@ -55,7 +55,7 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
         self._isFinished = true
     }
     
-    @objc final func complete() {
+    @objc func complete() {
         if !self.isCancelled {
             self._isExecuting = false
             self._isFinished = true

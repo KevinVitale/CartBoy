@@ -7,18 +7,34 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
                 controller.send("G".bytes(), timeout: 0)
                 controller.send("P".bytes(), timeout: 0)
                 controller.send("W".bytes(), timeout: 0)
-                
                 controller.send("E".bytes(), timeout: 0)
                 controller.send("", number: 0x555, radix: 16, terminate: true, timeout: 0)
+                return
+            }
+            guard progress.completedUnitCount > 1 else {
                 controller.send("", number: 0xAA, radix: 16, terminate: true, timeout: 0)
+                return
+            }
+            guard progress.completedUnitCount > 2 else {
                 controller.send("", number: 0x2AA, radix: 16, terminate: true, timeout: 0)
+                return
+            }
+            guard progress.completedUnitCount > 3 else {
                 controller.send("", number: 0x55, radix: 16, terminate: true, timeout: 0)
+                return
+            }
+            guard progress.completedUnitCount > 4 else {
                 controller.send("", number: 0x555, radix: 16, terminate: true, timeout: 0)
+                return
+            }
+            guard progress.completedUnitCount > 5 else {
                 controller.send("", number: 0xA0, radix: 16, terminate: true, timeout: 0)
                 return
             }
+        }, appendData: {
+            $0.starts(with: [0x31])
         }) { _ in
-            controller.send("0\0".bytes(), timeout: 0)
+            print("Flash program set, 'done'")
             result(true)
         }
     }
@@ -27,34 +43,71 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
         return SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: 6), perform: { progress in
             guard progress.completedUnitCount > 0 else {
                 controller.send("F555\0AA\0".bytes(), timeout: 0)
+                return
+            }
+            guard progress.completedUnitCount > 1 else {
                 controller.send("F2AA\055\0".bytes(), timeout: 0)
+                return
+            }
+            guard progress.completedUnitCount > 2 else {
                 controller.send("F555\080\0".bytes(), timeout: 0)
+                return
+            }
+            guard progress.completedUnitCount > 3 else {
                 controller.send("F555\0AA\0".bytes(), timeout: 0)
+                return
+            }
+            guard progress.completedUnitCount > 4 else {
                 controller.send("F2AA\055\0".bytes(), timeout: 0)
+                return
+            }
+            guard progress.completedUnitCount > 5 else {
                 controller.send("F555\010\0".bytes(), timeout: 0)
                 return
             }
+        }, appendData: {
+            $0.starts(with: [0x31])
         }) { _ in
-            controller.send("0\0".bytes(), timeout: 0)
+            print("Prepare for erase, 'done'")
             result(true)
         }
     }
     
     public static func erase<Controller>(using controller: Controller, result: @escaping (Bool) -> ())  -> Operation where Controller: SerialPortController {
-        let prep = setFlashMode(using: controller) { _ in
-            print("Set Flash Mode Complete")
-        }
-        let sendErase = prepareForErase(using: controller) { _ in
-            print("Prep Erase Complete")
-        }
-        sendErase.addDependency(prep)
-        
         var buffer = Data()
         var sectorCount = 0
+        let read64Bytes = SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: 6), perform: { progress in
+            guard progress.completedUnitCount > 0 else {
+                buffer.removeAll()
+                controller.send("0".bytes(), timeout: 0)
+                controller.send("A0\0".bytes(), timeout: 250)
+                controller.send("R".bytes(), timeout: 0)
+                return
+            }
+        }, appendData: {
+            buffer.append($0)
+            if buffer.count >= 64 {
+                return true
+            }
+            return false
+        }) { _ in
+            buffer.removeAll()
+            print("Read 64 bytes, 'done'")
+            controller.send("0".bytes(), timeout: 0)
+        }
+        
+        let prepErase = prepareForErase(using: controller) { _ in print("Prep done. Now erasing...") }
+        prepErase.addDependency(read64Bytes)
+
+        defer {
+            read64Bytes.start()
+            prepErase.start()
+        }
+        
         let erase = SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: 6)
             , perform: { progress in
             guard progress.completedUnitCount > 0 else {
-                controller.send("A0\0".bytes(), timeout: 0)
+                controller.send("A0\0".bytes(), timeout: 250)
                 controller.send("R".bytes(), timeout: 0)
                 return
             }
@@ -65,7 +118,7 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
         }, appendData: { data in
             buffer += data
             // Don't stop reading until we receive '0xFF' as the first byte.
-            guard buffer.starts(with: [0xFF]) else {
+            guard buffer.starts(with: [0xFF]), buffer.count == 64 else {
                 // Wait for 'buffer' to fill with 64 bytes
                 guard buffer.count % 64 == 0 else {
                     return false
@@ -73,6 +126,9 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
                 // Reset 'buffer' and update metrics (sector count)
                 buffer.removeAll()
                 sectorCount += 1
+                if sectorCount % 20000 == 0 {
+                    print("'Erase' is running long. \(sectorCount)")
+                }
                 
                 // Continue to read the next 64 bytes...
                 controller.send("1".bytes(), timeout: 0)
@@ -83,24 +139,17 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
             return true
         }
         ) { _ in
+            print(NSString(string: #file).lastPathComponent, #function)
             print("\(AM29F016B.self) erased \(sectorCount) sectors")
-            controller.send("0\0".bytes(), timeout: 250)
             result(true)
         }
-        
-        erase.addDependency(sendErase)
-        prep.start()
-        
+
+        erase.addDependency(prepErase)
         print("Erasing \(AM29F016B.self)")
-        sendErase.start()
         return erase
     }
     
     public func write<Controller>(flashCartridge: FlashCartridge, using controller: Controller, result: @escaping (Bool) -> ()) -> Operation where Controller : SerialPortController {
-        let prep = InsideGadgetsWriter<AM29F016B>.setFlashMode(using: controller) { _ in
-            print("Set Flash Mode Complete")
-        }
-        let data = Data(flashCartridge[flashCartridge.startIndex..<flashCartridge.endIndex])
         let header = flashCartridge.header
         print(header)
         guard header.isLogoValid, header.romBankSize != 0 else {
@@ -108,18 +157,16 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
                 result(false)
             }
         }
+        let data = Data(flashCartridge[flashCartridge.startIndex..<flashCartridge.endIndex])
         let write = SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: Int64(header.romSize / 64)), perform: { progress in
             guard progress.completedUnitCount > 0 else {
-                controller.send("0".bytes(),  timeout: 0)
-                controller.send("B", number: 0x0000, radix: 16, terminate: true, timeout: 0)
-                controller.send("B", number: 000000, radix: 10, terminate: true, timeout: 0)
                 controller.send("A0\0".bytes(), timeout: 250)
                 controller.send("T".data(using: .ascii)! + data[..<64], timeout: 0)
                 return
             }
             let startAddress = Int(progress.completedUnitCount * 64)
             let range = startAddress..<Int(startAddress + 64)
-            if case let bank = startAddress / header.romBankSize, bank > 1, startAddress % header.romBankSize == 0 {
+            if case let bank = startAddress / header.romBankSize, bank > 0, startAddress % header.romBankSize == 0 {
                 print("#\(bank), \(progress.fractionCompleted)%")
                 controller.send("0".bytes(), timeout: 100)
                 controller.send("B", number: 0x2100, radix: 16, terminate: true, timeout: 0)
@@ -139,12 +186,15 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
             }
         }) { _ in
             print("Flash Cart Write Complete")
-            controller.send("0\0".bytes(), timeout: 0)
             result(true)
         }
         
-        write.addDependency(prep)
-        prep.start()
+        let setFlashMode = InsideGadgetsWriter<AM29F016B>.setFlashMode(using: controller) { _ in
+            print("Set Flash Mode Complete")
+            
+        }
+        write.addDependency(setFlashMode)
+        setFlashMode.start()
         return write
     }
 }

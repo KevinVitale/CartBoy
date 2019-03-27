@@ -30,6 +30,15 @@ final class SerialPortOperation<Controller: SerialPortController>: OpenPortOpera
             }
         }
     }
+    
+    override final func complete() {
+        super.complete()
+        let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
+        let data = self.buffer.prefix(upTo: Int(upToCount))
+        
+        self.result(data)
+    }
+    
 
     // MARK: - Main
     //--------------------------------------------------------------------------
@@ -42,16 +51,13 @@ final class SerialPortOperation<Controller: SerialPortController>: OpenPortOpera
     // MARK: - Close
     //--------------------------------------------------------------------------
     override func serialPortWasClosed(_ serialPort: ORSSerialPort) {
-        let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
-        let data = self.buffer.prefix(upTo: Int(upToCount))
-        
-        self.result(data)
         super.serialPortWasClosed(serialPort)
     }
     
     // MARK: - Did Receive Data
     //--------------------------------------------------------------------------
     override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
+        // print(data, data.hexString(separator: "").lowercased())
         self.appendData(data) ? self.buffer.append(data) : ()
     }
 }
