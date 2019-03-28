@@ -2,8 +2,8 @@ import Gibby
 
 public protocol CartridgeWriter {
     associatedtype FlashCartridge: CartKit.FlashCartridge
-    static func erase<Controller: SerialPortController>(using controller: Controller, result: @escaping (Bool) -> ()) -> Operation
-    func write<Controller: SerialPortController>(flashCartridge: FlashCartridge, using controller: Controller, result: @escaping (Bool) -> ()) -> Operation
+    static func erase(result: @escaping (Bool) -> ()) -> Operation
+    func write(_ flashCartridge: FlashCartridge, result: @escaping (Bool) -> ()) -> Operation
 }
 
 extension CartridgeWriter {

@@ -17,6 +17,13 @@ extension InsideGadgetsCartridgeController {
     public static func controller() throws -> InsideGadgetsCartridgeController {
         return try InsideGadgetsCartridgeController(matching: .prefix("/dev/cu.usbserial-14"))
     }
+    public static func reader<Cartridge: Gibby.Cartridge>(for type: Cartridge.Type) throws -> InsideGadgetsReader<Cartridge> {
+        return .init(controller: try controller())
+    }
+    
+    public static func writer<FlashCartridge: CartKit.FlashCartridge>(for type: FlashCartridge.Type) throws -> InsideGadgetsWriter<FlashCartridge> {
+        return .init(controller: try controller())
+    }
 }
 
 extension InsideGadgetsCartridgeController {

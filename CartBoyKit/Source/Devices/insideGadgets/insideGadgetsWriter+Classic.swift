@@ -149,7 +149,7 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
         return erase
     }
     
-    public func write<Controller>(flashCartridge: FlashCartridge, using controller: Controller, result: @escaping (Bool) -> ()) -> Operation where Controller : SerialPortController {
+    public func write(_ flashCartridge: FlashCartridge, result: @escaping (Bool) -> ()) -> Operation {
         let header = flashCartridge.header
         print(header)
         guard header.isLogoValid, header.romBankSize != 0 else {
@@ -157,37 +157,37 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
                 result(false)
             }
         }
-        let write = SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: Int64(header.romSize / 64)), perform: { progress in
+        let write = SerialPortOperation(controller: self.controller, progress: Progress(totalUnitCount: Int64(header.romSize / 64)), perform: { progress in
             guard progress.completedUnitCount > 0 else {
                 print("Begin writing ROM: \(header.title)")
-                controller.send("0".bytes(), timeout: 0)
-                controller.send("A0\0".bytes(), timeout: 250)
-                controller.send("T".data(using: .ascii)! + flashCartridge[..<64], timeout: 0)
+                self.controller.send("0".bytes(), timeout: 0)
+                self.controller.send("A0\0".bytes(), timeout: 250)
+                self.controller.send("T".data(using: .ascii)! + flashCartridge[..<64], timeout: 0)
                 return
             }
             let startAddress = Int(progress.completedUnitCount * 64)
             let range = startAddress..<Int(startAddress + 64)
             if case let bank = startAddress / header.romBankSize, bank > 0, startAddress % header.romBankSize == 0 {
                 print("#\(bank), \(progress.fractionCompleted)%")
-                controller.send("0".bytes(), timeout: 100)
-                controller.send("B", number: 0x2100, radix: 16, terminate: true, timeout: 0)
-                controller.send("B", number: bank, radix: 10, terminate: true, timeout: 0)
+                self.controller.send("0".bytes(), timeout: 100)
+                self.controller.send("B", number: 0x2100, radix: 16, terminate: true, timeout: 0)
+                self.controller.send("B", number: bank, radix: 10, terminate: true, timeout: 0)
                 if bank >= 0x100 {
-                    controller.send("B", number: 0x3000, radix: 16, terminate: true, timeout: 0)
-                    controller.send("B", number: 1, radix: 10, terminate: true, timeout: 0)
+                    self.controller.send("B", number: 0x3000, radix: 16, terminate: true, timeout: 0)
+                    self.controller.send("B", number: 1, radix: 10, terminate: true, timeout: 0)
                 }
                 
-                controller.send("A4000\0".bytes(), timeout: 250)
-                controller.send("B", number: 0x4000, radix: 16, terminate: true, timeout: 0)
-                controller.send("B", number: bank, radix: 10, terminate: true, timeout: 0)
-                controller.send("T".data(using: .ascii)! + flashCartridge[range], timeout: 0)
+                self.controller.send("A4000\0".bytes(), timeout: 250)
+                self.controller.send("B", number: 0x4000, radix: 16, terminate: true, timeout: 0)
+                self.controller.send("B", number: bank, radix: 10, terminate: true, timeout: 0)
+                self.controller.send("T".data(using: .ascii)! + flashCartridge[range], timeout: 0)
             }
             else {
-                controller.send("T".data(using: .ascii)! + flashCartridge[range], timeout: 0)
+                self.controller.send("T".data(using: .ascii)! + flashCartridge[range], timeout: 0)
             }
         }) { _ in
             print("Writing flash cart, 'done'")
-            controller.send("0".bytes(), timeout: 0)
+            self.controller.send("0".bytes(), timeout: 0)
             result(true)
         }
         

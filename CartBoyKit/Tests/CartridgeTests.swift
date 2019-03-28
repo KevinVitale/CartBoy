@@ -6,9 +6,8 @@ import CartKit
 class CartridgeTests: XCTestCase {
     func testReadHeader() {
         let exp = expectation(description: "Reads Header")
-        let serialPort = try! InsideGadgetsCartridgeController.controller()
-        let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
-        controller.readHeader(using: serialPort) { header in
+        let controller = try! InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self)
+        controller.readHeader { header in
             defer { exp.fulfill() }
             print(header!)
         }.start()
@@ -17,12 +16,11 @@ class CartridgeTests: XCTestCase {
     
     func testReadCartridge() {
         let exp = expectation(description: "Reads Cartridge")
-        let serialPort = try! InsideGadgetsCartridgeController.controller()
-        let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
+        let controller = try! InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self)
         //----------------------------------------------------------------------
         var cartridge: GameboyClassic.Cartridge!
         //----------------------------------------------------------------------
-        controller.readCartridge(using: serialPort) {
+        controller.readCartridge {
             defer { exp.fulfill() }
             XCTAssertNotNil($0)
             cartridge = $0
@@ -42,14 +40,13 @@ class CartridgeTests: XCTestCase {
     
     func testBackupSaveFile() {
         let exp = expectation(description: "Backups Save File")
-        let serialPort = try! InsideGadgetsCartridgeController.controller()
-        let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
+        let controller = try! InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self)
         //----------------------------------------------------------------------
         var result: (header: GameboyClassic.Cartridge.Header?, saveFile: Data?) = (nil, nil)
         //----------------------------------------------------------------------
-        controller.readHeader(using: serialPort) { header in
+        controller.readHeader { header in
             result.header = header
-            controller.backupSave(using: serialPort, with: header) {
+            controller.backupSave(with: header) {
                 defer { exp.fulfill() }
                 XCTAssertNotNil($0)
                 result.saveFile = $0
@@ -74,8 +71,7 @@ class CartridgeTests: XCTestCase {
         let exp = expectation(description: "Restores Save File")
         exp.expectedFulfillmentCount = 2
         //----------------------------------------------------------------------
-        let serialPort = try! InsideGadgetsCartridgeController.controller()
-        let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
+        let controller = try! InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self)
         //----------------------------------------------------------------------
         func saveFileAndMD5(named title: String, extension fileExtension: String = "sav") throws -> (data: Data, md5: String) {
             let data = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)"))
@@ -87,11 +83,11 @@ class CartridgeTests: XCTestCase {
         print("MD5: \(saveFile.md5)")
         //----------------------------------------------------------------------
         // Read (cache) the cartridge header
-        controller.readHeader(using: serialPort) { header in
+        controller.readHeader { header in
             defer { exp.fulfill() }
             XCTAssertNotNil(header)
             // Write the save file
-            controller.restoreSave(data: saveFile.data, using: serialPort, with: header) {
+            controller.restoreSave(data: saveFile.data, with: header) {
                 defer { exp.fulfill() }
                 XCTAssertTrue($0)
                 }.start()
@@ -104,10 +100,9 @@ class CartridgeTests: XCTestCase {
     func testDeleteSaveFile() {
         let exp = expectation(description: "Deletes Save File")
         //----------------------------------------------------------------------
-        let serialPort = try! InsideGadgetsCartridgeController.controller()
-        let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
+        let controller = try! InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self)
         //----------------------------------------------------------------------
-        controller.deleteSave(using: serialPort) {
+        controller.deleteSave {
             defer { exp.fulfill() }
             XCTAssertTrue($0)
         }.start()
@@ -136,10 +131,9 @@ class CartridgeTests: XCTestCase {
         let exp = expectation(description: "Erase Cartridge")
         exp.expectedFulfillmentCount = 4
         //----------------------------------------------------------------------
-        let serialPort = try! InsideGadgetsCartridgeController.controller()
-        let writer = InsideGadgetsWriter<AM29F016B>()
-        let reader = InsideGadgetsReader<GameboyClassic.Cartridge>()
-        reader.readHeader(using: serialPort) {
+        let writer = try! InsideGadgetsCartridgeController.writer(for: AM29F016B.self)
+        let reader = try! InsideGadgetsCartridgeController.reader(for: AM29F016B.self)
+        reader.readHeader {
             defer { exp.fulfill() }
             if $0?.isLogoValid == false {
                 print("WARNING: Invalid header. Flashing cart will likely fail.")
@@ -155,16 +149,17 @@ class CartridgeTests: XCTestCase {
         func romFileURL(named title: String, extension fileExtension: String = "gb") -> URL {
             return URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)")
         }
-        let flashCart = try! writer.read(contentsOf: romFileURL(named: "ZELDA"))
+        let flashCart = try! writer.read(contentsOf: romFileURL(named: "POKEMON RED"))
         //----------------------------------------------------------------------
-        InsideGadgetsWriter<AM29F016B>.erase(using: serialPort) {
+        // FIX ME! Don't use 'controller' anymore
+        InsideGadgetsWriter<AM29F016B>.erase(using: try! InsideGadgetsCartridgeController.controller()) {
             defer { exp.fulfill() }
             print(#function)
             XCTAssertTrue($0)
-            writer.write(flashCartridge: flashCart, using: serialPort) {
+            writer.write(flashCart) {
                 defer { exp.fulfill() }
                 XCTAssertTrue($0)
-                reader.readHeader(using: serialPort) {
+                reader.readHeader {
                     defer { exp.fulfill() }
                     print(#function)
                     XCTAssertNotNil($0)

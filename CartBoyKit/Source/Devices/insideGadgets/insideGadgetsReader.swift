@@ -1,25 +1,28 @@
 import Gibby
 
 public struct InsideGadgetsReader<Cartridge: Gibby.Cartridge>: CartridgeReader, CartridgeArchiver {
-    public init() {
+    init(controller: InsideGadgetsCartridgeController) {
+        self.controller = controller
     }
     
-    public func readHeader<Controller>(using controller: Controller, result: @escaping (Cartridge.Header?) -> ()) -> Operation where Controller: SerialPortController {
+    let controller: InsideGadgetsCartridgeController
+
+    public func readHeader(result: @escaping (Cartridge.Header?) -> ()) -> Operation {
         fatalError("Controller does not support platform: \(Cartridge.Platform.self)")
     }
-    public func readCartridge<Controller>(using controller: Controller, with header: Cartridge.Header?, result: @escaping (Cartridge?) -> ()) -> Operation where Controller : SerialPortController {
-        fatalError("Controller does not support platform: \(Cartridge.Platform.self)")
-    }
-    
-    public func backupSave<Controller>(using controller: Controller, with header: Cartridge.Header?, result: @escaping (Data?) -> ()) -> Operation where Controller : SerialPortController {
-        fatalError("Controller does not support platform: \(Cartridge.Platform.self)")
-    }
-    
-    public func restoreSave<Controller>(data: Data, using controller: Controller, with header: Cartridge.Header?, result: @escaping (Bool) -> ()) -> Operation where Controller : SerialPortController {
+    public func readCartridge(with header: Cartridge.Header?, result: @escaping (Cartridge?) -> ()) -> Operation {
         fatalError("Controller does not support platform: \(Cartridge.Platform.self)")
     }
     
-    public func deleteSave<Controller>(using controller: Controller, with header: Cartridge.Header?, result: @escaping (Bool) -> ()) -> Operation where Controller : SerialPortController {
+    public func backupSave(with header: Cartridge.Header?, result: @escaping (Data?) -> ()) -> Operation {
+        fatalError("Controller does not support platform: \(Cartridge.Platform.self)")
+    }
+    
+    public func restoreSave(data: Data, with header: Cartridge.Header?, result: @escaping (Bool) -> ()) -> Operation {
+        fatalError("Controller does not support platform: \(Cartridge.Platform.self)")
+    }
+    
+    public func deleteSave(with header: Cartridge.Header?, result: @escaping (Bool) -> ()) -> Operation {
         fatalError("Controller does not support platform: \(Cartridge.Platform.self)")
     }
 }

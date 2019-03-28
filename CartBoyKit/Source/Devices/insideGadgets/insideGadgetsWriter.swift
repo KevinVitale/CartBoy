@@ -1,14 +1,17 @@
 import Gibby
 
 public struct InsideGadgetsWriter<FlashCartridge: CartKit.FlashCartridge>: CartridgeWriter {
-    public init() {
+    init(controller: InsideGadgetsCartridgeController) {
+        self.controller = controller
     }
     
-    public static func erase<Controller>(using controller: Controller, result: @escaping (Bool) -> ())  -> Operation where Controller: SerialPortController {
+    let controller: InsideGadgetsCartridgeController
+    
+    public static func erase(result: @escaping (Bool) -> ())  -> Operation {
         fatalError("Controller does not support platform: \(FlashCartridge.Platform.self)")
     }
     
-    public func write<Controller>(flashCartridge: FlashCartridge, using controller: Controller, result: @escaping (Bool) -> ()) -> Operation where Controller : SerialPortController {
+    public func write(_ flashCartridge: FlashCartridge, result: @escaping (Bool) -> ()) -> Operation {
         fatalError("Controller does not support platform: \(FlashCartridge.Platform.self)")
     }
 }
