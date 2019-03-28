@@ -72,18 +72,18 @@ class CartridgeTests: XCTestCase {
     
     func testRestoreSaveFile() {
         let exp = expectation(description: "Restores Save File")
-        exp.expectedFulfillmentCount = 3
+        exp.expectedFulfillmentCount = 2
         //----------------------------------------------------------------------
         let serialPort = try! InsideGadgetsCartridgeController.controller()
         let controller = InsideGadgetsReader<GameboyClassic.Cartridge>()
         //----------------------------------------------------------------------
-        func saveFileAndMD5(named title: String, extension fileExtension: String = "sav.bak") throws -> (data: Data, md5: String) {
+        func saveFileAndMD5(named title: String, extension fileExtension: String = "sav") throws -> (data: Data, md5: String) {
             let data = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)"))
             let MD5 = data.md5.hexString(separator: "").lowercased()
             return (data, MD5)
         }
         //----------------------------------------------------------------------
-        let saveFile = try! saveFileAndMD5(named: "PM_CRYSTAL")
+        let saveFile = try! saveFileAndMD5(named: "POKEMON BLUE")
         print("MD5: \(saveFile.md5)")
         //----------------------------------------------------------------------
         // Read (cache) the cartridge header
@@ -94,15 +94,6 @@ class CartridgeTests: XCTestCase {
             controller.restoreSave(data: saveFile.data, using: serialPort, with: header) {
                 defer { exp.fulfill() }
                 XCTAssertTrue($0)
-                // Sanity-Check
-                controller.backupSave(using: serialPort, with: header) {
-                    defer { exp.fulfill() }
-                    XCTAssertNotNil($0)
-                    let data = $0 ?? Data()
-                    let md5 = data.md5.hexString(separator: "").lowercased()
-                    print("WAS: \(saveFile.md5)")
-                    print("NOW: \(md5)")
-                    }.start()
                 }.start()
         }.start()
         //----------------------------------------------------------------------
@@ -143,11 +134,21 @@ class CartridgeTests: XCTestCase {
     
     func testWriteCartridge() {
         let exp = expectation(description: "Erase Cartridge")
-        exp.expectedFulfillmentCount = 3
+        exp.expectedFulfillmentCount = 4
         //----------------------------------------------------------------------
         let serialPort = try! InsideGadgetsCartridgeController.controller()
         let writer = InsideGadgetsWriter<AM29F016B>()
         let reader = InsideGadgetsReader<GameboyClassic.Cartridge>()
+        reader.readHeader(using: serialPort) {
+            defer { exp.fulfill() }
+            if $0?.isLogoValid == false {
+                print("WARNING: Invalid header. Flashing cart will likely fail.")
+                print($0 ?? .init(bytes: Data()))
+            }
+            else {
+                print("Logo: OK!")
+            }
+        }.start()
         //----------------------------------------------------------------------
         // TODO: Extend 'CartridgeWrite' so that it loads flash carts!
         //----------------------------------------------------------------------
