@@ -6,7 +6,7 @@ import CartKit
 class CartridgeTests: XCTestCase {
     func testReadHeader() {
         let exp = expectation(description: "Reads Header")
-        let controller = try! InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self)
+        let controller = try! InsideGadgetsCartridgeController<GameboyClassic.Cartridge>.reader()
         controller.readHeader { header in
             defer { exp.fulfill() }
             print(header!)
@@ -16,7 +16,7 @@ class CartridgeTests: XCTestCase {
     
     func testReadCartridge() {
         let exp = expectation(description: "Reads Cartridge")
-        let controller = try! InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self)
+        let controller = try! InsideGadgetsCartridgeController<GameboyClassic.Cartridge>.reader()
         //----------------------------------------------------------------------
         var cartridge: GameboyClassic.Cartridge!
         //----------------------------------------------------------------------
@@ -40,7 +40,7 @@ class CartridgeTests: XCTestCase {
     
     func testBackupSaveFile() {
         let exp = expectation(description: "Backups Save File")
-        let controller = try! InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self)
+        let controller = try! InsideGadgetsCartridgeController<GameboyClassic.Cartridge>.reader()
         //----------------------------------------------------------------------
         var result: (header: GameboyClassic.Cartridge.Header?, saveFile: Data?) = (nil, nil)
         //----------------------------------------------------------------------
@@ -71,7 +71,7 @@ class CartridgeTests: XCTestCase {
         let exp = expectation(description: "Restores Save File")
         exp.expectedFulfillmentCount = 2
         //----------------------------------------------------------------------
-        let controller = try! InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self)
+        let controller = try! InsideGadgetsCartridgeController<GameboyClassic.Cartridge>.reader()
         //----------------------------------------------------------------------
         func saveFileAndMD5(named title: String, extension fileExtension: String = "sav") throws -> (data: Data, md5: String) {
             let data = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)"))
@@ -100,7 +100,7 @@ class CartridgeTests: XCTestCase {
     func testDeleteSaveFile() {
         let exp = expectation(description: "Deletes Save File")
         //----------------------------------------------------------------------
-        let controller = try! InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self)
+        let controller = try! InsideGadgetsCartridgeController<GameboyClassic.Cartridge>.reader()
         //----------------------------------------------------------------------
         controller.deleteSave {
             defer { exp.fulfill() }
@@ -114,10 +114,9 @@ class CartridgeTests: XCTestCase {
     func testEraseCartridge() {
         let exp = expectation(description: "Erase Cartridge")
         //----------------------------------------------------------------------
-        let serialPort = try! InsideGadgetsCartridgeController.controller()
-        let controller = InsideGadgetsWriter<AM29F016B>.self
+        let controller = try! InsideGadgetsCartridgeController<AM29F016B>.writer()
         //----------------------------------------------------------------------
-        controller.erase(using: serialPort) {
+        controller.erase {
             defer { exp.fulfill() }
             print(#function)
             XCTAssertTrue($0)
@@ -131,8 +130,8 @@ class CartridgeTests: XCTestCase {
         let exp = expectation(description: "Erase Cartridge")
         exp.expectedFulfillmentCount = 4
         //----------------------------------------------------------------------
-        let writer = try! InsideGadgetsCartridgeController.writer(for: AM29F016B.self)
-        let reader = try! InsideGadgetsCartridgeController.reader(for: AM29F016B.self)
+        let writer = try! InsideGadgetsCartridgeController<AM29F016B>.writer()
+        let reader = try! InsideGadgetsCartridgeController<AM29F016B>.reader()
         reader.readHeader {
             defer { exp.fulfill() }
             if $0?.isLogoValid == false {
@@ -151,8 +150,7 @@ class CartridgeTests: XCTestCase {
         }
         let flashCart = try! writer.read(contentsOf: romFileURL(named: "POKEMON RED"))
         //----------------------------------------------------------------------
-        // FIX ME! Don't use 'controller' anymore
-        InsideGadgetsWriter<AM29F016B>.erase(using: try! InsideGadgetsCartridgeController.controller()) {
+        writer.erase {
             defer { exp.fulfill() }
             print(#function)
             XCTAssertTrue($0)

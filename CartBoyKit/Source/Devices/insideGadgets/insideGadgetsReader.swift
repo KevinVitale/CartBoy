@@ -1,11 +1,11 @@
 import Gibby
 
 public struct InsideGadgetsReader<Cartridge: Gibby.Cartridge>: CartridgeReader, CartridgeArchiver {
-    init(controller: InsideGadgetsCartridgeController) {
+    init(controller: InsideGadgetsCartridgeController<Cartridge>) {
         self.controller = controller
     }
     
-    let controller: InsideGadgetsCartridgeController
+    let controller: InsideGadgetsCartridgeController<Cartridge>
 
     public func readHeader(result: @escaping (Cartridge.Header?) -> ()) -> Operation {
         fatalError("Controller does not support platform: \(Cartridge.Platform.self)")

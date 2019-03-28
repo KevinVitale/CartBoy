@@ -1,7 +1,25 @@
 import ORSSerial
 import Gibby
 
-public class InsideGadgetsCartridgeController: ThreadSafeSerialPortController {
+public protocol CartridgeController: ThreadSafeSerialPortController {
+    associatedtype Cartridge: Gibby.Cartridge
+}
+
+public protocol CartridgeReaderController: CartridgeController {
+    associatedtype Cartridge
+    associatedtype Reader: CartridgeReader where Reader.Cartridge == Self.Cartridge
+    
+    static func reader() throws -> Reader
+}
+
+public protocol CartridgeWriterController: CartridgeController {
+    associatedtype Cartridge
+    associatedtype Writer: CartridgeWriter where Writer.FlashCartridge == Self.Cartridge
+    
+    static func writer() throws -> Writer
+}
+
+public class InsideGadgetsCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSerialPortController, CartridgeController {
     @discardableResult
     public override final func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
         defer { usleep(250) }
@@ -13,15 +31,18 @@ public class InsideGadgetsCartridgeController: ThreadSafeSerialPortController {
     }
 }
 
-extension InsideGadgetsCartridgeController {
-    public static func controller() throws -> InsideGadgetsCartridgeController {
-        return try InsideGadgetsCartridgeController(matching: .prefix("/dev/cu.usbserial-14"))
-    }
-    public static func reader<Cartridge: Gibby.Cartridge>(for type: Cartridge.Type) throws -> InsideGadgetsReader<Cartridge> {
-        return .init(controller: try controller())
+extension InsideGadgetsCartridgeController: CartridgeReaderController {
+    fileprivate static func controller<Cartridge: Gibby.Cartridge>() throws -> InsideGadgetsCartridgeController<Cartridge> {
+        return try InsideGadgetsCartridgeController<Cartridge>(matching: .prefix("/dev/cu.usbserial-14"))
     }
     
-    public static func writer<FlashCartridge: CartKit.FlashCartridge>(for type: FlashCartridge.Type) throws -> InsideGadgetsWriter<FlashCartridge> {
+    public static func reader() throws -> InsideGadgetsReader<Cartridge> {
+        return .init(controller: try controller())
+    }
+}
+
+extension InsideGadgetsCartridgeController: CartridgeWriterController where Cartridge: FlashCartridge {
+    public static func writer() throws -> InsideGadgetsWriter<Cartridge> {
         return .init(controller: try controller())
     }
 }
