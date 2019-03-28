@@ -96,7 +96,7 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
             controller.send("0".bytes(), timeout: 250)
         }
         
-        let prepErase = prepareForErase(using: controller) { _ in print("Prep done. Now erasing...") }
+        let prepErase = prepareForErase(using: controller) { _ in print("Now erasing...") }
         prepErase.addDependency(read64Bytes)
 
         defer {
@@ -159,6 +159,8 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
         }
         let write = SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: Int64(header.romSize / 64)), perform: { progress in
             guard progress.completedUnitCount > 0 else {
+                print("Begin writing ROM: \(header.title)")
+                controller.send("0".bytes(), timeout: 0)
                 controller.send("A0\0".bytes(), timeout: 250)
                 controller.send("T".data(using: .ascii)! + flashCartridge[..<64], timeout: 0)
                 return
@@ -184,15 +186,12 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
                 controller.send("T".data(using: .ascii)! + flashCartridge[range], timeout: 0)
             }
         }) { _ in
-            print("Flash Cart Write Complete")
+            print("Writing flash cart, 'done'")
             controller.send("0".bytes(), timeout: 0)
             result(true)
         }
         
-        let setFlashMode = InsideGadgetsWriter<AM29F016B>.setFlashMode(using: controller) { _ in
-            print("Set Flash Mode Complete")
-            
-        }
+        let setFlashMode = InsideGadgetsWriter<AM29F016B>.setFlashMode(using: controller) { _ in }
         write.addDependency(setFlashMode)
         setFlashMode.start()
         return write
