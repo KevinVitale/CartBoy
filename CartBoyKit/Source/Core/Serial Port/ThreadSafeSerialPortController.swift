@@ -4,7 +4,7 @@ import ORSSerial
 open class ThreadSafeSerialPortController: NSObject, SerialPortController {
     /**
      */
-    public required init(matching portProfile: ORSSerialPortManager.PortProfile) throws {
+    init(matching portProfile: ORSSerialPortManager.PortProfile) throws {
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
         super.init()
     }
@@ -53,7 +53,7 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
     /**
      */
     @discardableResult
-    public func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
+    func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
         defer {
             if let timeout = timeout {
                 usleep(timeout)
@@ -71,7 +71,7 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
     }
     
     @discardableResult
-    public func send<Number>(_ command: String, number: Number, radix: Int = 16, terminate: Bool = true, timeout: UInt32? = nil) -> Bool where Number : FixedWidthInteger {
+    func send<Number>(_ command: String, number: Number, radix: Int = 16, terminate: Bool = true, timeout: UInt32? = nil) -> Bool where Number : FixedWidthInteger {
         let numberAsString = String(number, radix: radix, uppercase: true)
         let data = ("\(command)\(numberAsString)" + (terminate ? "\0" : "")).data(using: .ascii)!
         return self.send(data, timeout: timeout)
@@ -88,7 +88,7 @@ extension ThreadSafeSerialPortController {
     /**
      */
     @discardableResult
-    public final func close() -> Bool {
+    public final func closePort() -> Bool {
         return self.reader.close()
     }
     

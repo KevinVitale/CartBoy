@@ -1,8 +1,5 @@
-//
-//  CartridgeController.swift
-//  CartKit
-//
-//  Created by Kevin Vitale on 3/28/19.
-//
+import Gibby
 
-import Foundation
+public protocol CartridgeController {
+    associatedtype Cartridge: Gibby.Cartridge
+}

@@ -8,7 +8,7 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
         super.init()
         
         self.completionBlock = {
-            controller.close()
+            controller.closePort()
         }
     }
 
