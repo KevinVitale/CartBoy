@@ -123,7 +123,10 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
             }
             return
         }
-        
+        guard header.isLogoValid, header.ramBankSize > 0 else {
+            result(false)
+            return
+        }
         let operation = SerialPortOperation(controller: self.controller, unitCount: Int64(data.count / 64), packetLength: 1, perform: { progress in
             let startAddress = Int(progress.completedUnitCount * 64)
             let range = startAddress..<Int(startAddress + 64)
