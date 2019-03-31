@@ -89,7 +89,7 @@ class CartridgeTests: XCTestCase {
             return (data, MD5)
         }
         //----------------------------------------------------------------------
-        let saveFile = try! saveFileAndMD5(named: "POKEMON YELLOW")
+        let saveFile = try! saveFileAndMD5(named: "MARIO DELUX")
         print("MD5: \(saveFile.md5)")
         //----------------------------------------------------------------------
         // Read (cache) the cartridge header
@@ -141,7 +141,7 @@ class CartridgeTests: XCTestCase {
         observer.invalidate()
     }
     
-    func testWriteCartridge() {
+    func testEraseAndWriteCartridge() {
         let exp = expectation(description: "Erase Cartridge")
         exp.expectedFulfillmentCount = 2
         //----------------------------------------------------------------------
@@ -152,7 +152,7 @@ class CartridgeTests: XCTestCase {
         func romFileURL(named title: String, extension fileExtension: String = "gb") -> URL {
             return URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)")
         }
-        let flashCart = try! writer.read(contentsOf: romFileURL(named: "POKEMON_GLD"))
+        let flashCart = try! writer.read(contentsOf: romFileURL(named: "MARIO DELUX"))
         //----------------------------------------------------------------------
         print("MD5:", Data(flashCart[0..<flashCart.endIndex]).md5.hexString(separator: "").lowercased())
         print(String(repeating: "-", count: 45), "|", separator: "", terminator: "\n")
@@ -168,6 +168,41 @@ class CartridgeTests: XCTestCase {
                 defer { exp.fulfill() }
                 XCTAssertTrue($0)
             }
+        }
+        let observer = writer.progress.observe(\.fractionCompleted, options: [.new, .old]) { progress, change in
+            let newValue = change.newValue ?? 0
+            let oldValue = change.oldValue ?? 0
+            if newValue != oldValue {
+                print(newValue)
+            }
+        }
+        //----------------------------------------------------------------------
+        waitForExpectations(timeout: 300)
+        //----------------------------------------------------------------------
+        observer.invalidate()
+    }
+    
+    func testWriteCartridge() {
+        let exp = expectation(description: "Erase Cartridge")
+        //----------------------------------------------------------------------
+        let writer = try! InsideGadgetsCartridgeController<AM29F016B>.writer()
+        //----------------------------------------------------------------------
+        // TODO: Extend 'CartridgeWrite' so that it loads flash carts!
+        //----------------------------------------------------------------------
+        func romFileURL(named title: String, extension fileExtension: String = "gb") -> URL {
+            return URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)")
+        }
+        let flashCart = try! writer.read(contentsOf: romFileURL(named: "MARIO DELUX"))
+        //----------------------------------------------------------------------
+        print("MD5:", Data(flashCart[0..<flashCart.endIndex]).md5.hexString(separator: "").lowercased())
+        print(String(repeating: "-", count: 45), "|", separator: "", terminator: "\n")
+        print(flashCart)
+        print(flashCart.header)
+        print(String(repeating: "-", count: 45), "|", separator: "", terminator: "\n")
+        //----------------------------------------------------------------------
+        writer.write(flashCart) {
+            defer { exp.fulfill() }
+            XCTAssertTrue($0)
         }
         let observer = writer.progress.observe(\.fractionCompleted, options: [.new, .old]) { progress, change in
             let newValue = change.newValue ?? 0
