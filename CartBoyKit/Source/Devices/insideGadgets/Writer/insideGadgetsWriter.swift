@@ -6,12 +6,7 @@ public final class InsideGadgetsWriter<FlashCartridge: CartKit.FlashCartridge>: 
     }
     
     public var progress: Progress = .init()
-    
-    func resetProgress(to totalUnitCount: Int64) {
-        progress.completedUnitCount = 0
-        progress.totalUnitCount = totalUnitCount
-    }
-    
+
     let controller: InsideGadgetsCartridgeController<FlashCartridge>
     
     public func erase(result: @escaping (Bool) -> ()) {

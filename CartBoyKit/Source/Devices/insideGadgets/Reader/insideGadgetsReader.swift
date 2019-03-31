@@ -8,11 +8,6 @@ public final class InsideGadgetsReader<Cartridge: Gibby.Cartridge>: NSObject, Ca
     
     public var progress: Progress = .init()
     
-    func resetProgress(to totalUnitCount: Int64) {
-        progress.completedUnitCount = 0
-        progress.totalUnitCount = totalUnitCount
-    }
-    
     let controller: InsideGadgetsCartridgeController<Cartridge>
 
     public func readHeader(result: @escaping (Cartridge.Header?) -> ()) {
