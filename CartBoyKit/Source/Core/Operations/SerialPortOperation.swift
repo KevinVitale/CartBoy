@@ -2,23 +2,34 @@ import Foundation
 import ORSSerial
 
 
-final class SerialPortOperation<Controller: SerialPortController>: OpenPortOperation<Controller> {
+final class SerialPortOperation<Controller: SerialPortController>: OpenPortOperation<Controller>, ProgressReporting {
     // MARK: - Initialization
     //--------------------------------------------------------------------------
-    convenience init(controller: Controller, progress: Progress, perform block: @escaping ((Progress) -> ()), appendData: @escaping (((Data) -> Bool)) = { _ in return true }, result: @escaping ((Data?) -> ())) {
+    convenience init(controller: Controller, unitCount: Int64, packetLength: Int = 64, perform block: @escaping ((Progress) -> ()), appendData: @escaping (((Data) -> Bool)) = { _ in return true }, result: @escaping ((Data?) -> ())) {
         self.init(controller: controller)
         self.performBlock = block
         self.appendData = appendData
-        self.progress = progress
+        self.packetLength = packetLength
+        self.progress = Progress(totalUnitCount: unitCount)
         self.result = result
+        //----------------------------------------------------------------------
     }
     
     // MARK: - Parameters (Private)
     //--------------------------------------------------------------------------
     private var performBlock: ((Progress) -> ())!
     private var appendData: ((Data) -> (Bool))!
+    private var packetLength: Int!
+    private var pageData: Data = Data() {
+        didSet {
+            if let packetLength = packetLength, packetLength > 0, pageData.count % packetLength == 0 {
+                buffer.append(pageData)
+                pageData.removeAll()
+            }
+        }
+    }
     private var result: ((Data?) -> ())!
-    private var progress: Progress!
+    private(set) var progress: Progress = .init()
     private var buffer: Data = .init() {
         didSet {
             progress.completedUnitCount = Int64(buffer.count)
@@ -44,7 +55,6 @@ final class SerialPortOperation<Controller: SerialPortController>: OpenPortOpera
     //--------------------------------------------------------------------------
     override func main() {
         super.main()
-        self.progress.becomeCurrent(withPendingUnitCount: 0)
         self.performBlock(progress)
     }
     
@@ -57,7 +67,7 @@ final class SerialPortOperation<Controller: SerialPortController>: OpenPortOpera
     // MARK: - Did Receive Data
     //--------------------------------------------------------------------------
     override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
-        // print(data, data.hexString(separator: "").lowercased())
-        self.appendData(data) ? self.buffer.append(data) : ()
+        // print(#function, data, data.hexString(separator: "").lowercased())
+        self.appendData(data) ? self.pageData.append(data) : ()
     }
 }

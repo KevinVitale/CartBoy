@@ -1,7 +1,7 @@
 import XCTest
 import ORSSerial
 import Gibby
-import CartKit
+@testable import CartKit
 
 class CartridgeTests: XCTestCase {
     func testReadHeader() {
@@ -10,10 +10,10 @@ class CartridgeTests: XCTestCase {
         controller.readHeader { header in
             defer { exp.fulfill() }
             print(header!)
-        }.start()
+        }
         waitForExpectations(timeout: 10)
     }
-    
+
     func testReadCartridge() {
         let exp = expectation(description: "Reads Cartridge")
         let controller = try! InsideGadgetsCartridgeController<GameboyClassic.Cartridge>.reader()
@@ -24,20 +24,30 @@ class CartridgeTests: XCTestCase {
             defer { exp.fulfill() }
             XCTAssertNotNil($0)
             cartridge = $0
-            }.start()
+        }
         //----------------------------------------------------------------------
         waitForExpectations(timeout: 100)
         //----------------------------------------------------------------------
+        let observer = controller.progress.observe(\.fractionCompleted, options: [.new, .old]) { progress, change in
+            print(progress)
+            let newValue = change.newValue ?? 0
+            let oldValue = change.oldValue ?? 0
+            if newValue != oldValue {
+                print(newValue)
+            }
+        }
         guard cartridge != nil else {
             return
         }
+        observer.invalidate()
         print("MD5:", Data(cartridge[0..<cartridge.endIndex]).md5.hexString(separator: "").lowercased())
-        print(String(repeating: "-", count: 45), "|", separator: "")
+        print(String(repeating: "-", count: 45), "|", separator: "", terminator: "\n")
         print(cartridge!)
-        print(String(repeating: "-", count: 45), "|", separator: "")
+        print(cartridge!.header)
+        print(String(repeating: "-", count: 45), "|", separator: "", terminator: "\n")
         try! cartridge.write(to: URL(fileURLWithPath: "/Users/kevin/Desktop/\(cartridge.header.title).gb"))
     }
-    
+
     func testBackupSaveFile() {
         let exp = expectation(description: "Backups Save File")
         let controller = try! InsideGadgetsCartridgeController<GameboyClassic.Cartridge>.reader()
@@ -50,8 +60,8 @@ class CartridgeTests: XCTestCase {
                 defer { exp.fulfill() }
                 XCTAssertNotNil($0)
                 result.saveFile = $0
-                }.start()
-        }.start()
+            }
+        }
         //----------------------------------------------------------------------
         waitForExpectations(timeout: 10)
         //----------------------------------------------------------------------
@@ -79,7 +89,7 @@ class CartridgeTests: XCTestCase {
             return (data, MD5)
         }
         //----------------------------------------------------------------------
-        let saveFile = try! saveFileAndMD5(named: "POKEMON BLUE")
+        let saveFile = try! saveFileAndMD5(named: "POKEMON YELLOW")
         print("MD5: \(saveFile.md5)")
         //----------------------------------------------------------------------
         // Read (cache) the cartridge header
@@ -90,8 +100,8 @@ class CartridgeTests: XCTestCase {
             controller.restoreSave(data: saveFile.data, with: header) {
                 defer { exp.fulfill() }
                 XCTAssertTrue($0)
-                }.start()
-        }.start()
+            }
+        }
         //----------------------------------------------------------------------
         waitForExpectations(timeout: 10)
         //----------------------------------------------------------------------
@@ -105,7 +115,7 @@ class CartridgeTests: XCTestCase {
         controller.deleteSave {
             defer { exp.fulfill() }
             XCTAssertTrue($0)
-        }.start()
+        }
         //----------------------------------------------------------------------
         waitForExpectations(timeout: 10)
         //----------------------------------------------------------------------
@@ -120,10 +130,15 @@ class CartridgeTests: XCTestCase {
             defer { exp.fulfill() }
             print(#function)
             XCTAssertTrue($0)
-        }.start()
+        }
+        //----------------------------------------------------------------------
+        let observer = controller.progress.observe(\.fractionCompleted, options: [.new]) { progress, change in
+            print(change.newValue ?? 0)
+        }
         //----------------------------------------------------------------------
         waitForExpectations(timeout: 300)
         //----------------------------------------------------------------------
+        observer.invalidate()
     }
     
     func testWriteCartridge() {
@@ -141,14 +156,20 @@ class CartridgeTests: XCTestCase {
             else {
                 print("Logo: OK!")
             }
-        }.start()
+        }
         //----------------------------------------------------------------------
         // TODO: Extend 'CartridgeWrite' so that it loads flash carts!
         //----------------------------------------------------------------------
         func romFileURL(named title: String, extension fileExtension: String = "gb") -> URL {
             return URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)")
         }
-        let flashCart = try! writer.read(contentsOf: romFileURL(named: "POKEMON RED"))
+        let flashCart = try! writer.read(contentsOf: romFileURL(named: "POKEMON YELLOW"))
+        //----------------------------------------------------------------------
+        print("MD5:", Data(flashCart[0..<flashCart.endIndex]).md5.hexString(separator: "").lowercased())
+        print(String(repeating: "-", count: 45), "|", separator: "", terminator: "\n")
+        print(flashCart)
+        print(flashCart.header)
+        print(String(repeating: "-", count: 45), "|", separator: "", terminator: "\n")
         //----------------------------------------------------------------------
         writer.erase {
             defer { exp.fulfill() }
@@ -165,11 +186,57 @@ class CartridgeTests: XCTestCase {
                         return
                     }
                     XCTAssertEqual(header.title, flashCart.header.title)
-                    }.start()
-                }.start()
+                }
+            }
+        }
+        let observer = writer.progress.observe(\.fractionCompleted, options: [.new, .old]) { progress, change in
+            let newValue = change.newValue ?? 0
+            let oldValue = change.oldValue ?? 0
+            if newValue != oldValue {
+                print(newValue)
+            }
+        }
+        //----------------------------------------------------------------------
+        waitForExpectations(timeout: 300)
+        //----------------------------------------------------------------------
+        observer.invalidate()
+    }
+    
+    /*
+    func testFlashID() {
+        let exp = expectation(description: "Flash ID")
+        //----------------------------------------------------------------------
+        try! InsideGadgetsCartridgeController<AM29F016B>.readFlashID(bitIsFlipped: false) {
+            defer { exp.fulfill() }
+            print($0!.hexString())
         }.start()
         //----------------------------------------------------------------------
         waitForExpectations(timeout: 300)
         //----------------------------------------------------------------------
     }
+
+    func testFlashProgram() {
+        let exp = expectation(description: "Flash Program")
+        //----------------------------------------------------------------------
+        let writer = try! InsideGadgetsCartridgeController<AM29F016B>.writer()
+        writer.set(flash: ._555) { _ in
+            exp.fulfill()
+        }
+        //----------------------------------------------------------------------
+        waitForExpectations(timeout: 300)
+        //----------------------------------------------------------------------
+    }
+    
+    func testResetFlashMode() {
+        let exp = expectation(description: "Flash ID")
+        //----------------------------------------------------------------------
+        let writer = try! InsideGadgetsCartridgeController<AM29F016B>.writer()
+        writer.resetFlashMode {
+            exp.fulfill()
+        }
+        //----------------------------------------------------------------------
+        waitForExpectations(timeout: 300)
+        //----------------------------------------------------------------------
+    }
+     */
 }

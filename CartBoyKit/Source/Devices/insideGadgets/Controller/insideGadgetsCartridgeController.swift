@@ -2,18 +2,23 @@ import ORSSerial
 import Gibby
 
 public class InsideGadgetsCartridgeController<Cartridge: Gibby.Cartridge>: ThreadSafeSerialPortController, CartridgeController {
-    fileprivate override init(matching portProfile: ORSSerialPortManager.PortProfile = .prefix("/dev/cu.usbserial-14")) throws {
+    override init(matching portProfile: ORSSerialPortManager.PortProfile = .prefix("/dev/cu.usbserial-14")) throws {
         try super.init(matching: portProfile)
     }
+    
+    private let queue: OperationQueue = .init()
 
     @discardableResult
     override final func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
-        defer { usleep(250) }
         return super.send(data, timeout: timeout)
     }
 
     public override func open() -> ORSSerialPort {
         return super.open().configuredAsGBxCart()
+    }
+    
+    func add(_ operation: Operation) {
+        self.queue.addOperation(operation)
     }
 }
 
@@ -26,6 +31,33 @@ extension InsideGadgetsCartridgeController: CartridgeReaderController {
 extension InsideGadgetsCartridgeController: CartridgeWriterController where Cartridge: FlashCartridge {
     public static func writer() throws -> InsideGadgetsWriter<Cartridge> {
         return .init(controller: try .init())
+    }
+}
+
+extension InsideGadgetsCartridgeController {
+    @discardableResult
+    func go(to address: Cartridge.Platform.AddressSpace, timeout: UInt32 = 250) -> Bool {
+        return send("A", number: address, timeout: timeout)
+    }
+    
+    @discardableResult
+    func read() -> Bool {
+        return send("R".bytes())
+    }
+    
+    @discardableResult
+    func `break`(timeout: UInt32 = 0) -> Bool {
+        return send("\0".bytes(), timeout: timeout)
+    }
+    
+    @discardableResult
+    func stop(timeout: UInt32 = 0) -> Bool {
+        return send("0".bytes(), timeout: timeout)
+    }
+    
+    @discardableResult
+    func `continue`() -> Bool {
+        return send("1".bytes())
     }
 }
 

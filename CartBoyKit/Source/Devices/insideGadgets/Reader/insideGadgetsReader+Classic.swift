@@ -1,243 +1,167 @@
 import Gibby
 
 extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
-    public func readHeader(result: @escaping (Cartridge.Header?) -> ()) -> Operation {
-        let timeout: UInt32 = 250
-        return SerialPortOperation(controller: self.controller, progress: Progress(totalUnitCount: Int64(Cartridge.Platform.headerRange.count)), perform: { progress in
-            guard progress.completedUnitCount > 0 else {
-                self.controller.send("0".bytes(),  timeout: timeout)
-                self.controller.send("B", number: 0x0000, radix: 16, terminate: true, timeout: timeout)
-                self.controller.send("B", number: 000000, radix: 10, terminate: true, timeout: timeout)
-                self.controller.send("A100\0".bytes(), timeout: timeout)
-                self.controller.send("R".bytes(), timeout: timeout)
-                return
-            }
-            guard progress.completedUnitCount % 64 == 0 else {
-                return
-            }
-            self.controller.send("1".bytes(), timeout: timeout)
+    public func readHeader(result: @escaping (Cartridge.Header?) -> ()) {
+        let count = Int64(Cartridge.Platform.headerRange.count)
+        self.resetProgress(to: Int64(count))
+        self.read(count, at: 0x100, prepare: {
+            $0.toggleRAM(on: false)
         }) { data in
-            self.controller.send("0\0".bytes(), timeout: timeout)
-            guard let data = data else {
-                result(nil)
-                return
-            }
-            
-            result(.init(bytes: data))
+            defer { self.resetProgress(to: Int64(count)) }
+            result(.init(bytes: data ?? Data(count: Int(count))))
         }
     }
     
-    public func readCartridge(with header: Cartridge.Header? = nil, result: @escaping (Cartridge?) -> ()) -> Operation {
+    public func readCartridge(with header: Cartridge.Header? = nil, result: @escaping (Cartridge?) -> ()) {
         guard let header = header as? GameboyClassic.Cartridge.Header else {
-            return self.readHeader {
-                return self.readCartridge(with: $0, result: result).start()
+            self.readHeader { [weak self] in
+                return self?.readCartridge(with: $0, result: result)
             }
+            return
         }
-        print(header)
-        return SerialPortOperation(controller: controller, progress: Progress(totalUnitCount: Int64(header.romSize)), perform: { progress in
-            guard progress.completedUnitCount > 0 else {
-                self.controller.send("0".bytes(),  timeout: 0)
-                self.controller.send("B", number: 0x0000, radix: 16, terminate: true, timeout: 0)
-                self.controller.send("B", number: 000000, radix: 10, terminate: true, timeout: 0)
-                self.controller.send("A0\0".bytes(), timeout: 250)
-                self.controller.send("R".bytes(), timeout: 0)
-                return
-            }
-            guard progress.completedUnitCount % 64 == 0 else {
-                return
-            }
-            if case let bank = progress.completedUnitCount / Int64(header.romBankSize), bank >= 1, progress.completedUnitCount % Int64(header.romBankSize) == 0 {
-                self.controller.send("0\0".bytes(), timeout: 0)
-                switch header.configuration {
-                case .one:
-                    self.controller.send("B", number: 0x6000, radix: 16, terminate: true, timeout: 0)
-                    self.controller.send("B", number: bank, radix: 10, terminate: true, timeout: 0)
-                    
-                    self.controller.send("B", number: 0x4000, radix: 16, terminate: true, timeout: 0)
-                    self.controller.send("B", number: bank >> 5, radix: 10, terminate: true, timeout: 0)
-                    
-                    self.controller.send("B", number: 0x2000, radix: 16, terminate: true, timeout: 0)
-                    self.controller.send("B", number: (bank & 0x1F), radix: 10, terminate: true, timeout: 0)
-                default:
-                    self.controller.send("B", number: 0x2100, radix: 16, terminate: true, timeout: 0)
-                    self.controller.send("B", number: bank, radix: 10, terminate: true, timeout: 0)
-                    if bank >= 0x100 {
-                        self.controller.send("B", number: 0x3000, radix: 16, terminate: true, timeout: 0)
-                        self.controller.send("B", number: 1, radix: 10, terminate: true, timeout: 0)
+        
+        self.controller.add(BlockOperation { [weak self] in
+            let group = DispatchGroup()
+            group.enter()
+            var romBanks = [Int:Data]() {
+                didSet {
+                    if romBanks.count == header.romBanks - 1 {
+                        group.leave()
                     }
                 }
-                print(".", separator: "", terminator: "")
-                self.controller.send("A4000\0".bytes(), timeout: 0)
-                self.controller.send("R".bytes(),    timeout: 0)
-            }
-            else {
-                self.controller.send("1".bytes(), timeout: 0)
-            }
-        }) { data in
-            self.controller.send("0\0".bytes(), timeout: 0)
-            guard let data = data else {
-                result(nil)
-                return
             }
             
-            result(.init(bytes: data))
-        }
+            self?.resetProgress(to: Int64(header.romSize))
+            for bank in 1..<header.romBanks {
+                let unitCount = Int64(header.romBankSize * (bank > 1 ? 1 : 2))
+                //--------------------------------------------------------------
+                let address = UInt16(bank > 1 ? 0x4000 : 0x0000)
+                self?.read(unitCount, at: address, prepare: {
+                    $0.mbc2(fix: header)
+                    //----------------------------------------------------------
+                    // SET: the 'RAM' mode (MBC1-ONLY)
+                    //----------------------------------------------------------
+                    if case .one = header.configuration {
+                        $0.set(bank: 1, at: 0x6000)
+                    }
+                    $0.toggleRAM(on: false)
+                    $0.set(bank: bank, at: 0x2100)
+                }) { data in
+                    if let data = data {
+                        romBanks[bank] = data
+                    }
+                }
+            }
+            
+            group.wait()
+            defer { self?.resetProgress(to: 0) }
+
+            // Order the map from 'lowest' to 'highest' bank number; flatten.
+            let cartridgeData = romBanks
+                .sorted(by: { $0.key < $1.key })
+                .reduce(into: Data()) { $0.append($1.value) }
+            
+            result(.init(bytes: cartridgeData))
+        })
     }
     
-    public func backupSave(with header: Cartridge.Header? = nil, result: @escaping (Data?) -> ()) -> Operation {
+    public func backupSave(with header: Cartridge.Header? = nil, result: @escaping (Data?) -> ()) {
         guard let header = header as? GameboyClassic.Cartridge.Header else {
-            return self.readHeader {
-                return self.backupSave(with: $0, result: result).start()
+            self.readHeader {
+                self.backupSave(with: $0, result: result)
             }
+            return
         }
-        print(header)
-        return SerialPortOperation(controller: self.controller, progress: Progress(totalUnitCount: Int64(header.ramSize)), perform: { progress in
-            guard progress.completedUnitCount > 0 else {
-                self.controller.send("0\0".bytes(),  timeout: 0)
-                
-                switch header.configuration {
-                    //--------------------------------------------------------------
-                    // MBC2 "fix"
-                //--------------------------------------------------------------
-                case .one, .two:
-                    //----------------------------------------------------------
-                    // START; STOP
-                    //----------------------------------------------------------
-                    self.controller.send("0".bytes(), timeout: 0)
-                    self.controller.send("A0\0".bytes(), timeout: 0)
-                    self.controller.send("R".bytes(), timeout: 0)
-                    self.controller.send("0\0".bytes(), timeout: 0)
-                default: (/* do nothing */)
+        
+        self.controller.add(BlockOperation { [weak self] in
+            let group = DispatchGroup()
+            group.enter()
+            var ramBanks = [Int:Data]() {
+                didSet {
+                    if ramBanks.count == header.ramBanks {
+                        group.leave()
+                    }
                 }
-                //--------------------------------------------------------------
-                // SET: the 'RAM' mode (MBC1-ONLY)
-                //--------------------------------------------------------------
-                if case .one = header.configuration {
-                    self.controller.send("B", number: 0x6000, radix: 16, terminate: true, timeout: 0)
-                    self.controller.send("B", number: 1, radix: 10, terminate: true, timeout: 0)
+            }
+            
+            self?.resetProgress(to: Int64(header.ramSize))
+            for bank in 0..<header.ramBanks {
+                self?.read(header.ramBankSize, at: 0xA000, prepare: {
+                    $0.mbc2(fix: header)
+                    //----------------------------------------------------------
+                    // SET: the 'RAM' mode (MBC1-ONLY)
+                    //----------------------------------------------------------
+                    if case .one = header.configuration {
+                        $0.set(bank: 1, at: 0x6000)
+                    }
+                    //----------------------------------------------------------
+                    $0.toggleRAM(on: true)
+                    $0.set(bank: bank, at: 0x4000)
+                }) { data in
+                    self?.controller.toggleRAM(on: false)
+                    if let data = data {
+                        ramBanks[bank] = data
+                    }
                 }
-                
-                //--------------------------------------------------------------
-                // TOGGLE
-                //--------------------------------------------------------------
-                self.controller.send("B", number: 0x0000, radix: 16, terminate: true, timeout: 0)
-                self.controller.send("B", number: 0x0A, radix: 10, terminate: true, timeout: 0)
-                
-                //--------------------------------------------------------------
-                // BANK SWITCH
-                //--------------------------------------------------------------
-                self.controller.send("B", number: 0x4000, radix: 16, terminate: true, timeout: 0)
-                self.controller.send("B", number: 0x0, radix: 10, terminate: true, timeout: 0)
-                
-                //--------------------------------------------------------------
-                // START
-                //--------------------------------------------------------------
-                self.controller.send("AA000\0".bytes(), timeout: 0)
-                self.controller.send("R".bytes(), timeout: 0)
-                return
             }
-            guard progress.completedUnitCount % 64 == 0 else {
-                return
-            }
-            if case let bank = progress.completedUnitCount / Int64(header.ramBankSize), progress.completedUnitCount % Int64(header.ramBankSize) == 0 {
-                print("#\(bank), \(progress.fractionCompleted)%")
-                
-                self.controller.send("0".bytes(), timeout: 0)
-                self.controller.send("B", number: 0x4000, radix: 16, terminate: true, timeout: 0)
-                self.controller.send("B", number: bank, radix: 10, terminate: true, timeout: 0)
-                self.controller.send("AA000\0".bytes(), timeout: 250)
-                self.controller.send("R".bytes(), timeout: 0)
-            }
-            else {
-                self.controller.send("1".bytes(), timeout: 0)
-            }
-        }) { data in
-            self.controller.send("0\0".bytes(), timeout: 0)
-            result(data)
-        }
+            
+            group.wait()
+            defer { self?.resetProgress(to: Int64(0)) }
+
+            let saveData = ramBanks
+                .sorted(by: { $0.key < $1.key })
+                .reduce(into: Data()) { $0.append($1.value) }
+            
+            result(saveData)
+        })
     }
     
-    public func restoreSave(data: Data, with header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) -> Operation {
+    public func restoreSave(data: Data, with header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) {
         guard let header = header as? GameboyClassic.Cartridge.Header else {
-            return self.readHeader {
-                return self.restoreSave(data: data, with: $0, result: result).start()
+            self.readHeader {
+                self.restoreSave(data: data, with: $0, result: result)
             }
+            return
         }
-        print(header)
-        guard header.isLogoValid, header.ramBankSize != 0 else {
-            return BlockOperation {
-                result(false)
-            }
-        }
-        return SerialPortOperation(controller: self.controller, progress: Progress(totalUnitCount: Int64(data.count / 64)), perform: { progress in
-            guard progress.completedUnitCount > 0 else {
-                self.controller.send("0\0".bytes(),  timeout: 0)
-                
-                switch header.configuration {
-                    //--------------------------------------------------------------
-                    // MBC2 "fix"
-                //--------------------------------------------------------------
-                case .one, .two:
-                    //----------------------------------------------------------
-                    // START; STOP
-                    //----------------------------------------------------------
-                    self.controller.send("0".bytes(), timeout: 0)
-                    self.controller.send("A0\0".bytes(), timeout: 0)
-                    self.controller.send("R".bytes(), timeout: 0)
-                    self.controller.send("0\0".bytes(), timeout: 0)
-                default: (/* do nothing */)
-                }
-                //--------------------------------------------------------------
-                // SET: the 'RAM' mode (MBC1-ONLY)
-                //--------------------------------------------------------------
-                if case .one = header.configuration {
-                    self.controller.send("B", number: 0x6000, radix: 16, terminate: true, timeout: 0)
-                    self.controller.send("B", number: 1, radix: 10, terminate: true, timeout: 0)
-                }
-                
-                //--------------------------------------------------------------
-                // TOGGLE
-                //--------------------------------------------------------------
-                self.controller.send("B", number: 0x0000, radix: 16, terminate: true, timeout: 0)
-                self.controller.send("B", number: 0x0A, radix: 10, terminate: true, timeout: 0)
-                
-                //--------------------------------------------------------------
-                // BANK SWITCH
-                //--------------------------------------------------------------
-                self.controller.send("B", number: 0x4000, radix: 16, terminate: true, timeout: 0)
-                self.controller.send("B", number: 0x0, radix: 10, terminate: true, timeout: 0)
-                
-                //--------------------------------------------------------------
-                // START
-                //--------------------------------------------------------------
-                self.controller.send("AA000\0".bytes(), timeout: 0)
-                self.controller.send("W".data(using: .ascii)! + data[..<64], timeout: 0)
-                return
-            }
+        
+        let operation = SerialPortOperation(controller: self.controller, unitCount: Int64(data.count / 64), packetLength: 1, perform: { progress in
             let startAddress = Int(progress.completedUnitCount * 64)
             let range = startAddress..<Int(startAddress + 64)
             if case let bank = startAddress / header.ramBankSize, startAddress % header.ramBankSize == 0 {
-                print("#\(bank), \(progress.fractionCompleted)%")
-                
-                self.controller.send("0".bytes(), timeout: 0)
-                self.controller.send("B", number: 0x4000, radix: 16, terminate: true, timeout: 0)
-                self.controller.send("B", number: bank, radix: 10, terminate: true, timeout: 0)
-                self.controller.send("AA000\0".bytes(), timeout: 250)
-                self.controller.send("W".data(using: .ascii)! + data[range], timeout: 0)
+                if bank == 0 {
+                    self.controller.toggleRAM(on: true)
+                }
+                //--------------------------------------------------------------
+                self.controller.stop()
+                self.controller.mbc2(fix: header)
+                //--------------------------------------------------------------
+                // SET: the 'RAM' mode (MBC1-ONLY)
+                //--------------------------------------------------------------
+                if case .one = header.configuration {
+                    self.controller.set(bank: 1, at: 0x6000)
+                }
+                //--------------------------------------------------------------
+                self.controller.set(bank: bank, at: 0x4000)
+                self.controller.go(to: 0xA000)
+                self.controller.restore(data[range])
             }
             else {
-                self.controller.send("W".data(using: .ascii)! + data[range], timeout: 0)
+                self.controller.restore(data[range])
             }
         }) { _ in
-            self.controller.send("0\0".bytes(), timeout: 0)
+            defer { self.progress.totalUnitCount = 0 }
+            self.controller.stop()
+            self.controller.toggleRAM(on: false)
             result(true)
+            return
         }
+        self.controller.add(operation)
     }
     
-    public func deleteSave(with header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) -> Operation {
+    public func deleteSave(with header: Cartridge.Header? = nil, result: @escaping (Bool) -> ()) {
         guard let header = header else {
             return self.readHeader {
-                return self.deleteSave(with: $0, result: result).start()
+                return self.deleteSave(with: $0, result: result)
             }
         }
         return self.restoreSave(data: Data(count: header.ramSize), with: header, result: result)

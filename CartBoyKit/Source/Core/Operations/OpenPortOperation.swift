@@ -28,7 +28,7 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
         didSet  {  self.didChangeValue(forKey: "isFinished") }
     }
     
-    @objc var _isReady: Bool = false {
+    @objc var _isReady: Bool = true {
         willSet { self.willChangeValue(forKey: "isReady") }
         didSet  {  self.didChangeValue(forKey: "isReady") }
     }
@@ -71,7 +71,12 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
         }
     }
     
+    override var debugDescription: String {
+        return "\(transactionID)" + super.debugDescription
+    }
+    
     @objc override func main() {
+        self._isReady = false
         self.controller.openReader(delegate: self)
         self.isReadyCondition.whileLocked {
             while !self.isReady {
@@ -87,11 +92,9 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
     }
     
     func serialPortWasOpened(_ serialPort: ORSSerialPort) {
-        defer {
-            self.isReadyCondition.whileLocked {
-                self._isReady = true
-                self.isReadyCondition.signal()
-            }
+        self.isReadyCondition.whileLocked {
+            self._isReady = true
+            self.isReadyCondition.signal()
         }
     }
 

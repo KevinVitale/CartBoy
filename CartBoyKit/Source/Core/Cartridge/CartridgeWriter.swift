@@ -3,8 +3,8 @@ import Gibby
 public protocol CartridgeWriter {
     associatedtype FlashCartridge: CartKit.FlashCartridge
 
-    func erase(result: @escaping (Bool) -> ()) -> Operation
-    func write(_ flashCartridge: FlashCartridge, result: @escaping (Bool) -> ()) -> Operation
+    func erase(result: @escaping (Bool) -> ())
+    func write(_ flashCartridge: FlashCartridge, result: @escaping (Bool) -> ()) 
 }
 
 extension CartridgeWriter {
