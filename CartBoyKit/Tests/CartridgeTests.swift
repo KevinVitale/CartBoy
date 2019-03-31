@@ -147,8 +147,6 @@ class CartridgeTests: XCTestCase {
         //----------------------------------------------------------------------
         let writer = try! InsideGadgetsCartridgeController<AM29F016B>.writer()
         //----------------------------------------------------------------------
-        // TODO: Extend 'CartridgeWrite' so that it loads flash carts!
-        //----------------------------------------------------------------------
         func romFileURL(named title: String, extension fileExtension: String = "gb") -> URL {
             return URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)")
         }
@@ -186,8 +184,6 @@ class CartridgeTests: XCTestCase {
         let exp = expectation(description: "Erase Cartridge")
         //----------------------------------------------------------------------
         let writer = try! InsideGadgetsCartridgeController<AM29F016B>.writer()
-        //----------------------------------------------------------------------
-        // TODO: Extend 'CartridgeWrite' so that it loads flash carts!
         //----------------------------------------------------------------------
         func romFileURL(named title: String, extension fileExtension: String = "gb") -> URL {
             return URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)")
