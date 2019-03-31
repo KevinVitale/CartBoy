@@ -25,14 +25,4 @@ public protocol SerialPortController {
     /**
      */
     func close(delegate: ORSSerialPortDelegate)
-
-    /**
-     */
-    // @discardableResult
-    // func send(_ data: Data?, timeout: UInt32?) -> Bool
-    
-    /**
-     */
-    // @discardableResult
-    // func send<Number: FixedWidthInteger>(_ command: String, number: Number, radix: Int, terminate: Bool, timeout: UInt32?) -> Bool
 }
