@@ -1,7 +1,6 @@
 import Gibby
 
 public final class InsideGadgetsReader<Cartridge: Gibby.Cartridge>: NSObject, CartridgeReader, CartridgeArchiver, ProgressReporting {
-
     init(controller: InsideGadgetsCartridgeController<Cartridge>) {
         self.controller = controller
     }
@@ -32,7 +31,7 @@ public final class InsideGadgetsReader<Cartridge: Gibby.Cartridge>: NSObject, Ca
 }
 
 extension InsideGadgetsReader {
-    public func read<Number>(_ unitCount: Number, packetLength: Int = 64, at address: Cartridge.Platform.AddressSpace, prepare: ((InsideGadgetsCartridgeController<Cartridge>) -> ())? = nil, appendData: @escaping ((Data) -> Bool) = { _ in true }, result: @escaping (Data?) -> ()) where Number : FixedWidthInteger {
+    func read<Number>(_ unitCount: Number, packetLength: Int = 64, at address: Cartridge.Platform.AddressSpace, prepare: ((InsideGadgetsCartridgeController<Cartridge>) -> ())? = nil, appendData: @escaping ((Data) -> Bool) = { _ in true }, result: @escaping (Data?) -> ()) where Number : FixedWidthInteger {
         let operation = SerialPortOperation(controller: self.controller, unitCount: Int64(unitCount), packetLength: packetLength, perform: { progress in
             guard progress.completedUnitCount > 0 else {
                 self.progress.addChild(progress, withPendingUnitCount: Int64(unitCount))

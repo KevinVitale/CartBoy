@@ -19,7 +19,7 @@ public final class InsideGadgetsWriter<FlashCartridge: CartKit.FlashCartridge>: 
 }
 
 extension InsideGadgetsWriter {
-    public func read<Number>(_ unitCount: Number, packetLength: Int = 64, at address: FlashCartridge.Platform.AddressSpace, prepare: ((InsideGadgetsCartridgeController<FlashCartridge>) -> ())? = nil, appendData: @escaping ((Data) -> Bool) = { _ in true }, result: @escaping (Data?) -> ()) where Number : FixedWidthInteger {
+    func read<Number>(_ unitCount: Number, packetLength: Int = 64, at address: FlashCartridge.Platform.AddressSpace, prepare: ((InsideGadgetsCartridgeController<FlashCartridge>) -> ())? = nil, appendData: @escaping ((Data) -> Bool) = { _ in true }, result: @escaping (Data?) -> ()) where Number : FixedWidthInteger {
         let operation = SerialPortOperation(controller: self.controller, unitCount: Int64(unitCount), packetLength: packetLength, perform: { progress in
             guard progress.completedUnitCount > 0 else {
                 self.progress.addChild(progress, withPendingUnitCount: Int64(unitCount))
@@ -43,7 +43,7 @@ extension InsideGadgetsWriter {
         self.controller.add(operation)
     }
     
-    public func write(_ data: Slice<FlashCartridge>, packetLength: Int = 1, at address: FlashCartridge.Platform.AddressSpace, prepare: ((InsideGadgetsCartridgeController<FlashCartridge>) -> ())? = nil, appendData: @escaping ((Data) -> Bool) = { _ in true }, result: @escaping () -> ()) {
+    func write(_ data: Slice<FlashCartridge>, packetLength: Int = 1, at address: FlashCartridge.Platform.AddressSpace, prepare: ((InsideGadgetsCartridgeController<FlashCartridge>) -> ())? = nil, appendData: @escaping ((Data) -> Bool) = { _ in true }, result: @escaping () -> ()) {
         let unitCount = Int64(data.count / 64)
         let operation = SerialPortOperation(controller: self.controller, unitCount: unitCount, packetLength: packetLength, perform: { progress in
             if progress.completedUnitCount == 0 {
