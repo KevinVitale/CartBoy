@@ -7,7 +7,7 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
         self.read(count, at: 0x100, prepare: {
             $0.toggleRAM(on: false)
         }) { data in
-            defer { self.resetProgress(to: Int64(count)) }
+            defer { self.resetProgress(to: 0) }
             result(.init(bytes: data ?? Data(count: Int(count))))
         }
     }

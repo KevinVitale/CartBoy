@@ -127,7 +127,6 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
                 //--------------------------------------------------------------
                 group.enter()
                 //--------------------------------------------------------------
-                print(bank, startAddress, bytesInRange, bytesToWrite)
                 self?.write(bytesToWrite, at: startAddress, prepare: {
                     if bank > 0 {
                         $0.set(bank: bank, at: 0x2100)

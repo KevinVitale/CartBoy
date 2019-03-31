@@ -25,21 +25,21 @@ class CartridgeTests: XCTestCase {
             XCTAssertNotNil($0)
             cartridge = $0
         }
-        //----------------------------------------------------------------------
-        waitForExpectations(timeout: 100)
-        //----------------------------------------------------------------------
         let observer = controller.progress.observe(\.fractionCompleted, options: [.new, .old]) { progress, change in
-            print(progress)
             let newValue = change.newValue ?? 0
             let oldValue = change.oldValue ?? 0
             if newValue != oldValue {
                 print(newValue)
             }
         }
+        //----------------------------------------------------------------------
+        waitForExpectations(timeout: 100)
+        //----------------------------------------------------------------------
+        observer.invalidate()
+        //----------------------------------------------------------------------
         guard cartridge != nil else {
             return
         }
-        observer.invalidate()
         print("MD5:", Data(cartridge[0..<cartridge.endIndex]).md5.hexString(separator: "").lowercased())
         print(String(repeating: "-", count: 45), "|", separator: "", terminator: "\n")
         print(cartridge!)
@@ -143,27 +143,16 @@ class CartridgeTests: XCTestCase {
     
     func testWriteCartridge() {
         let exp = expectation(description: "Erase Cartridge")
-        exp.expectedFulfillmentCount = 4
+        exp.expectedFulfillmentCount = 2
         //----------------------------------------------------------------------
         let writer = try! InsideGadgetsCartridgeController<AM29F016B>.writer()
-        let reader = try! InsideGadgetsCartridgeController<AM29F016B>.reader()
-        reader.readHeader {
-            defer { exp.fulfill() }
-            if $0?.isLogoValid == false {
-                print("WARNING: Invalid header. Flashing cart will likely fail.")
-                print($0 ?? .init(bytes: Data()))
-            }
-            else {
-                print("Logo: OK!")
-            }
-        }
         //----------------------------------------------------------------------
         // TODO: Extend 'CartridgeWrite' so that it loads flash carts!
         //----------------------------------------------------------------------
         func romFileURL(named title: String, extension fileExtension: String = "gb") -> URL {
             return URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)")
         }
-        let flashCart = try! writer.read(contentsOf: romFileURL(named: "POKEMON YELLOW"))
+        let flashCart = try! writer.read(contentsOf: romFileURL(named: "POKEMON_GLD"))
         //----------------------------------------------------------------------
         print("MD5:", Data(flashCart[0..<flashCart.endIndex]).md5.hexString(separator: "").lowercased())
         print(String(repeating: "-", count: 45), "|", separator: "", terminator: "\n")
@@ -178,15 +167,6 @@ class CartridgeTests: XCTestCase {
             writer.write(flashCart) {
                 defer { exp.fulfill() }
                 XCTAssertTrue($0)
-                reader.readHeader {
-                    defer { exp.fulfill() }
-                    print(#function)
-                    XCTAssertNotNil($0)
-                    guard let header = $0 else {
-                        return
-                    }
-                    XCTAssertEqual(header.title, flashCart.header.title)
-                }
             }
         }
         let observer = writer.progress.observe(\.fractionCompleted, options: [.new, .old]) { progress, change in
@@ -201,42 +181,4 @@ class CartridgeTests: XCTestCase {
         //----------------------------------------------------------------------
         observer.invalidate()
     }
-    
-    /*
-    func testFlashID() {
-        let exp = expectation(description: "Flash ID")
-        //----------------------------------------------------------------------
-        try! InsideGadgetsCartridgeController<AM29F016B>.readFlashID(bitIsFlipped: false) {
-            defer { exp.fulfill() }
-            print($0!.hexString())
-        }.start()
-        //----------------------------------------------------------------------
-        waitForExpectations(timeout: 300)
-        //----------------------------------------------------------------------
-    }
-
-    func testFlashProgram() {
-        let exp = expectation(description: "Flash Program")
-        //----------------------------------------------------------------------
-        let writer = try! InsideGadgetsCartridgeController<AM29F016B>.writer()
-        writer.set(flash: ._555) { _ in
-            exp.fulfill()
-        }
-        //----------------------------------------------------------------------
-        waitForExpectations(timeout: 300)
-        //----------------------------------------------------------------------
-    }
-    
-    func testResetFlashMode() {
-        let exp = expectation(description: "Flash ID")
-        //----------------------------------------------------------------------
-        let writer = try! InsideGadgetsCartridgeController<AM29F016B>.writer()
-        writer.resetFlashMode {
-            exp.fulfill()
-        }
-        //----------------------------------------------------------------------
-        waitForExpectations(timeout: 300)
-        //----------------------------------------------------------------------
-    }
-     */
 }
