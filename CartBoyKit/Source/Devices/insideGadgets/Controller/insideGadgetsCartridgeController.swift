@@ -42,7 +42,14 @@ extension InsideGadgetsCartridgeController {
     
     @discardableResult
     func read() -> Bool {
-        return send("R".bytes())
+        switch Cartridge.Platform.self {
+        case is GameboyClassic.Type:
+            return send("R".bytes())
+        case is GameboyAdvance.Type:
+            return send("r".bytes())
+        default:
+            return false
+        }
     }
     
     @discardableResult
