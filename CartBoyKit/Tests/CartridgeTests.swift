@@ -4,9 +4,19 @@ import Gibby
 @testable import CartKit
 
 class CartridgeTests: XCTestCase {
-    func testReadHeader() {
+    func testReadClassicHeader() {
         let exp = expectation(description: "Reads Header")
         let controller = try! InsideGadgetsCartridgeController<GameboyClassic.Cartridge>.reader()
+        controller.readHeader { header in
+            defer { exp.fulfill() }
+            print(header!)
+        }
+        waitForExpectations(timeout: 10)
+    }
+    
+    func testReadAdvanceHeader() {
+        let exp = expectation(description: "Reads Header")
+        let controller = try! InsideGadgetsCartridgeController<GameboyAdvance.Cartridge>.reader()
         controller.readHeader { header in
             defer { exp.fulfill() }
             print(header!)
@@ -89,7 +99,7 @@ class CartridgeTests: XCTestCase {
             return (data, MD5)
         }
         //----------------------------------------------------------------------
-        let saveFile = try! saveFileAndMD5(named: "MARIO DELUX")
+        let saveFile = try! saveFileAndMD5(named: "ZELDA")
         print("MD5: \(saveFile.md5)")
         //----------------------------------------------------------------------
         // Read (cache) the cartridge header
@@ -150,7 +160,7 @@ class CartridgeTests: XCTestCase {
         func romFileURL(named title: String, extension fileExtension: String = "gb") -> URL {
             return URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)")
         }
-        let flashCart = try! writer.read(contentsOf: romFileURL(named: "MARIO DELUX"))
+        let flashCart = try! writer.read(contentsOf: romFileURL(named: "ZELDA"))
         //----------------------------------------------------------------------
         print("MD5:", Data(flashCart[0..<flashCart.endIndex]).md5.hexString(separator: "").lowercased())
         print(String(repeating: "-", count: 45), "|", separator: "", terminator: "\n")
