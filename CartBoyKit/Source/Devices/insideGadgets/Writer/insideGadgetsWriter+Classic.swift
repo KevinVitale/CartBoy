@@ -134,7 +134,7 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
                             $0.set(bank: 1, at: 0x3000)
                         }
                     }
-                    $0.go(to: startAddress, timeout: 250)
+                    $0.go(to: startAddress)
                     $0.set(bank: bank, at: 0x4000)
                 }) {
                     group.leave()
@@ -142,6 +142,13 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
             }
             //------------------------------------------------------------------
             group.wait()
+            //------------------------------------------------------------------
+            group.enter()
+            self?.resetFlashMode {
+                group.leave()
+            }
+            group.wait()
+            //------------------------------------------------------------------
             defer { self?.resetProgress(to: 0) }
             result(true)
         })

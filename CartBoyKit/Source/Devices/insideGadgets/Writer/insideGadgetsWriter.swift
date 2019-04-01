@@ -52,11 +52,12 @@ extension InsideGadgetsWriter {
                 prepare?(self.controller)
             }
             let startAddress = FlashCartridge.Index(progress.completedUnitCount * 64).advanced(by: Int(data.startIndex))
-            let bytesInRange  = startAddress..<FlashCartridge.Index(startAddress + 64)
-            self.controller.send("T".data(using: .ascii)! + Data(data[bytesInRange]), timeout: 250)
+            let bytesInRange = startAddress..<FlashCartridge.Index(startAddress + 64)
+            let bytesToWrite = "T".data(using: .ascii)! + Data(data[bytesInRange])
+            self.controller.send(bytesToWrite)
         }, appendData: appendData)
         { _ in
-            self.controller.stop(timeout: 250)
+            self.controller.stop()
             result()
             return
         }
