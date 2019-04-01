@@ -4,6 +4,16 @@ import Gibby
 @testable import CartKit
 
 class CartridgeTests: XCTestCase {
+    func testControllerVersion() {
+        let exp = expectation(description: "Reads Controller Version")
+        try! InsideGadgetsCartridgeController<GameboyClassic.Cartridge>.version {
+            defer { exp.fulfill() }
+            XCTAssertNotNil($0)
+            print($0!)
+        }
+        waitForExpectations(timeout: 10)
+    }
+    
     func testReadClassicHeader() {
         let exp = expectation(description: "Reads Header")
         let controller = try! InsideGadgetsCartridgeController<GameboyClassic.Cartridge>.reader()
