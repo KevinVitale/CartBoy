@@ -2,9 +2,10 @@ import Gibby
 
 extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
     public func readHeader(result: @escaping (Cartridge.Header?) -> ()) {
-        let count = Int64(Cartridge.Platform.headerRange.count)
+        let range = Cartridge.Platform.headerRange
+        let count = Int64(range.count)
         self.resetProgress(to: Int64(count))
-        self.read(count, at: 0x100, prepare: {
+        self.read(count, at: range.lowerBound, prepare: {
             $0.toggleRAM(on: false)
         }) { data in
             defer { self.resetProgress(to: 0) }
