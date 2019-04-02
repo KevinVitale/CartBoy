@@ -18,3 +18,10 @@ public protocol CartridgeArchiver {
     func restoreSave(data: Data, with header: Cartridge.Header?, result: @escaping (Bool) -> ())
     func deleteSave(with header: Cartridge.Header?, result: @escaping (Bool) -> ()) 
 }
+
+/**
+ Errors which can occur while performing `CartridgeArchiver` operations.
+ */
+@available(macOS 10.11, *)
+public enum CartridgeArchiverError: Error {
+}
