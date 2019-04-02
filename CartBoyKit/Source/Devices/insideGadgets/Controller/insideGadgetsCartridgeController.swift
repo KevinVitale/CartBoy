@@ -52,6 +52,7 @@ extension InsideGadgetsCartridgeController {
         }
     }
     
+    @available(macOS, introduced: 10.11, deprecated)
     @discardableResult
     func `break`(timeout: UInt32 = 0) -> Bool {
         return send("\0".bytes(), timeout: timeout)
