@@ -124,7 +124,7 @@ extension String: Hashable {
         
         if let key = key {
             key.withUnsafeBytes { body in
-                CCHmac(algorithm.hmacAlgorithm, UnsafeRawPointer(body), key.count, str, count, result)
+                CCHmac(algorithm.hmacAlgorithm, body.baseAddress!, key.count, str, count, result)
             }
         } else {
             _ = algorithm.digestAlgorithm(str, CC_LONG(strLen), result)
@@ -153,7 +153,7 @@ extension Data: Hashable {
         let count = self.count
         let digestLen = algorithm.digestLength
         
-        return self.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) -> Data in
+        return self.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) -> Data in
             let result = UnsafeMutablePointer<UInt8>.allocate(capacity: digestLen)
             defer {
                 result.deallocate()
@@ -161,10 +161,10 @@ extension Data: Hashable {
             
             if let key = key {
                 key.withUnsafeBytes { body in
-                    CCHmac(algorithm.hmacAlgorithm, UnsafeRawPointer(body), key.count, bytes, count, result)
+                    CCHmac(algorithm.hmacAlgorithm, body.baseAddress!, key.count, bytes.baseAddress!, count, result)
                 }
             } else {
-                _ = algorithm.digestAlgorithm(bytes, CC_LONG(count), result)
+                _ = algorithm.digestAlgorithm(bytes.baseAddress!, CC_LONG(count), result)
             }
             
             return Data(bytes: result, count: digestLen)

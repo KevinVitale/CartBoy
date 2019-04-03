@@ -63,7 +63,6 @@ extension InsideGadgetsWriter where FlashCartridge.Platform == GameboyClassic {
     func resetFlashMode(result: @escaping () -> ()) {
         let operation = SerialPortOperation(controller: self.controller, unitCount: 1, packetLength: 1, perform: { progress in
             guard progress.completedUnitCount > 0 else {
-                self.controller.break(timeout: 250)
                 self.controller.stop()
                 self.controller.flash(byte: 0xF0, at: 0x00) // Reset flash back to read mode
                 return

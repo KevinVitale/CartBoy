@@ -5,7 +5,7 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
         let operation = SerialPortOperation(controller: self.controller, unitCount: 6, packetLength: 1, perform: { progress in
             guard progress.completedUnitCount > 0 else {
                 print("Preparing: sending 'Erase' bytes...")
-                self.controller.break(timeout: 250)
+                self.controller.stop()
                 self.controller.romMode()
                 self.controller.pin(mode: "W")
                 self.controller.flash(byte: 0xAA, at: 0x555)
@@ -118,24 +118,16 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
             //------------------------------------------------------------------
             self?.resetProgress(to: Int64(flashCartridge.header.romSize / 64))
             //------------------------------------------------------------------
-            for bank in 0..<header.romBanks {
-                //--------------------------------------------------------------
-                let startAddress = UInt16(bank > 0 ? 0x4000 : 0x0000)
-                let lowerBound   = Int(startAddress) * bank
-                let bytesInRange = lowerBound..<lowerBound + header.romBankSize
-                let bytesToWrite = flashCartridge[bytesInRange]
-                //--------------------------------------------------------------
+            let romBanks = (0..<header.romBanks).compactMap({ flashCartridge.romBank(at: $0) })
+            for romBank in romBanks.enumerated() {
                 group.enter()
                 //--------------------------------------------------------------
-                self?.write(bytesToWrite, at: startAddress, prepare: {
-                    if bank > 0 {
-                        $0.set(bank: bank, at: 0x2100)
-                        if bank >= 0x100 {
-                            $0.set(bank: 1, at: 0x3000)
-                        }
-                    }
-                    $0.go(to: startAddress)
-                    $0.set(bank: bank, at: 0x4000)
+                let bank         = romBank.offset
+                let bytesToWrite = romBank.element
+                //--------------------------------------------------------------
+                self?.write(bytesToWrite, prepare: {
+                    $0.set(bank: bank, at: 0x2100)
+                    $0.go(to: bank > 0 ? 0x4000 : 0x0000)
                 }) {
                     group.leave()
                 }

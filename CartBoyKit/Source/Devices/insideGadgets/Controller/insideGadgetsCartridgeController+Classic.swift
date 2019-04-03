@@ -1,13 +1,13 @@
 import Gibby
 
-extension InsideGadgetsCartridgeController where Cartridge.Platform == GameboyClassic {
+extension InsideGadgetsCartridgeController where Platform == GameboyClassic {
     @discardableResult
     func restore(_ data: Data) -> Bool {
         return send("W".data(using: .ascii)! + data)
     }
 
     @discardableResult
-    func set<Number>(bank: Number, at address: Cartridge.Platform.AddressSpace, timeout: UInt32 = 250) -> Bool where Number : FixedWidthInteger {
+    func set<Number>(bank: Number, at address: Platform.AddressSpace, timeout: UInt32 = 250) -> Bool where Number : FixedWidthInteger {
         return ( send("B", number: address, radix: 16, timeout: timeout)
             &&   send("B", number:    bank, radix: 10, timeout: timeout))
     }
@@ -31,9 +31,9 @@ extension InsideGadgetsCartridgeController where Cartridge.Platform == GameboyCl
     }
 
     @discardableResult
-    func mbc2(fix header: GameboyClassic.Cartridge.Header) -> Bool {
+    func mbc2<Header: Gibby.Header>(fix header: Header) -> Bool where Header.Platform == Platform, Header.Index == Platform.AddressSpace {
         switch header.configuration {
-        case .one, .two:
+        case .two:
             return (
                 self.go(to: 0x0)
              && self.read()
@@ -43,15 +43,11 @@ extension InsideGadgetsCartridgeController where Cartridge.Platform == GameboyCl
             return false
         }
     }
-}
-
-extension InsideGadgetsCartridgeController where Cartridge: FlashCartridge, Cartridge.Platform == GameboyClassic {
+    
     @discardableResult
-    func flash<Number>(byte: Number, at address: Cartridge.Platform.AddressSpace, timeout: UInt32 = 250) -> Bool where Number : FixedWidthInteger {
+    func flash<Number>(byte: Number, at address: Platform.AddressSpace, timeout: UInt32 = 250) -> Bool where Number : FixedWidthInteger {
         return ( send("F", number: address)
             &&   send("", number: byte)
         )
     }
-    
 }
-

@@ -1,5 +1,5 @@
 import Gibby
 
 public protocol CartridgeController {
-    associatedtype Cartridge: Gibby.Cartridge
+    associatedtype Platform: Gibby.Platform
 }

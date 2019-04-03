@@ -1,6 +1,6 @@
 import Gibby
 
-extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
+extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartridge.Header.Index == Cartridge.Platform.AddressSpace {
     public func readHeader(result: @escaping (Cartridge.Header?) -> ()) {
         let range = Cartridge.Platform.headerRange
         let count = Int64(range.count)
@@ -14,7 +14,7 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
     }
     
     public func readCartridge(with header: Cartridge.Header? = nil, result: @escaping (Cartridge?) -> ()) {
-        guard let header = header as? GameboyClassic.Cartridge.Header else {
+        guard let header = header else {
             self.readHeader { [weak self] in
                 return self?.readCartridge(with: $0, result: result)
             }
@@ -24,44 +24,54 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
         self.controller.add(BlockOperation { [weak self] in
             let group = DispatchGroup()
             group.enter()
+            //------------------------------------------------------------------
+            let romBankCount = header.romBanks
+            //------------------------------------------------------------------
             var romBanks = [Int:Data]() {
                 didSet {
-                    if romBanks.count == header.romBanks - 1 {
+                    if romBanks.count == romBankCount {
                         group.leave()
                     }
                 }
             }
-            
+            //------------------------------------------------------------------
             self?.resetProgress(to: Int64(header.romSize))
-            for bank in 1..<header.romBanks {
-                let unitCount = Int64(header.romBankSize * (bank > 1 ? 1 : 2))
+            //------------------------------------------------------------------
+            for bank in 0..<romBankCount {
                 //--------------------------------------------------------------
-                let address = UInt16(bank > 1 ? 0x4000 : 0x0000)
-                self?.read(unitCount, at: address, prepare: {
+                let address = UInt16(bank > 0 ? 0x4000 : 0x0000)
+                //--------------------------------------------------------------
+                self?.read(header.romBankSize, at: address, prepare: {
                     $0.mbc2(fix: header)
                     //----------------------------------------------------------
-                    // SET: the 'RAM' mode (MBC1-ONLY)
-                    //----------------------------------------------------------
-                    if case .one = header.configuration {
-                        $0.set(bank: 1, at: 0x6000)
-                    }
                     $0.toggleRAM(on: false)
-                    $0.set(bank: bank, at: 0x2100)
+                    //----------------------------------------------------------
+                    guard bank > 0 else {
+                        return
+                    }
+                    if case .one = header.configuration {
+                        $0.set(bank:           0, at: 0x6000)
+                        $0.set(bank:   bank >> 5, at: 0x4000)
+                        $0.set(bank: bank & 0x1F, at: 0x2000)
+                    }
+                    else {
+                        $0.set(bank: bank, at: 0x2100)
+                    }
                 }) { data in
                     if let data = data {
                         romBanks[bank] = data
                     }
                 }
             }
-            
+            //------------------------------------------------------------------
             group.wait()
             defer { self?.resetProgress(to: 0) }
-
+            //------------------------------------------------------------------
             // Order the map from 'lowest' to 'highest' bank number; flatten.
             let cartridgeData = romBanks
                 .sorted(by: { $0.key < $1.key })
                 .reduce(into: Data()) { $0.append($1.value) }
-            
+            //------------------------------------------------------------------
             result(.init(bytes: cartridgeData))
         })
     }
