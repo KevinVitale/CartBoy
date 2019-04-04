@@ -14,6 +14,9 @@
 		0A4B4AB422526228004BB0B0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A4B4AB322526228004BB0B0 /* Assets.xcassets */; };
 		0A4B4AB722526228004BB0B0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A4B4AB522526228004BB0B0 /* Main.storyboard */; };
 		0A4B4AC322526228004BB0B0 /* CartBoyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4B4AC222526228004BB0B0 /* CartBoyTests.swift */; };
+		0AF31F5822557D050026A149 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5722557D050026A149 /* Gibby.framework */; };
+		0AF31F5A22557D050026A149 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5922557D050026A149 /* ORSSerial.framework */; };
+		0AF31F5D22557D050026A149 /* CartKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A30454E223B096100C12C0C /* CartKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +56,8 @@
 		0A4B4AC222526228004BB0B0 /* CartBoyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartBoyTests.swift; sourceTree = "<group>"; };
 		0A4B4AC422526228004BB0B0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CartKit.xcodeproj; path = ../CartBoyKit/CartKit.xcodeproj; sourceTree = "<group>"; };
+		0AF31F5722557D050026A149 /* Gibby.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Gibby.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0AF31F5922557D050026A149 /* ORSSerial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ORSSerial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +65,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0AF31F5A22557D050026A149 /* ORSSerial.framework in Frameworks */,
+				0AF31F5822557D050026A149 /* Gibby.framework in Frameworks */,
+				0AF31F5D22557D050026A149 /* CartKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,7 +145,17 @@
 				0A4B4AA922526227004BB0B0 /* CartBoy */,
 				0A4B4AC122526228004BB0B0 /* CartBoyTests */,
 				0A4A5C82223FDFFC00FDE756 /* Products */,
+				0AF31F5622557D050026A149 /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		0AF31F5622557D050026A149 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0AF31F5722557D050026A149 /* Gibby.framework */,
+				0AF31F5922557D050026A149 /* ORSSerial.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -189,6 +207,11 @@
 				TargetAttributes = {
 					0A4B4AA722526227004BB0B0 = {
 						CreatedOnToolsVersion = 10.2;
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 1;
+							};
+						};
 					};
 					0A4B4ABD22526228004BB0B0 = {
 						CreatedOnToolsVersion = 10.2;
