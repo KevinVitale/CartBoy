@@ -9,7 +9,7 @@ import Gibby
     - _restoring_ save data __to__, and
     - _deleting_ save data __off of__
  
- cartridges that support such hardware necessary to store save data.
+ any cartridges that support such necessary hardware.
  */
 @available(macOS 10.11, *)
 public protocol CartridgeArchiver {
