@@ -2,7 +2,7 @@ import ORSSerial
 import Gibby
 
 public class InsideGadgetsCartridgeController<Platform: Gibby.Platform>: ThreadSafeSerialPortController, CartridgeController {
-    fileprivate override init(matching portProfile: ORSSerialPortManager.PortProfile = .prefix("/dev/cu.usbserial-14")) throws {
+    fileprivate override init(matching portProfile: ORSSerialPortManager.PortProfile) throws {
         try super.init(matching: portProfile)
     }
     
@@ -22,13 +22,17 @@ public class InsideGadgetsCartridgeController<Platform: Gibby.Platform>: ThreadS
     }
 }
 
+extension ORSSerialPortManager.PortProfile {
+    public static let GBxCart: ORSSerialPortManager.PortProfile = .usb(vendorID: 6790, productID: 29987)
+}
+
 extension InsideGadgetsCartridgeController {
-    public static func reader<Cartridge: Gibby.Cartridge>(for cartridge: Cartridge.Type) throws -> InsideGadgetsReader<Cartridge> where Cartridge.Platform == Platform {
-        return .init(controller: try .init())
+    public static func reader<Cartridge: Gibby.Cartridge>(for cartridge: Cartridge.Type, matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws -> InsideGadgetsReader<Cartridge> where Cartridge.Platform == Platform {
+        return .init(controller: try .init(matching: portProfile))
     }
     
-    public static func writer<FlashCartridge: CartKit.FlashCartridge>(for cartridge: FlashCartridge.Type) throws -> InsideGadgetsWriter<FlashCartridge> where FlashCartridge.Platform == Platform {
-        return .init(controller: try .init())
+    public static func writer<FlashCartridge: CartKit.FlashCartridge>(for cartridge: FlashCartridge.Type, matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws -> InsideGadgetsWriter<FlashCartridge> where FlashCartridge.Platform == Platform {
+        return .init(controller: try .init(matching: portProfile))
     }
 }
 
@@ -50,7 +54,7 @@ extension InsideGadgetsCartridgeController {
     }
     
     public static func version(result: @escaping (Version?) -> ()) throws {
-        let controller = try InsideGadgetsCartridgeController()
+        let controller = try InsideGadgetsCartridgeController(matching: .GBxCart)
         controller.add(SerialPortOperation(controller: controller, unitCount: 3, packetLength: 1, perform: { progress in
             guard progress.completedUnitCount > 0 else {
                 controller.send("C\0".bytes())
