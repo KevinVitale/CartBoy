@@ -1,56 +1,98 @@
 import Gibby
+import ORSSerial
 
-public final class InsideGadgetsReader<Cartridge: Gibby.Cartridge>: NSObject, CartridgeReader, CartridgeArchiver, ProgressReporting {
+public final class InsideGadgetsReader<Cartridge: Gibby.Cartridge>: NSObject, ProgressReporting {
     init(controller: InsideGadgetsCartridgeController<Cartridge.Platform>) {
         self.controller = controller
     }
     
-    public var progress: Progress = .init()
-    
-    let controller: InsideGadgetsCartridgeController<Cartridge.Platform>
+    public internal(set) var progress: Progress = .init()
 
-    public func readHeader(result: @escaping (Cartridge.Header?) -> ()) {
+    let controller: InsideGadgetsCartridgeController<Cartridge.Platform>
+}
+
+extension InsideGadgetsReader: CartridgeReader, CartridgeArchiver {
+    public func header(result: @escaping (Result<Cartridge.Header, CartridgeReaderError<Cartridge>>) -> ()) {
         fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
     }
     
-    public func readCartridge(with header: Cartridge.Header?, result: @escaping (Cartridge?) -> ()) {
+    public func cartridge(progress callback: @escaping (Progress) -> (), result: @escaping (Result<Cartridge, CartridgeReaderError<Cartridge>>) -> ()) {
+        fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
+    }
+
+    public func backup(progress callback: @escaping (Progress) -> (), result: @escaping (Result<Data, Error>) -> ()) {
         fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
     }
     
-    public func backupSave(with header: Cartridge.Header?, result: @escaping (Data?) -> ()) {
+    public func restore(data: Data, progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ()) {
         fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
     }
     
-    public func restoreSave(data: Data, with header: Cartridge.Header?, result: @escaping (Bool) -> ()) {
-        fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
-    }
-    
-    public func deleteSave(with header: Cartridge.Header?, result: @escaping (Bool) -> ()) {
+    public func delete(progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ()) {
         fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
     }
 }
 
 extension InsideGadgetsReader {
-    func read<Number>(_ unitCount: Number, packetLength: Int = 64, at address: Cartridge.Platform.AddressSpace, prepare: ((InsideGadgetsCartridgeController<Cartridge.Platform>) -> ())? = nil, appendData: @escaping ((Data) -> Bool) = { _ in true }, result: @escaping (Data?) -> ()) where Number : FixedWidthInteger {
-        let operation = SerialPortOperation(controller: self.controller, unitCount: Int64(unitCount), packetLength: packetLength, perform: { progress in
-            guard progress.completedUnitCount > 0 else {
-                self.progress.addChild(progress, withPendingUnitCount: Int64(unitCount))
+    func request<Number>(totalBytes: Number, timeout: TimeInterval = -1.0, packetSize: UInt = 64, prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> (), progress: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>, Progress) -> () = { (_, _) in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true}) -> Result<Data, Error> where Number: FixedWidthInteger {
+        return Result { try await {
+            self.controller.add(
+                self.controller
+                    .request(totalBytes: Int64(totalBytes)
+                        , packetSize: packetSize
+                        , timeoutInterval: timeout
+                        , prepare: prepare
+                        , progress: progress
+                        , responseEvaluator: responseEvaluator
+                        , result: $0
+                )
+            )}
+            }
+            .map {
                 self.controller.stop()
-                prepare?(self.controller)
-                self.controller.go(to: address)
-                self.controller.read()
-                return
-            }
-            guard progress.completedUnitCount % Int64(packetLength) == 0 else {
-                return
-            }
-            self.controller.continue()
-        }, appendData: appendData)
-        { data in
-            self.controller.stop()
-            result(data)
-            return
+                return $0
         }
-        self.controller.add(operation)
+    }
+    
+    func read<Number>(totalBytes: Number, startingAt address: Cartridge.Platform.AddressSpace, timeout: TimeInterval = -1.0, packetSize: UInt = 64, prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> (), progress update: @escaping (Progress) -> () = { _ in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true}) -> Result<Data, Error> where Number: FixedWidthInteger {
+        return self.request(totalBytes: totalBytes
+            , timeout: timeout
+            , packetSize: packetSize
+            , prepare: {
+                $0.stop()
+                prepare($0)
+                $0.go(to: address)
+                $0.read()
+            }
+            , progress: { controller, progress in
+                update(progress)
+                controller.continue()
+            }
+            , responseEvaluator: { data in
+                switch data!.count % 64 {
+                case  0: return true && responseEvaluator(data!)
+                case 32: return true && responseEvaluator(data!)
+                default: return false
+                }
+            }
+        )
+    }
+    
+    func header(prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> ()) -> Result<Cartridge.Header, CartridgeReaderError<Cartridge>> {
+        return Result { Cartridge.Platform.headerRange }
+            .flatMap { headerRange in
+                self.read(totalBytes: headerRange.count
+                    , startingAt: headerRange.lowerBound
+                    , prepare: { prepare($0) }
+                )
+            }
+            .map { Cartridge.Header(bytes: $0) }
+            .flatMap {
+                guard $0.isLogoValid else {
+                    return .failure(SerialPortRequestError.noError)
+                }
+                return .success($0)
+            }
+            .mapError { .invalidHeader($0) }
     }
 }

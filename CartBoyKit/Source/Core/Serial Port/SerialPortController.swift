@@ -26,3 +26,24 @@ public protocol SerialPortController {
      */
     func close(delegate: ORSSerialPortDelegate)
 }
+
+extension SerialPortController {
+    func request(totalBytes unitCount: Int64, packetSize maxPacketLength: UInt, timeoutInterval: TimeInterval = -1.0, prepare block: @escaping ((Self) -> ()), progress update: @escaping (Self, _ with: Progress) -> (), responseEvaluator: @escaping ORSSerialPacketEvaluator, result: @escaping (Result<Data, SerialPortRequestError>) -> ()) -> SerialPortRequest<Self> {
+        return SerialPortRequest(controller: self
+            , unitCount: unitCount
+            , timeoutInterval: timeoutInterval
+            , maxPacketLength: maxPacketLength
+            , responseEvaluator: { data in
+                responseEvaluator(data!)
+        }, perform: { progress in
+            if progress.completedUnitCount == 0 {
+                block(self)
+            }
+            else {
+                update(self, progress)
+            }
+        }) {
+            result($0)
+        }
+    }
+}

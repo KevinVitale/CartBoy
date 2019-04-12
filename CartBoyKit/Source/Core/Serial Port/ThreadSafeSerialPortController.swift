@@ -15,8 +15,8 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
     ///
     private let isOpenCondition = NSCondition()
     
-    ///
-    private var currentDelegate: ORSSerialPortDelegate? = nil // Prevents 'deinit'
+    /// Retain a strong reference. Prevents 'deinit'.
+    private var currentDelegate: ORSSerialPortDelegate? = nil
     private var        delegate: ORSSerialPortDelegate? {
         get { return reader.delegate }
         set {
@@ -38,8 +38,7 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
             while self.currentDelegate != nil {
                 self.isOpenCondition.wait()
             }
-            
-            // print("Continuing...")
+            //------------------------------------------------------------------
             self.delegate = delegate
             //------------------------------------------------------------------
             DispatchQueue.main.sync {

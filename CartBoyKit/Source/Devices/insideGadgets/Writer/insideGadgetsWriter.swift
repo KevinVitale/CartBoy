@@ -1,65 +1,76 @@
 import Gibby
+import ORSSerial
 
-public final class InsideGadgetsWriter<FlashCartridge: CartKit.FlashCartridge>: NSObject, CartridgeWriter, ProgressReporting {
+public final class InsideGadgetsWriter<FlashCartridge: CartKit.FlashCartridge>: NSObject, ProgressReporting {
     init(controller: InsideGadgetsCartridgeController<FlashCartridge.Platform>) {
         self.controller = controller
     }
     
-    public var progress: Progress = .init()
+    public internal(set) var progress: Progress = .init()
 
     let controller: InsideGadgetsCartridgeController<FlashCartridge.Platform>
-    
-    public func erase(result: @escaping (Bool) -> ()) {
-        fatalError("Controller does not support platform: \(FlashCartridge.Platform.self)")
+}
+
+extension InsideGadgetsWriter: CartridgeWriter {
+    public func erase(progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ()) {
+        fatalError("Writer does not support platform: \(FlashCartridge.Platform.self)")
     }
     
-    public func write(_ flashCartridge: FlashCartridge, result: @escaping (Bool) -> ()) {
-        fatalError("Controller does not support platform: \(FlashCartridge.Platform.self)")
+    public func write(_ flashCartridge: FlashCartridge, progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ()) {
+        fatalError("Writer does not support platform: \(FlashCartridge.Platform.self)")
     }
 }
 
 extension InsideGadgetsWriter {
-    func read<Number>(_ unitCount: Number, packetLength: Int = 64, at address: FlashCartridge.Platform.AddressSpace, prepare: ((InsideGadgetsCartridgeController<FlashCartridge.Platform>) -> ())? = nil, appendData: @escaping ((Data) -> Bool) = { _ in true }, result: @escaping (Data?) -> ()) where Number : FixedWidthInteger {
-        let operation = SerialPortOperation(controller: self.controller, unitCount: Int64(unitCount), packetLength: packetLength, perform: { progress in
-            guard progress.completedUnitCount > 0 else {
-                self.progress.addChild(progress, withPendingUnitCount: Int64(unitCount))
+    func request<Number>(totalBytes: Number, timeout: TimeInterval = -1.0, packetSize: UInt = 64, prepare: @escaping (InsideGadgetsCartridgeController<FlashCartridge.Platform>) -> (), progress: @escaping (InsideGadgetsCartridgeController<FlashCartridge.Platform>, Progress) -> () = { (_, _) in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true}) -> Result<Data, Error> where Number: FixedWidthInteger {
+        return Result { try await {
+            self.controller.add(
+                self.controller.request(totalBytes: Int64(totalBytes)
+                    , packetSize: packetSize
+                    , timeoutInterval: timeout
+                    , prepare: prepare
+                    , progress: progress
+                    , responseEvaluator: responseEvaluator
+                    , result: $0
+                )
+            )}
+            }
+            .map {
                 self.controller.stop()
-                prepare?(self.controller)
-                self.controller.go(to: address)
-                self.controller.read()
-                return
-            }
-            guard progress.completedUnitCount % Int64(packetLength) == 0 else {
-                return
-            }
-            self.controller.continue()
-        }, appendData: appendData)
-        { data in
-            self.controller.stop()
-            result(data)
-            return
+                return $0
         }
-        self.controller.add(operation)
     }
     
-    func write(_ data: Slice<FlashCartridge>, packetLength: Int = 1, prepare: ((InsideGadgetsCartridgeController<FlashCartridge.Platform>) -> ())? = nil, appendData: @escaping ((Data) -> Bool) = { _ in true }, result: @escaping () -> ()) {
-        let unitCount = Int64(data.count / 64)
-        let operation = SerialPortOperation(controller: self.controller, unitCount: unitCount, packetLength: packetLength, perform: { progress in
-            if progress.completedUnitCount == 0 {
-                self.progress.addChild(progress, withPendingUnitCount: unitCount)
-                self.controller.stop()
-                prepare?(self.controller)
+    func sendAndWait(totalBytes: Int64 = 1, timeout: TimeInterval = -1.0, _ prepare: @escaping (InsideGadgetsCartridgeController<FlashCartridge.Platform>) -> (), responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true}) -> Result<Data, Error> {
+        return self.request(totalBytes: totalBytes
+            , timeout: timeout
+            , packetSize: 1
+            , prepare: prepare
+            , responseEvaluator: responseEvaluator
+        )
+    }
+    
+    func read<Number>(totalBytes: Number, startingAt address: FlashCartridge.Platform.AddressSpace, timeout: TimeInterval = -1.0, packetSize: UInt = 64, prepare: ((InsideGadgetsCartridgeController<FlashCartridge.Platform>) -> ())? = nil, progress update: @escaping (Progress) -> () = { _ in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true}) -> Result<Data, Error> where Number: FixedWidthInteger {
+        return self.request(totalBytes: totalBytes
+            , timeout: timeout
+            , packetSize: packetSize
+            , prepare: {
+                $0.stop()
+                prepare?($0)
+                $0.go(to: address)
+                $0.read()
             }
-            let startAddress = FlashCartridge.Index(progress.completedUnitCount * 64).advanced(by: Int(data.startIndex))
-            let bytesInRange = startAddress..<FlashCartridge.Index(startAddress + 64)
-            let bytesToWrite = "T".data(using: .ascii)! + Data(data[bytesInRange])
-            self.controller.send(bytesToWrite)
-        }, appendData: appendData)
-        { _ in
-            self.controller.stop()
-            result()
-            return
-        }
-        self.controller.add(operation)
+            , progress: { controller, progress in
+                update(progress)
+                controller.continue()
+            }
+            , responseEvaluator: { data in
+                switch data!.count % 64 {
+                case  0: return true && responseEvaluator(data!)
+                case 32: return true && responseEvaluator(data!)
+                default: return false
+                }
+            }
+        )
     }
 }

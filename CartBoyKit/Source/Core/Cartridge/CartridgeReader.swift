@@ -2,6 +2,11 @@ import Gibby
 
 public protocol CartridgeReader {
     associatedtype Cartridge: Gibby.Cartridge
-    func readHeader(result: @escaping (Cartridge.Header?) -> ())
-    func readCartridge(with header: Cartridge.Header?, result: @escaping (Cartridge?) -> ())
+    func header(result: @escaping (Result<Cartridge.Header,CartridgeReaderError<Cartridge>>) -> ())
+    func cartridge(progress callback: @escaping (Progress) -> (), result: @escaping (Result<Cartridge,CartridgeReaderError<Cartridge>>) -> ())
+}
+
+public enum CartridgeReaderError<Cartridge: Gibby.Cartridge>: Error {
+    case invalidHeader(Error)
+    case invalidCartridge(Error)
 }

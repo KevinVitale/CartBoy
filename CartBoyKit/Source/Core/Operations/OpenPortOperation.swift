@@ -4,7 +4,6 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
     init(controller: Controller) {
         self.delegate = controller
         self.controller = controller
-        self.transactionID = UUID()
         super.init()
         
         self.completionBlock = {
@@ -14,7 +13,6 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
 
     private(set) var delegate: SerialPortController? = nil
     let controller: Controller
-    let transactionID: UUID
 
     private let isReadyCondition = NSCondition()
     
@@ -70,19 +68,15 @@ class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSe
             main()
         }
     }
-    
-    override var debugDescription: String {
-        return "\(transactionID)" + super.debugDescription
-    }
-    
+
     @objc override func main() {
+        defer { self._isExecuting = true }
         self._isReady = false
         self.controller.openReader(delegate: self)
         self.isReadyCondition.whileLocked {
             while !self.isReady {
                 self.isReadyCondition.wait()
             }
-            self._isExecuting = true
             super.main()
         }
     }

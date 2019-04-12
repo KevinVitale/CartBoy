@@ -2,21 +2,60 @@ import ORSSerial
 import Gibby
 
 public class InsideGadgetsCartridgeController<Platform: Gibby.Platform>: ThreadSafeSerialPortController, CartridgeController {
+    /**
+     Initializes a controller matching the the `portProfile` provided.
+     
+     - Parameter portProfile: A profile describing the serial device to locate.
+     
+     - Throws: If no serial port matching the profile is found, a
+               `PortMatchingError` is thrown.
+     */
     fileprivate override init(matching portProfile: ORSSerialPortManager.PortProfile) throws {
         try super.init(matching: portProfile)
     }
     
+    /// Accepts operations which are expected to execute within the context of
+    /// the receiver.
     private let queue: OperationQueue = .init()
 
+    /**
+     Sends `data` to the serial port
+     
+     This sends `data`, then waits upto `timeout` following the transfer.
+     
+     - Parameter data: The data to send.
+     - Parameter timeout: A duration, in microseconds, to halt following `send`.
+     
+     - Warning: `timeout` halts on the function's calling thread.
+     
+     - Returns: `true`, if the serial port successfully sends the `data`.
+     */
     @discardableResult
     override final func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
         return super.send(data, timeout: timeout)
     }
 
+    /**
+     Opens the serial port.
+     
+     In addition to being opened, the serial port is explicitly configured as
+     if it were device manufactured by insideGadgets.com before returning.
+
+     - Returns: An open serial port.
+     */
     public override func open() -> ORSSerialPort {
         return super.open().configuredAsGBxCart()
     }
     
+    /**
+     Queues an `operation` for execution.
+     
+     - Parameter operation: The operation being queued.
+     
+     When `operation` starts will depend on its own particular implemenation.
+     For example, `OpenPortOperation` will block until it has exclusive access
+     to the port/controller associated with it.
+     */
     func add(_ operation: Operation) {
         self.queue.addOperation(operation)
     }
@@ -27,17 +66,22 @@ extension ORSSerialPortManager.PortProfile {
 }
 
 extension InsideGadgetsCartridgeController {
-    public static func reader<Cartridge: Gibby.Cartridge>(for cartridge: Cartridge.Type, matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws -> InsideGadgetsReader<Cartridge> where Cartridge.Platform == Platform {
-        return .init(controller: try .init(matching: portProfile))
+    public static func reader<Cartridge: Gibby.Cartridge>(for cartridge: Cartridge.Type, matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) -> Result<InsideGadgetsReader<Cartridge>, Error> where Cartridge.Platform == Platform {
+        return Result { .init(controller: try .init(matching: portProfile)) }
     }
     
-    public static func writer<FlashCartridge: CartKit.FlashCartridge>(for cartridge: FlashCartridge.Type, matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws -> InsideGadgetsWriter<FlashCartridge> where FlashCartridge.Platform == Platform {
-        return .init(controller: try .init(matching: portProfile))
+    public static func writer<FlashCartridge: CartKit.FlashCartridge>(for cartridge: FlashCartridge.Type, matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) -> Result<InsideGadgetsWriter<FlashCartridge>, Error> where FlashCartridge.Platform == Platform {
+        return Result { .init(controller: try .init(matching: portProfile)) }
     }
 }
 
 extension InsideGadgetsCartridgeController {
     public struct Version: CustomStringConvertible {
+        public enum Error: Swift.Error {
+            case invalidData
+            case invalidController(Swift.Error)
+        }
+        
         init(major: Int = 1, minor: Int, revision: String) {
             self.major = major
             self.minor = minor
@@ -53,57 +97,49 @@ extension InsideGadgetsCartridgeController {
         }
     }
     
-    public static func version(result: @escaping (Version?) -> ()) throws {
-        let controller = try InsideGadgetsCartridgeController(matching: .GBxCart)
-        controller.add(SerialPortOperation(controller: controller, unitCount: 3, packetLength: 1, perform: { progress in
-            guard progress.completedUnitCount > 0 else {
-                controller.send("C\0".bytes())
-                return
+    public static func version(_ result: @escaping (Result<Version,InsideGadgetsCartridgeController<Platform>.Version.Error>) -> ()) {
+        let controller = Result { try InsideGadgetsCartridgeController(matching: .GBxCart) }
+        let operation = controller.map({ controller -> SerialPortRequest<InsideGadgetsCartridgeController<Platform>> in
+            return SerialPortRequest(controller: controller, unitCount: 3, maxPacketLength: 1, perform: { progress in
+                guard progress.completedUnitCount > 0 else {
+                    controller.send("C\0".bytes())
+                    return
+                }
+                guard progress.completedUnitCount > 1 else {
+                    controller.send("h\0".bytes())
+                    return
+                }
+                guard progress.completedUnitCount > 2 else {
+                    controller.send("V\0".bytes())
+                    return
+                }
+            }) {
+                result($0
+                    .flatMapError { .failure(.invalidController($0)) }
+                    .flatMap {
+                        guard $0.count == 3 else {
+                            return .failure(.invalidData)
+                        }
+                        //------------------------------------------------------
+                        let major = $0[0]
+                        let minor = $0[1]
+                        let revision = $0[2]
+                        //------------------------------------------------------
+                        return .success(.init(
+                            major: Int(major)
+                          , minor: Int(minor)
+                          , revision: String(revision, radix: 16, uppercase: false))
+                        )
+                })
             }
-            guard progress.completedUnitCount > 1 else {
-                controller.send("h\0".bytes())
-                return
-            }
-            guard progress.completedUnitCount > 2 else {
-                controller.send("V\0".bytes())
-                return
-            }
-        }) { data in
-            guard let major = data?[0], let minor = data?[1], let revision = data?[2] else {
-                result(nil)
-                return
-            }
-            result(.init(major: Int(major), minor: Int(minor), revision: String(revision, radix: 16, uppercase: false)))
         })
-    }
-}
-
-extension InsideGadgetsCartridgeController {
-    @discardableResult
-    func go(to address: Platform.AddressSpace, timeout: UInt32 = 250) -> Bool {
-        return send("A", number: address, timeout: timeout)
-    }
-    
-    @discardableResult
-    func read() -> Bool {
-        switch Platform.self {
-        case is GameboyClassic.Type:
-            return send("R".bytes())
-        case is GameboyAdvance.Type:
-            return send("r".bytes())
-        default:
-            return false
+        //----------------------------------------------------------------------
+        switch operation {
+        case .failure(let error):
+            result(.failure(.invalidController(error)))
+        case .success(let operation):
+            operation.start()
         }
-    }
-
-    @discardableResult
-    func stop(timeout: UInt32 = 0) -> Bool {
-        return send("0".bytes(), timeout: timeout)
-    }
-    
-    @discardableResult
-    func `continue`() -> Bool {
-        return send("1".bytes())
     }
 }
 

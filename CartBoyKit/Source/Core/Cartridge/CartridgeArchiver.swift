@@ -14,14 +14,7 @@ import Gibby
 @available(macOS 10.11, *)
 public protocol CartridgeArchiver {
     associatedtype Cartridge: Gibby.Cartridge
-    func backupSave(with header: Cartridge.Header?, result: @escaping (Data?) -> ())
-    func restoreSave(data: Data, with header: Cartridge.Header?, result: @escaping (Bool) -> ())
-    func deleteSave(with header: Cartridge.Header?, result: @escaping (Bool) -> ()) 
-}
-
-/**
- Errors which can occur while performing `CartridgeArchiver` operations.
- */
-@available(macOS 10.11, *)
-public enum CartridgeArchiverError: Error {
+    func backup(progress callback: @escaping (Progress) -> (), result: @escaping (Result<Data, Error>) -> ())
+    func restore(data: Data, progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ())
+    func delete(progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ())
 }
