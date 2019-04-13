@@ -1,12 +1,10 @@
 import Gibby
 import ORSSerial
 
-public final class InsideGadgetsReader<Cartridge: Gibby.Cartridge>: NSObject, ProgressReporting {
+public final class InsideGadgetsReader<Cartridge: Gibby.Cartridge>: NSObject {
     init(controller: InsideGadgetsCartridgeController<Cartridge.Platform>) {
         self.controller = controller
     }
-    
-    public internal(set) var progress: Progress = .init()
 
     let controller: InsideGadgetsCartridgeController<Cartridge.Platform>
 }
@@ -16,19 +14,19 @@ extension InsideGadgetsReader: CartridgeReader, CartridgeArchiver {
         fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
     }
     
-    public func cartridge(progress callback: @escaping (Progress) -> (), result: @escaping (Result<Cartridge, CartridgeReaderError<Cartridge>>) -> ()) {
+    public func cartridge(progress callback: @escaping (Double) -> (), result: @escaping (Result<Cartridge, CartridgeReaderError<Cartridge>>) -> ()) {
         fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
     }
 
-    public func backup(progress callback: @escaping (Progress) -> (), result: @escaping (Result<Data, Error>) -> ()) {
+    public func backup(progress callback: @escaping (Double) -> (), result: @escaping (Result<Data, Error>) -> ()) {
         fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
     }
     
-    public func restore(data: Data, progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ()) {
+    public func restore(data: Data, progress callback: @escaping (Double) -> (), result: @escaping (Result<(), Error>) -> ()) {
         fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
     }
     
-    public func delete(progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ()) {
+    public func delete(progress callback: @escaping (Double) -> (), result: @escaping (Result<(), Error>) -> ()) {
         fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
     }
 }

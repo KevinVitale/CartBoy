@@ -14,7 +14,7 @@ import Gibby
 @available(macOS 10.11, *)
 public protocol CartridgeArchiver {
     associatedtype Cartridge: Gibby.Cartridge
-    func backup(progress callback: @escaping (Progress) -> (), result: @escaping (Result<Data, Error>) -> ())
-    func restore(data: Data, progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ())
-    func delete(progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ())
+    func backup(progress callback: @escaping (Double) -> (), result: @escaping (Result<Data, Error>) -> ())
+    func restore(data: Data, progress callback: @escaping (Double) -> (), result: @escaping (Result<(), Error>) -> ())
+    func delete(progress callback: @escaping (Double) -> (), result: @escaping (Result<(), Error>) -> ())
 }

@@ -7,41 +7,46 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartri
         })
     }
     
-    public func cartridge(progress callback: @escaping (Progress) -> (), result: @escaping (Result<Cartridge, CartridgeReaderError<Cartridge>>) -> ()) {
+    public func cartridge(progress callback: @escaping (Double) -> (), result: @escaping (Result<Cartridge, CartridgeReaderError<Cartridge>>) -> ()) {
         self.controller.add(BlockOperation {
             result(self.cartridge(callback))
         })
     }
 
-    public func backup(progress callback: @escaping (Progress) -> (), result: @escaping (Result<Data,Error>) ->()) {
+    public func backup(progress callback: @escaping (Double) -> (), result: @escaping (Result<Data,Error>) ->()) {
         self.controller.add(BlockOperation{
             result(self.backup(callback))
         })
     }
 
-    public func restore(data: Data, progress callback: @escaping (Progress) -> (), result: @escaping (Result<(),Error>) -> ()) {
+    public func restore(data: Data, progress callback: @escaping (Double) -> (), result: @escaping (Result<(),Error>) -> ()) {
         self.controller.add(BlockOperation{
             result(self.restore(data: data, callback))
         })
     }
     
-    public func delete(progress callback: @escaping (Progress) -> (), result: @escaping (Result<(), Error>) -> ()) {
+    public func delete(progress callback: @escaping (Double) -> (), result: @escaping (Result<(), Error>) -> ()) {
         self.controller.add(BlockOperation {
             result(self.delete(callback))
         })
     }
     
-    public func cartridge(_ progress: @escaping (Progress) -> ()) -> Result<Cartridge, CartridgeReaderError<Cartridge>> {
+    private func cartridge(_ callback: @escaping (Double) -> ()) -> Result<Cartridge, CartridgeReaderError<Cartridge>> {
         precondition(!Thread.current.isMainThread)
         return Result {
             let header = try await { self.header(result: $0) }
             //------------------------------------------------------------------
-            self.progress = .init(totalUnitCount: Int64(header.romSize))
-            DispatchQueue.main.sync { progress(self.progress) }
+            let progress = Progress(totalUnitCount: Int64(header.romSize))
+            let observer = progress.observe(\.fractionCompleted, options: [.new]) { progress, change in
+                DispatchQueue.main.sync {
+                    callback(change.newValue ?? 0)
+                }
+            }
+            defer { observer.invalidate() }
             //------------------------------------------------------------------
             var cartridgeData = Data()
             for bank in 0..<header.romBanks {
-                self.progress.becomeCurrent(withPendingUnitCount: Int64(header.romBankSize))
+                progress.becomeCurrent(withPendingUnitCount: Int64(header.romBankSize))
                 //--------------------------------------------------------------
                 let bankData = try self.read(totalBytes: header.romBankSize
                     , startingAt: bank > 0 ? 0x4000 : 0x0000
@@ -65,25 +70,30 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartri
                 //--------------------------------------------------------------
                 cartridgeData.append(bankData)
                 //--------------------------------------------------------------
-                self.progress.resignCurrent()
+                progress.resignCurrent()
             }
             return Cartridge(bytes: cartridgeData)
             }
             .mapError { .invalidCartridge($0) }
     }
 
-    public func backup(_ progress: @escaping (Progress) -> ()) -> Result<Data, Error> {
+    private func backup(_ callback: @escaping (Double) -> ()) -> Result<Data, Error> {
         precondition(!Thread.current.isMainThread)
         return Result {
             let header = try await { self.header(result: $0) }
             //------------------------------------------------------------------
-            self.progress = .init(totalUnitCount: Int64(header.ramSize))
-            DispatchQueue.main.sync { progress(self.progress) }
+            let progress = Progress(totalUnitCount: Int64(header.ramSize))
+            let observer = progress.observe(\.fractionCompleted, options: [.new]) { progress, change in
+                DispatchQueue.main.sync {
+                    callback(change.newValue ?? 0)
+                }
+            }
+            defer { observer.invalidate() }
             //------------------------------------------------------------------
             let ramBankSize = Int64(header.ramBankSize)
             var backupData = Data()
             for bank in 0..<header.ramBanks {
-                self.progress.becomeCurrent(withPendingUnitCount: ramBankSize)
+                progress.becomeCurrent(withPendingUnitCount: ramBankSize)
                 //--------------------------------------------------------------
                 let bankData = try self.read(totalBytes: ramBankSize
                     , startingAt: 0xA000
@@ -102,19 +112,24 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartri
                 //--------------------------------------------------------------
                 backupData.append(bankData)
                 //--------------------------------------------------------------
-                self.progress.resignCurrent()
+                progress.resignCurrent()
             }
             return backupData
         }
     }
     
-    public func restore(data: Data, _ progress: @escaping (Progress) -> ()) -> Result<(), Error> {
+    private func restore(data: Data, _ callback: @escaping (Double) -> ()) -> Result<(), Error> {
         precondition(!Thread.current.isMainThread)
         return Result {
             let header = try await { self.header(result: $0) }
             //------------------------------------------------------------------
-            self.progress = .init(totalUnitCount: Int64(header.ramSize))
-            DispatchQueue.main.sync { progress(self.progress) }
+            let progress = Progress(totalUnitCount: Int64(header.ramSize))
+            let observer = progress.observe(\.fractionCompleted, options: [.new]) { progress, change in
+                DispatchQueue.main.sync {
+                    callback(change.newValue ?? 0)
+                }
+            }
+            defer { observer.invalidate() }
             //------------------------------------------------------------------
             for bank in 0..<header.ramBanks {
                 let startIndex = bank * header.ramBankSize
@@ -123,7 +138,7 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartri
                 let slice  = data[startIndex..<endIndex]
                 let ramBankSize = Int64(slice.count)
                 //--------------------------------------------------------------
-                self.progress.becomeCurrent(withPendingUnitCount: ramBankSize)
+                progress.becomeCurrent(withPendingUnitCount: ramBankSize)
                 //--------------------------------------------------------------
                 _ = try self.request(totalBytes: ramBankSize / 64
                     , packetSize: 1
@@ -148,18 +163,18 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartri
                     controller.restore(slice[rangeOfBytes])
                 }).get()
                 //--------------------------------------------------------------
-                self.progress.resignCurrent()
+                progress.resignCurrent()
             }
         }
     }
     
-    public func delete(_ progress: @escaping (Progress) -> ()) -> Result<(), Error> {
+    private func delete(_ callback: @escaping (Double) -> ()) -> Result<(), Error> {
         precondition(!Thread.current.isMainThread)
         return self
             .header(prepare: { $0.toggleRAM(on: false) })
             .mapError { $0 }
             .map { Data(count: $0.ramSize) }
-            .flatMap { self.restore(data: $0, progress) }
+            .flatMap { self.restore(data: $0, callback) }
     }
 }
 

@@ -3,7 +3,7 @@ import Gibby
 public protocol CartridgeReader {
     associatedtype Cartridge: Gibby.Cartridge
     func header(result: @escaping (Result<Cartridge.Header,CartridgeReaderError<Cartridge>>) -> ())
-    func cartridge(progress callback: @escaping (Progress) -> (), result: @escaping (Result<Cartridge,CartridgeReaderError<Cartridge>>) -> ())
+    func cartridge(progress callback: @escaping (Double) -> (), result: @escaping (Result<Cartridge,CartridgeReaderError<Cartridge>>) -> ())
 }
 
 public enum CartridgeReaderError<Cartridge: Gibby.Cartridge>: Error {

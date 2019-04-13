@@ -32,13 +32,9 @@ class CartridgeTests: XCTestCase {
             XCTFail("\(error)")
             exp.fulfill()
         case .success(let reader):
-            var observer: NSKeyValueObservation!
             reader.cartridge(progress: {
-                observer = $0.observe(\.fractionCompleted, options: [.new]) { progress, change in
-                    print(change.newValue ?? 0)
-                }
+                print($0)
             }) {
-                defer { observer.invalidate() }
                 switch $0 {
                 case .failure(let error):
                     XCTFail("\(error)")
@@ -59,13 +55,9 @@ class CartridgeTests: XCTestCase {
             XCTFail("\(error)")
             exp.fulfill()
         case .success(let reader):
-            var observer: NSKeyValueObservation!
             reader.backup(progress: {
-                observer = $0.observe(\.fractionCompleted, options: [.new]) { progress, change in
-                    print(change.newValue ?? 0)
-                }
+                print($0)
             }) {
-                defer { observer.invalidate() }
                 switch $0 {
                 case .failure(let error):
                     XCTFail("\(error)")
@@ -95,13 +87,9 @@ class CartridgeTests: XCTestCase {
             //------------------------------------------------------------------
             let saveFile = try! saveFileAndMD5(named: "POKEMON YELLOW")
             print("MD5: \(saveFile.md5)")
-            var observer: NSKeyValueObservation!
             reader.restore(data: saveFile.data, progress: {
-                observer = $0.observe(\.fractionCompleted, options: [.new]) { progress, change in
-                    print(change.newValue ?? 0)
-                }
+                print($0)
             }) {
-                defer { observer.invalidate() }
                 switch $0 {
                 case .failure(let error):
                     XCTFail("\(error)")
@@ -121,13 +109,9 @@ class CartridgeTests: XCTestCase {
             XCTFail("\(error)")
             exp.fulfill()
         case .success(let reader):
-            var observer: NSKeyValueObservation!
             reader.delete(progress: {
-                observer = $0.observe(\.fractionCompleted, options: [.new]) { progress, change in
-                    print(change.newValue ?? 0)
-                }
+                print($0)
             }) {
-                defer { observer.invalidate() }
                 switch $0 {
                 case .failure(let error):
                     XCTFail("\(error)")
