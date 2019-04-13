@@ -34,27 +34,31 @@ extension InsideGadgetsReader: CartridgeReader, CartridgeArchiver {
 }
 
 extension InsideGadgetsReader {
-    func request<Number>(totalBytes: Number, timeout: TimeInterval = -1.0, packetSize: UInt = 64, prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> (), progress: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>, Progress) -> () = { (_, _) in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true}) -> Result<Data, Error> where Number: FixedWidthInteger {
-        return Result { try await {
-            self.controller.add(
-                self.controller
-                    .request(totalBytes: Int64(totalBytes)
+    func request<Number>(totalBytes: Number, timeout: TimeInterval = -1.0, packetSize: UInt = 64, prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> (), progress: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>, Progress) -> () = { (_, _) in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true}) -> Result<Data, SerialPortRequestError> where Number: FixedWidthInteger {
+        var result: Result<Data, SerialPortRequestError> = Result(catching: {
+            try await {
+                self.controller.add(
+                    self.controller.request(totalBytes: Int64(totalBytes)
                         , packetSize: packetSize
                         , timeoutInterval: timeout
                         , prepare: prepare
                         , progress: progress
                         , responseEvaluator: responseEvaluator
                         , result: $0
+                    )
                 )
-            )}
             }
-            .map {
+        })
+        .mapError { $0 as! SerialPortRequestError }
+        result = result
+            .flatMap { data in
                 self.controller.stop()
-                return $0
+                return .success(data)
         }
+        return result
     }
     
-    func read<Number>(totalBytes: Number, startingAt address: Cartridge.Platform.AddressSpace, timeout: TimeInterval = -1.0, packetSize: UInt = 64, prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> (), progress update: @escaping (Progress) -> () = { _ in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true}) -> Result<Data, Error> where Number: FixedWidthInteger {
+    func read<Number>(totalBytes: Number, startingAt address: Cartridge.Platform.AddressSpace, timeout: TimeInterval = -1.0, packetSize: UInt = 64, prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> (), progress update: @escaping (Progress) -> () = { _ in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true}) -> Result<Data, SerialPortRequestError> where Number: FixedWidthInteger {
         return self.request(totalBytes: totalBytes
             , timeout: timeout
             , packetSize: packetSize
@@ -78,21 +82,19 @@ extension InsideGadgetsReader {
         )
     }
     
-    func header(prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> ()) -> Result<Cartridge.Header, CartridgeReaderError<Cartridge>> {
-        return Result { Cartridge.Platform.headerRange }
-            .flatMap { headerRange in
-                self.read(totalBytes: headerRange.count
-                    , startingAt: headerRange.lowerBound
-                    , prepare: { prepare($0) }
-                )
+    func header(prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> ()) -> Result<Cartridge.Header, SerialPortRequestError> {
+        let headerRange = Cartridge.Platform.headerRange
+        let readData = self
+            .read(totalBytes: headerRange.count
+                , startingAt: headerRange.lowerBound
+                , prepare: { prepare($0) }
+            )
+        return readData.flatMap {
+            let header = Cartridge.Header(bytes: $0)
+            guard header.isLogoValid else {
+                return .failure(.noError)
             }
-            .map { Cartridge.Header(bytes: $0) }
-            .flatMap {
-                guard $0.isLogoValid else {
-                    return .failure(SerialPortRequestError.noError)
-                }
-                return .success($0)
-            }
-            .mapError { .invalidHeader($0) }
+            return .success(header)
+        }
     }
 }

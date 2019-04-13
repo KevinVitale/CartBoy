@@ -1,9 +1,9 @@
 import Gibby
 
 extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartridge.Header.Index == Cartridge.Platform.AddressSpace {
-    public func header(result: @escaping (Result<Cartridge.Header,CartridgeReaderError<Cartridge>>) -> ()) {
+    public func header(result: @escaping (Result<Cartridge.Header, CartridgeReaderError<Cartridge>>) -> ()) {
         self.controller.add(BlockOperation {
-            result(self.header(prepare: { $0.toggleRAM(on: false) }))
+            result(self.header(prepare: { $0.toggleRAM(on: false) }).mapError { .invalidHeader($0) })
         })
     }
     
@@ -33,29 +33,22 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartri
     
     public func cartridge(_ progress: @escaping (Progress) -> ()) -> Result<Cartridge, CartridgeReaderError<Cartridge>> {
         precondition(!Thread.current.isMainThread)
-        return self
-            .header(prepare: { $0.toggleRAM(on: false) })
-            .map { header -> Cartridge.Header in
-                defer {
-                    self.progress = .init(totalUnitCount: Int64(header.romSize))
-                    DispatchQueue.main.sync { progress(self.progress) }
-                }
-                return header
-            }
-            .map { header in (0..<header.romBanks).map { bank in (bank, header) } }
-            .map { $0.map { bank, header -> Result<Data, Error> in
-                defer { self.progress.resignCurrent() }
-                //--------------------------------------------------------------
+        return Result {
+            let header = try await { self.header(result: $0) }
+            //------------------------------------------------------------------
+            self.progress = .init(totalUnitCount: Int64(header.romSize))
+            DispatchQueue.main.sync { progress(self.progress) }
+            //------------------------------------------------------------------
+            var cartridgeData = Data()
+            for bank in 0..<header.romBanks {
                 self.progress.becomeCurrent(withPendingUnitCount: Int64(header.romBankSize))
                 //--------------------------------------------------------------
-                return self.read(totalBytes: header.romBankSize
+                let bankData = try self.read(totalBytes: header.romBankSize
                     , startingAt: bank > 0 ? 0x4000 : 0x0000
                     , prepare: {
                         $0.mbc2(fix: header)
                         //------------------------------------------------------
-                        guard bank > 0 else {
-                            return
-                        }
+                        guard bank > 0 else { return }
                         //------------------------------------------------------
                         if case .one = header.configuration {
                             $0.set(bank:           0, at: 0x6000)
@@ -68,39 +61,31 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartri
                                 $0.set(bank: 1, at: 0x3000)
                             }
                         }
-                })
-                }
+                }).get()
+                //--------------------------------------------------------------
+                cartridgeData.append(bankData)
+                //--------------------------------------------------------------
+                self.progress.resignCurrent()
             }
-            .flatMap { romBankResults -> Result<[Data], CartridgeReaderError<Cartridge>> in
-                Result {
-                    try romBankResults.map { try $0.get() }
-                }
-                .mapError { .invalidCartridge($0) }
+            return Cartridge(bytes: cartridgeData)
             }
-            .map { $0.flatMap { $0 }}
-            .map { Cartridge(bytes: Data($0))}
+            .mapError { .invalidCartridge($0) }
     }
 
     public func backup(_ progress: @escaping (Progress) -> ()) -> Result<Data, Error> {
         precondition(!Thread.current.isMainThread)
-        return self
-            .header(prepare: { $0.toggleRAM(on: false) })
-            .map { header -> Cartridge.Header in
-                defer {
-                    self.progress = .init(totalUnitCount: Int64(header.ramSize))
-                    DispatchQueue.main.sync { progress(self.progress) }
-                }
-                return header
-            }
-            .map { header in (0..<header.ramBanks).map { bank in (bank, header) } }
-            .map { $0.map { bank, header -> Result<Data, Error> in
-                let totalBytes = Int64(header.ramBankSize)
+        return Result {
+            let header = try await { self.header(result: $0) }
+            //------------------------------------------------------------------
+            self.progress = .init(totalUnitCount: Int64(header.ramSize))
+            DispatchQueue.main.sync { progress(self.progress) }
+            //------------------------------------------------------------------
+            let ramBankSize = Int64(header.ramBankSize)
+            var backupData = Data()
+            for bank in 0..<header.ramBanks {
+                self.progress.becomeCurrent(withPendingUnitCount: ramBankSize)
                 //--------------------------------------------------------------
-                defer { self.progress.resignCurrent() }
-                //--------------------------------------------------------------
-                self.progress.becomeCurrent(withPendingUnitCount: totalBytes)
-                //--------------------------------------------------------------
-                return self.read(totalBytes: totalBytes
+                let bankData = try self.read(totalBytes: ramBankSize
                     , startingAt: 0xA000
                     , prepare: {
                         $0.mbc2(fix: header)
@@ -113,46 +98,34 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartri
                         //--------------------------------------------------
                         $0.toggleRAM(on: true)
                         $0.set(bank: bank, at: 0x4000)
-                })
-                }
+                }).get()
+                //--------------------------------------------------------------
+                backupData.append(bankData)
+                //--------------------------------------------------------------
+                self.progress.resignCurrent()
             }
-            .flatMap { ramBankResults in
-                Result {
-                    try ramBankResults.map { try $0.get() }
-                }
-                .mapError { .invalidCartridge($0) }
-            }
-            .map { dataArray -> [UInt8] in dataArray.flatMap { $0 } }
-            .map { Data($0) }
-            .mapError { $0 }
+            return backupData
+        }
     }
     
     public func restore(data: Data, _ progress: @escaping (Progress) -> ()) -> Result<(), Error> {
         precondition(!Thread.current.isMainThread)
-        return self
-            .header(prepare: { $0.toggleRAM(on: false) })
-            .map { header -> Cartridge.Header in
-                defer {
-                    self.progress = .init(totalUnitCount: Int64(header.ramSize))
-                    DispatchQueue.main.sync { progress(self.progress) }
-                }
-                return header
-            }
-            .map { header in (0..<header.ramBanks).map { ($0, header) } }
-            .map { $0.map { bank, header -> (Int, Data, Cartridge.Header) in
+        return Result {
+            let header = try await { self.header(result: $0) }
+            //------------------------------------------------------------------
+            self.progress = .init(totalUnitCount: Int64(header.ramSize))
+            DispatchQueue.main.sync { progress(self.progress) }
+            //------------------------------------------------------------------
+            for bank in 0..<header.ramBanks {
                 let startIndex = bank * header.ramBankSize
                 let endIndex   = startIndex.advanced(by: header.ramBankSize)
-                return (bank, data[startIndex..<endIndex], header) }
-            }
-            .map { $0.map { element -> Result<Data, Error> in
-                let (bank, slice, header) = element
-                let totalBytes = Int64(slice.count)
                 //--------------------------------------------------------------
-                defer { self.progress.resignCurrent() }
+                let slice  = data[startIndex..<endIndex]
+                let ramBankSize = Int64(slice.count)
                 //--------------------------------------------------------------
-                self.progress.becomeCurrent(withPendingUnitCount: totalBytes)
+                self.progress.becomeCurrent(withPendingUnitCount: ramBankSize)
                 //--------------------------------------------------------------
-                return self.request(totalBytes: totalBytes / 64
+                _ = try self.request(totalBytes: ramBankSize / 64
                     , packetSize: 1
                     , prepare: {
                         if bank == 0 { $0.toggleRAM(on: true) }
@@ -173,18 +146,11 @@ extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartri
                     let startAddress = Int(progress.completedUnitCount * 64).advanced(by: slice.startIndex)
                     let rangeOfBytes = startAddress..<Int(startAddress + 64)
                     controller.restore(slice[rangeOfBytes])
-                })
-                }
+                }).get()
+                //--------------------------------------------------------------
+                self.progress.resignCurrent()
             }
-            .flatMap { ramBankResults in
-                Result {
-                    try ramBankResults.map { try $0.get() }
-                    }
-                    .mapError { .invalidCartridge($0) }
-            }
-            .map { dataArray in dataArray.flatMap { $0 } }
-            .map { _ in }
-            .mapError { $0 }
+        }
     }
     
     public func delete(_ progress: @escaping (Progress) -> ()) -> Result<(), Error> {
