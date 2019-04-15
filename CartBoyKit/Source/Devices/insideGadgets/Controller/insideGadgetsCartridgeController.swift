@@ -1,7 +1,7 @@
 import ORSSerial
 import Gibby
 
-public class InsideGadgetsCartridgeController<Platform: Gibby.Platform>: ThreadSafeSerialPortController, CartridgeController {
+public class InsideGadgetsCartridgeController<Platform: Gibby.Platform>: ThreadSafeSerialPortController {
     /**
      Initializes a controller matching the the `portProfile` provided.
      

@@ -29,7 +29,6 @@
 		0AAD811521F381AF00D548C8 /* GBxCartKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AAD810721F381AF00D548C8 /* GBxCartKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0AAD811F21F3826D00D548C8 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
 		0ABD40E2221A10D000C6F656 /* insideGadgetsCartridgeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A108BBB221792C000A12FA1 /* insideGadgetsCartridgeController.swift */; };
-		0ABD8CAF224D469500607F36 /* CartridgeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABD8CAE224D469500607F36 /* CartridgeController.swift */; };
 		0ABD8CBA224D541B00607F36 /* insideGadgetsCartridgeController+Classic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABD8CB9224D541B00607F36 /* insideGadgetsCartridgeController+Classic.swift */; };
 		0AC59C562234A5180040BAA4 /* OpenPortOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC59C542234A4DE0040BAA4 /* OpenPortOperation.swift */; };
 		0AC92F8821F95FB200605C82 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AC92F8521F95F8D00605C82 /* Gibby.framework */; };
@@ -96,7 +95,6 @@
 		0AAD810521F381AF00D548C8 /* CartKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CartKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AAD810721F381AF00D548C8 /* GBxCartKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GBxCartKit.h; sourceTree = "<group>"; };
 		0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftCrypto.swift; sourceTree = "<group>"; };
-		0ABD8CAE224D469500607F36 /* CartridgeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartridgeController.swift; sourceTree = "<group>"; };
 		0ABD8CB9224D541B00607F36 /* insideGadgetsCartridgeController+Classic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "insideGadgetsCartridgeController+Classic.swift"; sourceTree = "<group>"; };
 		0AC59C542234A4DE0040BAA4 /* OpenPortOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenPortOperation.swift; sourceTree = "<group>"; };
 		0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gibby.xcodeproj; path = ../Dependencies/Gibby/Gibby.xcodeproj; sourceTree = "<group>"; };
@@ -181,7 +179,6 @@
 			isa = PBXGroup;
 			children = (
 				0A8AE9F4224A575600D1BA05 /* Cartridge */,
-				0ABD8CAD224D468400607F36 /* Controller */,
 				0A108BBD22179EC000A12FA1 /* Serial Port */,
 				0AC0FE182213294D002E69C2 /* Operations */,
 				0A1381B421F685C00071E293 /* Utils */,
@@ -243,14 +240,6 @@
 				0AAD810721F381AF00D548C8 /* GBxCartKit.h */,
 			);
 			path = Source;
-			sourceTree = "<group>";
-		};
-		0ABD8CAD224D468400607F36 /* Controller */ = {
-			isa = PBXGroup;
-			children = (
-				0ABD8CAE224D469500607F36 /* CartridgeController.swift */,
-			);
-			path = Controller;
 			sourceTree = "<group>";
 		};
 		0ABD8CB4224D51FC00607F36 /* Controller */ = {
@@ -475,7 +464,6 @@
 				0A61C76522371701001D653D /* SerialPortController.swift in Sources */,
 				0A0DF2B2225AC07B002278BE /* SerialPortRequest.swift in Sources */,
 				0A4213DB224E7E87004DD64B /* insideGadgetsWriter+Classic+FlashCartridge.swift in Sources */,
-				0ABD8CAF224D469500607F36 /* CartridgeController.swift in Sources */,
 				0A4BBB00225BD38000164297 /* insideGadgetsCartridgeController+Shared.swift in Sources */,
 				0A8AE9FE224A5A0C00D1BA05 /* insideGadgetsReader+Advance.swift in Sources */,
 				0A8AE9F6224A576B00D1BA05 /* CartridgeReader.swift in Sources */,
