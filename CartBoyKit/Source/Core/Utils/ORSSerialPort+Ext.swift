@@ -56,7 +56,7 @@ extension ORSSerialPortManager {
 
 import IOKit.usb
 extension ORSSerialPort {
-    var ioDeviceAttributes: NSDictionary {
+    public var ioDeviceAttributes: NSDictionary {
         var itr: io_iterator_t = 0
         let result = IORegistryEntryCreateIterator(
             self.ioKitDevice
@@ -91,11 +91,11 @@ extension ORSSerialPort {
         return deviceProperties
     }
     
-    var productID: Int {
+    public var productID: Int {
         return (ioDeviceAttributes[kUSBProductID] as? Int) ?? NSNotFound
     }
     
-    var vendorID: Int {
+    public var vendorID: Int {
         return (ioDeviceAttributes[kUSBVendorID] as? Int) ?? NSNotFound
     }
 }
