@@ -17,9 +17,6 @@ extension BinaryInteger {
         guard let data = String(self, radix: radix, uppercase: uppercase).data(using: encoding) else {
             return nil
         }
-        if radix == 10 {
-            print(">>> \(data.hexString(radix: radix))")
-        }
         return data
     }
 }
