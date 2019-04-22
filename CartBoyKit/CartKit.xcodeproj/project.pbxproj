@@ -175,26 +175,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		0A61C77422382D66001D653D /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				0A8AE9F4224A575600D1BA05 /* Cartridge */,
-				0A108BBD22179EC000A12FA1 /* Serial Port */,
-				0AC0FE182213294D002E69C2 /* Operations */,
-				0A1381B421F685C00071E293 /* Utils */,
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
-		0A61C77522382D93001D653D /* Devices */ = {
-			isa = PBXGroup;
-			children = (
-				0ADA13E1223ABE6300333E3A /* Flash Carts */,
-				0A8AE9ED224A570E00D1BA05 /* insideGadgets */,
-			);
-			path = Devices;
-			sourceTree = "<group>";
-		};
 		0A8AE9ED224A570E00D1BA05 /* insideGadgets */ = {
 			isa = PBXGroup;
 			children = (
@@ -235,8 +215,12 @@
 		0AAD810621F381AF00D548C8 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				0A61C77422382D66001D653D /* Core */,
-				0A61C77522382D93001D653D /* Devices */,
+				0A8AE9F4224A575600D1BA05 /* Cartridge */,
+				0AE8203C226E3F9500DED360 /* Devices */,
+				0ADA13E1223ABE6300333E3A /* Flash Cartridge */,
+				0AC0FE182213294D002E69C2 /* Operations */,
+				0A108BBD22179EC000A12FA1 /* Serial Port */,
+				0A1381B421F685C00071E293 /* Utils */,
 				0AAD810721F381AF00D548C8 /* GBxCartKit.h */,
 			);
 			path = Source;
@@ -290,12 +274,20 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0ADA13E1223ABE6300333E3A /* Flash Carts */ = {
+		0ADA13E1223ABE6300333E3A /* Flash Cartridge */ = {
 			isa = PBXGroup;
 			children = (
 				0ADE2860224846FE00BD4E6A /* AM29F016B.swift */,
 			);
-			path = "Flash Carts";
+			path = "Flash Cartridge";
+			sourceTree = "<group>";
+		};
+		0AE8203C226E3F9500DED360 /* Devices */ = {
+			isa = PBXGroup;
+			children = (
+				0A8AE9ED224A570E00D1BA05 /* insideGadgets */,
+			);
+			path = Devices;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
