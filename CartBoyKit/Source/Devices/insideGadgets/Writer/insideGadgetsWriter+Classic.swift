@@ -14,7 +14,7 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
         })
     }
     
-    public func erase(_ progress: @escaping (Progress) -> ()) -> Result<(),Error> {
+    private func erase(_ progress: @escaping (Progress) -> ()) -> Result<(),Error> {
         precondition(!Thread.current.isMainThread)
         //----------------------------------------------------------------------
         // Reset Flash Mode
@@ -76,7 +76,7 @@ extension InsideGadgetsWriter where FlashCartridge == AM29F016B {
         }
     }
 
-    public func write(_ flashCartridge: FlashCartridge, _ progress: @escaping (Progress) -> ()) -> Result<(), Error> {
+    private func write(_ flashCartridge: FlashCartridge, _ progress: @escaping (Progress) -> ()) -> Result<(), Error> {
         precondition(!Thread.current.isMainThread)
         //----------------------------------------------------------------------
         self.progress = .init(totalUnitCount: Int64(flashCartridge.count))
