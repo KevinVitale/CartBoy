@@ -16,30 +16,29 @@
 		0A4B4AC322526228004BB0B0 /* CartBoyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4B4AC222526228004BB0B0 /* CartBoyTests.swift */; };
 		0AF31F5822557D050026A149 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5722557D050026A149 /* Gibby.framework */; };
 		0AF31F5A22557D050026A149 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5922557D050026A149 /* ORSSerial.framework */; };
-		0AF31F5D22557D050026A149 /* CartKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A30454E223B096100C12C0C /* CartKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		0A30454B223B096100C12C0C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0AAD80F621F3815B00D548C8;
-			remoteInfo = Tests;
-		};
-		0A30454D223B096100C12C0C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0AAD810521F381AF00D548C8;
-			remoteInfo = CartKit;
-		};
 		0A4B4ABF22526228004BB0B0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0ADA13F5223AC2EB00333E3A /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 0A4B4AA722526227004BB0B0;
 			remoteInfo = CartBoy;
+		};
+		0ABCB88E226E40F600790192 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0AAD80F621F3815B00D548C8;
+			remoteInfo = Tests;
+		};
+		0ABCB890226E40F600790192 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0AAD810521F381AF00D548C8;
+			remoteInfo = CartKit;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -55,7 +54,7 @@
 		0A4B4ABE22526228004BB0B0 /* CartBoyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CartBoyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A4B4AC222526228004BB0B0 /* CartBoyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartBoyTests.swift; sourceTree = "<group>"; };
 		0A4B4AC422526228004BB0B0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CartKit.xcodeproj; path = ../CartBoyKit/CartKit.xcodeproj; sourceTree = "<group>"; };
+		0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CartKit.xcodeproj; path = ../CartKit/CartKit.xcodeproj; sourceTree = "<group>"; };
 		0AF31F5722557D050026A149 /* Gibby.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Gibby.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AF31F5922557D050026A149 /* ORSSerial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ORSSerial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -67,7 +66,6 @@
 			files = (
 				0AF31F5A22557D050026A149 /* ORSSerial.framework in Frameworks */,
 				0AF31F5822557D050026A149 /* Gibby.framework in Frameworks */,
-				0AF31F5D22557D050026A149 /* CartKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,15 +79,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0A304547223B096100C12C0C /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				0A30454C223B096100C12C0C /* Tests.xctest */,
-				0A30454E223B096100C12C0C /* CartKit.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		0A4A5C82223FDFFC00FDE756 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -136,6 +125,15 @@
 				0A4B4AB022526227004BB0B0 /* Document.xcdatamodeld */,
 			);
 			path = "Core Data";
+			sourceTree = "<group>";
+		};
+		0ABCB88A226E40F600790192 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0ABCB88F226E40F600790192 /* Tests.xctest */,
+				0ABCB891226E40F600790192 /* CartKit.framework */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		0ADA13F4223AC2EB00333E3A = {
@@ -232,7 +230,7 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 0A304547223B096100C12C0C /* Products */;
+					ProductGroup = 0ABCB88A226E40F600790192 /* Products */;
 					ProjectRef = 0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */;
 				},
 			);
@@ -245,18 +243,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		0A30454C223B096100C12C0C /* Tests.xctest */ = {
+		0ABCB88F226E40F600790192 /* Tests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = Tests.xctest;
-			remoteRef = 0A30454B223B096100C12C0C /* PBXContainerItemProxy */;
+			remoteRef = 0ABCB88E226E40F600790192 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		0A30454E223B096100C12C0C /* CartKit.framework */ = {
+		0ABCB891226E40F600790192 /* CartKit.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = CartKit.framework;
-			remoteRef = 0A30454D223B096100C12C0C /* PBXContainerItemProxy */;
+			remoteRef = 0ABCB890226E40F600790192 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
