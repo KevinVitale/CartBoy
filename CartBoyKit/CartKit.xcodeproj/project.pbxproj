@@ -266,8 +266,8 @@
 			isa = PBXGroup;
 			children = (
 				0A3D8BC2224A61880010B1BC /* insideGadgetsWriter.swift */,
-				0A4213DA224E7E87004DD64B /* insideGadgetsWriter+Classic+FlashCartridge.swift */,
 				0A3D8BC8224A62080010B1BC /* insideGadgetsWriter+Classic.swift */,
+				0A4213DA224E7E87004DD64B /* insideGadgetsWriter+Classic+FlashCartridge.swift */,
 			);
 			path = Writer;
 			sourceTree = "<group>";
