@@ -1,6 +1,6 @@
 import ORSSerial
 
-class OpenPortOperation<Controller: SerialPortController>: BlockOperation, ORSSerialPortDelegate {
+class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialPortDelegate {
     init(controller: Controller) {
         self.delegate = controller
         self.controller = controller
