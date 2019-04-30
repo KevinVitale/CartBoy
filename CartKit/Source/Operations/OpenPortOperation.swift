@@ -2,7 +2,6 @@ import ORSSerial
 
 class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialPortDelegate {
     init(controller: Controller) {
-        self.delegate = controller
         self.controller = controller
         super.init()
         
@@ -11,7 +10,6 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
         }
     }
 
-    private(set) var delegate: SerialPortController? = nil
     let controller: Controller
 
     private let isReadyCondition = NSCondition()
