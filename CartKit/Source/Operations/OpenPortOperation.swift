@@ -1,5 +1,20 @@
 import ORSSerial
 
+/**
+ A single-purpose `Operation` that is intended to be subclassed. When used with
+ `ThreadSafeSerialPortController`, this class guarantees that access to the
+ associated instance of `Controller` (and its underlying serial port) is
+ thread-safe.
+ 
+ When started, the receiver will attempt to open `Controller` for itself, waiting
+ indefinitely until it has done so. Once opened, the port remains under exclusive
+ control of the receiver, until the receiver is either cancelled, or completes.
+ 
+ The receiver automatically closes the port when it moves to its `isFinished`
+ state.
+ 
+ - SeeAlso: ThreadSafeSerialPortController
+ */
 class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialPortDelegate {
     init(controller: Controller) {
         self.controller = controller
@@ -24,6 +39,11 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
         didSet  {  self.didChangeValue(forKey: "isFinished") }
     }
     
+    /// Defaults to `true` so that the receiver is eligble to be queued when
+    /// being sumbitted to a `OperationQueue`.
+    ///
+    /// Once `main()` is called, this value gets set to `false` and then back to
+    /// `true` once the port has been opened.
     @objc var _isReady: Bool = true {
         willSet { self.willChangeValue(forKey: "isReady") }
         didSet  {  self.didChangeValue(forKey: "isReady") }
@@ -67,6 +87,12 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
         }
     }
 
+    /**
+     Blocks until the receiver has opened the `Controller` for itself.
+
+     Subclasses should override this function expecting that when the call to
+     `super.main()` returns, the port is open and under its exclusive control.
+     */
     @objc override func main() {
         defer { self._isExecuting = true }
         self._isReady = false
