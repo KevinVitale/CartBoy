@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0A4A5C80223FDFFC00FDE756"
+               BlueprintIdentifier = "0A4B4AA722526227004BB0B0"
                BuildableName = "CartBoy.app"
                BlueprintName = "CartBoy"
                ReferencedContainer = "container:CartBoy.xcodeproj">
@@ -32,7 +32,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0A4A5C98223FDFFD00FDE756"
+               BlueprintIdentifier = "0A4B4ABD22526228004BB0B0"
                BuildableName = "CartBoyTests.xctest"
                BlueprintName = "CartBoyTests"
                ReferencedContainer = "container:CartBoy.xcodeproj">
@@ -42,7 +42,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "0A4A5C80223FDFFC00FDE756"
+            BlueprintIdentifier = "0A4B4AA722526227004BB0B0"
             BuildableName = "CartBoy.app"
             BlueprintName = "CartBoy"
             ReferencedContainer = "container:CartBoy.xcodeproj">
@@ -65,7 +65,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "0A4A5C80223FDFFC00FDE756"
+            BlueprintIdentifier = "0A4B4AA722526227004BB0B0"
             BuildableName = "CartBoy.app"
             BlueprintName = "CartBoy"
             ReferencedContainer = "container:CartBoy.xcodeproj">
@@ -84,7 +84,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "0A4A5C80223FDFFC00FDE756"
+            BlueprintIdentifier = "0A4B4AA722526227004BB0B0"
             BuildableName = "CartBoy.app"
             BlueprintName = "CartBoy"
             ReferencedContainer = "container:CartBoy.xcodeproj">

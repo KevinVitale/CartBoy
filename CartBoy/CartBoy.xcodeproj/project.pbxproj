@@ -40,6 +40,13 @@
 			remoteGlobalIDString = 0AAD810521F381AF00D548C8;
 			remoteInfo = CartKit;
 		};
+		0ABCBABA22724C20002D515F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 0AAD810421F381AF00D548C8;
+			remoteInfo = CartKit;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -170,6 +177,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				0ABCBABB22724C20002D515F /* PBXTargetDependency */,
 			);
 			name = CartBoy;
 			productName = CartBoy;
@@ -305,6 +313,11 @@
 			isa = PBXTargetDependency;
 			target = 0A4B4AA722526227004BB0B0 /* CartBoy */;
 			targetProxy = 0A4B4ABF22526228004BB0B0 /* PBXContainerItemProxy */;
+		};
+		0ABCBABB22724C20002D515F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = CartKit;
+			targetProxy = 0ABCBABA22724C20002D515F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

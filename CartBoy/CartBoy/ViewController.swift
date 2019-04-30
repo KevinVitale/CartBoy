@@ -3,6 +3,36 @@ import ORSSerial
 import Gibby
 import CartKit
 
+
+class CartInfoController: NSObject {
+    private var _queue: DispatchQueue!
+    @IBOutlet weak var viewController: NSViewController!
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        _queue = DispatchQueue(label: "com.cartboy.controller.cartridge.info")
+    }
+    
+    @IBAction func readHeader(_ sender: Any?) {
+        _queue.async(flags: .barrier) {
+            do {
+                throw CocoaError(.featureUnsupported)
+            }
+            catch {
+                DispatchQueue.main.async {
+                    self.viewController.presentError(error
+                        , modalFor: NSApp.mainWindow!
+                        , delegate: nil
+                        , didPresent: nil
+                        , contextInfo: nil
+                    )
+                }
+            }
+        }
+    }
+}
+
+
 class ViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
