@@ -77,16 +77,17 @@ extension ORSSerialPort {
             defer { IOObjectRelease(obj) }
             
             var value: Unmanaged<CFMutableDictionary>? = .passRetained([String:AnyHashable]() as! CFMutableDictionary)
-            
             guard IORegistryEntryCreateCFProperties(obj, &value, kCFAllocatorDefault, 0) == KERN_SUCCESS
-                , let properties = value?.takeRetainedValue() as CFMutableDictionary? as NSDictionary?
-                , let _ = properties[kUSBVendorID]  as? Int
+                , let properties = value?.takeRetainedValue() as CFMutableDictionary? as NSDictionary? else {
+                    continue
+            }
+
+            guard let _ = properties[kUSBVendorID]  as? Int
                 , let _ = properties[kUSBProductID] as? Int
                 else {
                     continue
             }
             deviceProperties = properties
-
         } while obj != 0
         
         return deviceProperties
