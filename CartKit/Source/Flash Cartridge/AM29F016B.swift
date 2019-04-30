@@ -2,6 +2,7 @@ import Gibby
 
 public protocol FlashCartridge: Gibby.Cartridge {
     init(contentsOf url: URL) throws
+    var voltage: Voltage { get }
 }
 
 public struct AM29F016B: FlashCartridge {
