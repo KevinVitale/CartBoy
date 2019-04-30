@@ -64,11 +64,12 @@ extension ORSSerialPort {
           , IOOptionBits(kIORegistryIterateRecursively + kIORegistryIterateParents)
           , &itr
         )
+        
+        defer { IOObjectRelease(itr) }
         guard result == KERN_SUCCESS else {
             return [:]
         }
-        defer { IOObjectRelease(itr) }
-        
+
         var obj: io_object_t = 0
         var deviceProperties: NSDictionary = [:]
         repeat {
