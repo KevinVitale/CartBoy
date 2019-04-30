@@ -1,13 +1,10 @@
 import ORSSerial
 
 /**
- This contract implies the receiver is managing an `ORSSerialPort` instance.
- 
  A `SerialPortController` instance can:
     - `open` and `close` a serial port; and
     - `send` arbitruary data to said serial port; and
-    - execute `SerialPacketOperations` submitted as operations; and
-    - detect hardware features, such as board revision and voltage settings.
+    - execute `SerialPacketOperations` submitted as operations.
  */
 public protocol SerialPortController {
     ///
