@@ -15,7 +15,7 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
     ///
     private let isOpenCondition = NSCondition()
     
-    /// Retain a strong reference. Prevents 'deinit'.
+    /// Retain a strong reference. Prevents _deinit_ of `reader.delegate`.
     private var currentDelegate: ORSSerialPortDelegate? = nil
     private var        delegate: ORSSerialPortDelegate? {
         get { return reader.delegate }
