@@ -3,4 +3,4 @@
 	url = ./Dependencies/Gibby
 [submodule "ORSSerialPort"]
 	path = Dependencies/ORSSerialPort
-	url = git@github.com:armadsen/ORSSerialPort.git
+	url = git@github.com:KevinVitale/ORSSerialPort.git
