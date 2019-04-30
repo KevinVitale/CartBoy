@@ -1,6 +1,6 @@
 import Gibby
 
-extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic, Cartridge.Header.Index == Cartridge.Platform.AddressSpace {
+extension InsideGadgetsReader where Cartridge.Platform == GameboyClassic {
     public func header(result: @escaping (Result<Cartridge.Header, CartridgeReaderError<Cartridge>>) -> ()) {
         self.controller.add(BlockOperation {
             result(self.header(prepare: { $0.toggleRAM(on: false) }).mapError { .invalidHeader($0) })

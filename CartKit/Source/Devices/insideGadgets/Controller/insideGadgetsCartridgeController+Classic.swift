@@ -31,7 +31,7 @@ extension InsideGadgetsCartridgeController where Platform == GameboyClassic {
     }
 
     @discardableResult
-    func mbc2<Header: Gibby.Header>(fix header: Header) -> Bool where Header.Platform == Platform, Header.Index == Platform.AddressSpace {
+    func mbc2<Header: Gibby.Header>(fix header: Header) -> Bool where Header.Platform == Platform {
         switch header.configuration {
         case .two:
             return (
