@@ -14,6 +14,13 @@ public final class _InsideGadgetsController<Platform: Gibby.Platform>: ThreadSaf
         try super.init(matching: portProfile)
     }
     
+    /// The operation queue to submit _requests_ on.
+    ///
+    /// - warning:
+    /// Upon starting requests, the calling thread gets blocked until a response
+    /// can materialize. However, `SerialPortRequest` is to receive serial port
+    /// delegate callbacks on the main thread, so if the thread that starts the
+    /// request is also the main thread **a deadlock is guaranteed to occur**.
     private let queue = OperationQueue()
     
     /**
