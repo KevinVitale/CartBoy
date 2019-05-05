@@ -13,7 +13,7 @@ extension CartridgeController {
 }
 
 public final class _InsideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerialPortController, CartridgeController {
-    public override init(matching portProfile: ORSSerialPortManager.PortProfile) throws {
+    public override init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
         try super.init(matching: portProfile)
     }
     
