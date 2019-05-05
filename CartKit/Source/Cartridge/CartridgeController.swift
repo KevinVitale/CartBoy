@@ -11,6 +11,7 @@ public protocol CartridgeController: SerialPortController {
     func scanHeader(_ result: @escaping (Result<Platform.Header, Error>) -> ())
     func readCartridge(progress: @escaping ProgressCallback, _ result: @escaping (Result<Platform.Cartridge, Error>) -> ())
     
+    func backupSave(progress: @escaping ProgressCallback, _ result: @escaping (Result<Data, Error>) -> ())
 
 public enum CartridgeControllerError: Error {
     case platformNotSupported

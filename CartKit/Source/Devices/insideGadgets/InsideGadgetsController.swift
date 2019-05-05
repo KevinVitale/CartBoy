@@ -98,6 +98,36 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
         }
     }
     
+    private func backupResult(_ update: @escaping ProgressCallback) -> Result<Data, Error> {
+        return self
+            .headerResult()
+            .flatMap { header in
+                var progress: Progress!
+                //--------------------------------------------------------------
+                switch Platform.self {
+                case is GameboyClassic.Type: progress = Progress(totalUnitCount: Int64((header as! GameboyClassic.Header).ramSize))
+                case is GameboyAdvance.Type: progress = Progress(totalUnitCount: Int64((self as! insideGadgetsController<GameboyAdvance>).ramSize()))
+                default:
+                    return .failure(CartridgeControllerError.platformNotSupported)
+                }
+                let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
+                    DispatchQueue.main.sync {
+                        update(change.newValue ?? 0)
+                    }
+                }
+                //--------------------------------------------------------------
+                defer { observer.invalidate() }
+                //--------------------------------------------------------------
+                switch Platform.self {
+                case is GameboyClassic.Type:
+                    return (self as! insideGadgetsController<GameboyClassic>)
+                        .ramDataResult(updating: progress, header: header as! GameboyClassic.Header)
+                default:
+                    return .failure(CartridgeControllerError.platformNotSupported)
+                }
+        }
+    }
+    
     public func read<Number>(byteCount: Number, startingAt address: Platform.AddressSpace, timeout: TimeInterval = -1.0, prepare: (() -> ())? = nil, progress update: @escaping (Progress) -> () = { _ in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true }) -> Result<Data, Error> where Number: FixedWidthInteger {
         precondition(Thread.current != .main)
         return Result {
@@ -135,11 +165,22 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
             result(self.cartridgeResult(progress))
         })
     }
+    
+    public func backupSave(progress: @escaping ProgressCallback, _ result: @escaping (Result<Data, Error>) -> ()) {
+        self.queue.addOperation(BlockOperation {
+            result(self.backupResult(progress))
+        })
+    }
 }
 
 extension insideGadgetsController where Platform == GameboyAdvance {
     @discardableResult
     fileprivate func romSize() -> Int {
+        return 0
+    }
+    
+    @discardableResult
+    fileprivate func ramSize() -> Int {
         return 0
     }
 }
@@ -201,6 +242,36 @@ extension insideGadgetsController where Platform == GameboyClassic {
                 progress.resignCurrent()
             }
             return romData
+        }
+    }
+    
+    fileprivate func ramDataResult(updating progress: Progress, header: Platform.Header) -> Result<Data, Error> {
+        return Result {
+            let ramBankSize = Int64(header.ramBankSize)
+            var backupData = Data()
+            for bank in 0..<header.ramBanks {
+                progress.becomeCurrent(withPendingUnitCount: ramBankSize)
+                //--------------------------------------------------------------
+                let bankData = try self.read(byteCount: ramBankSize
+                    , startingAt: 0xA000
+                    , prepare: {
+                        self.mbc2(fix: header)
+                        //--------------------------------------------------
+                        // SET: the 'RAM' mode (MBC1-ONLY)
+                        //--------------------------------------------------
+                        if case .one = header.configuration {
+                            self.set(bank: 1, at: 0x6000)
+                        }
+                        //--------------------------------------------------
+                        self.toggleRAM(on: true)
+                        self.set(bank: bank, at: 0x4000)
+                }).get()
+                //--------------------------------------------------------------
+                backupData.append(bankData)
+                //--------------------------------------------------------------
+                progress.resignCurrent()
+            }
+            return backupData
         }
     }
 }

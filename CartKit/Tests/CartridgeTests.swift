@@ -56,23 +56,24 @@ class CartridgeTests: XCTestCase {
     
     func testBackupResult() {
         let exp = expectation(description: "")
-        switch InsideGadgetsCartridgeController<GameboyClassic>.reader() {
-        case .failure(let error):
-            XCTFail("\(error)")
-            exp.fulfill()
-        case .success(let reader):
-            reader.backup(progress: {
+        
+        do {
+            let controller = try insideGadgetsController<GameboyClassic>()
+            controller.backupSave(progress: {
                 print($0)
             }) {
                 switch $0 {
+                case .success(let saveData):
+                    print("MD5:", saveData.md5.hexString(separator: "").lowercased())
+                    exp.fulfill()
                 case .failure(let error):
                     XCTFail("\(error)")
                     exp.fulfill()
-                case .success(let backup):
-                    print("MD5:", Data(backup[0..<backup.endIndex]).md5.hexString(separator: "").lowercased())
-                    exp.fulfill()
                 }
             }
+        } catch {
+            XCTFail("\(error)")
+            exp.fulfill()
         }
         waitForExpectations(timeout: 5)
     }
