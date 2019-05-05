@@ -9,9 +9,6 @@ public protocol CartridgeController: SerialPortController {
     func scanHeader(_ result: @escaping (Result<Platform.Header, Error>) -> ())
 }
 
-extension CartridgeController {
-}
-
 public final class _InsideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerialPortController, CartridgeController {
     public override init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
         try super.init(matching: portProfile)
