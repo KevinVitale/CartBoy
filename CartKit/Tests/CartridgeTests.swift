@@ -3,6 +3,12 @@ import ORSSerial
 import Gibby
 import CartKit
 
+extension Cartridge {
+    fileprivate var md5: String {
+        return Data(self[0..<self.endIndex]).md5.hexString(separator: "").lowercased()
+    }
+}
+
 class CartridgeTests: XCTestCase {
     func testHeaderResult() {
         let exp = expectation(description: "")
@@ -34,7 +40,7 @@ class CartridgeTests: XCTestCase {
             }) {
                 switch $0 {
                 case .success(let cartridge):
-                    print("MD5:", Data(cartridge[0..<cartridge.endIndex]).md5.hexString(separator: "").lowercased())
+                    print("MD5:", cartridge.md5)
                     exp.fulfill()
                 case .failure(let error):
                     XCTFail("\(error)")
