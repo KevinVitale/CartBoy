@@ -25,20 +25,19 @@ public protocol SerialPortController {
 }
 
 extension SerialPortController {
-    func request(totalBytes unitCount: Int64, packetSize maxPacketLength: UInt, timeoutInterval: TimeInterval = -1.0, prepare block: @escaping ((Self) -> ()), progress update: @escaping (Self, _ with: Progress) -> (), responseEvaluator: @escaping ORSSerialPacketEvaluator, result: @escaping (Result<Data, SerialPortRequestError>) -> ()) -> SerialPortRequest<Self> {
+    func request<Number>(totalBytes unitCount: Number, packetSize maxPacketLength: UInt, timeoutInterval: TimeInterval = -1.0, prepare block: @escaping ((Self) -> ()), progress update: @escaping (Self, _ with: Progress) -> (), responseEvaluator: @escaping ORSSerialPacketEvaluator, result: @escaping (Result<Data, SerialPortRequestError>) -> ()) -> SerialPortRequest<Self> where Number: FixedWidthInteger {
         return SerialPortRequest(controller: self
-            , unitCount: unitCount
+            , unitCount: Int64(unitCount)
             , timeoutInterval: timeoutInterval
             , maxPacketLength: maxPacketLength
-            , responseEvaluator: { data in
-                responseEvaluator(data!)
-        }, perform: { progress in
-            if progress.completedUnitCount == 0 {
-                block(self)
-            }
-            else {
-                update(self, progress)
-            }
+            , responseEvaluator: { data in responseEvaluator(data!) }
+            , perform: { progress in
+                if progress.completedUnitCount == 0 {
+                    block(self)
+                }
+                else {
+                    update(self, progress)
+                }
         }) {
             result($0)
         }
