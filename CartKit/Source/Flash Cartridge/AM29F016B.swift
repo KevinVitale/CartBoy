@@ -20,6 +20,10 @@ public struct AM29F016B: FlashCartridge {
     
     private let cartridge: Platform.Cartridge
     
+    public var voltage: Voltage {
+        return .high
+    }
+
     public subscript(position: Index) -> Data.Element {
         return cartridge[Index(position)]
     }
@@ -42,11 +46,5 @@ public struct AM29F016B: FlashCartridge {
     
     public func write(to url: URL, options: Data.WritingOptions = []) throws {
         try self.cartridge.write(to: url, options: options)
-    }
-}
-
-extension AM29F016B {
-    public var voltage: Voltage {
-        return .high
     }
 }
