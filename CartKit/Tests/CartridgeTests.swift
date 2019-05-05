@@ -13,7 +13,7 @@ class CartridgeTests: XCTestCase {
     func testHeaderResult() {
         let exp = expectation(description: "")
         do {
-            let controller = try _InsideGadgetsController<GameboyClassic>()
+            let controller = try insideGadgetsController<GameboyClassic>()
             controller.scanHeader {
                 switch $0 {
                 case .success(let header):
@@ -34,7 +34,7 @@ class CartridgeTests: XCTestCase {
     func testCartridgeResult() {
         let exp = expectation(description: "")
         do {
-            let controller = try _InsideGadgetsController<GameboyClassic>()
+            let controller = try insideGadgetsController<GameboyClassic>()
             controller.readCartridge(progress: {
                 print($0)
             }) {
