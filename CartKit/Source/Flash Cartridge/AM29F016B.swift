@@ -15,7 +15,6 @@ public struct AM29F016B: FlashCartridge {
     }
     
     public typealias Platform = GameboyClassic
-    public typealias Header   = Platform.Cartridge.Header
     public typealias Index    = Platform.Cartridge.Index
     
     private let cartridge: Platform.Cartridge
