@@ -6,39 +6,44 @@ import CartKit
 class CartridgeTests: XCTestCase {
     func testHeaderResult() {
         let exp = expectation(description: "")
-        let controller = try! _InsideGadgetsController<GameboyClassic>(matching: .GBxCart)
-        controller.scanHeader {
-            switch $0 {
-            case .success(let header):
-                print(header)
-                exp.fulfill()
-            case .failure(let error):
-                XCTFail("\(error)")
-                exp.fulfill()
+        do {
+            let controller = try _InsideGadgetsController<GameboyClassic>()
+            controller.scanHeader {
+                switch $0 {
+                case .success(let header):
+                    print(header)
+                    exp.fulfill()
+                case .failure(let error):
+                    XCTFail("\(error)")
+                    exp.fulfill()
+                }
             }
+        } catch {
+            XCTFail("\(error)")
+            exp.fulfill()
         }
         waitForExpectations(timeout: 5)
     }
     
     func testCartridgeResult() {
         let exp = expectation(description: "")
-        switch InsideGadgetsCartridgeController<GameboyClassic>.reader() {
-        case .failure(let error):
-            XCTFail("\(error)")
-            exp.fulfill()
-        case .success(let reader):
-            reader.cartridge(progress: {
+        do {
+            let controller = try _InsideGadgetsController<GameboyClassic>()
+            controller.readCartridge(progress: {
                 print($0)
             }) {
                 switch $0 {
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
                 case .success(let cartridge):
                     print("MD5:", Data(cartridge[0..<cartridge.endIndex]).md5.hexString(separator: "").lowercased())
                     exp.fulfill()
+                case .failure(let error):
+                    XCTFail("\(error)")
+                    exp.fulfill()
                 }
             }
+        } catch {
+            XCTFail("\(error)")
+            exp.fulfill()
         }
         waitForExpectations(timeout: 20)
     }
