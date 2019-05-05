@@ -73,7 +73,7 @@ public final class _InsideGadgetsController<Platform: Gibby.Platform>: ThreadSaf
     public func read<Number>(byteCount: Number, startingAt address: Platform.AddressSpace, timeout: TimeInterval = -1.0, prepare: ((_InsideGadgetsController<Platform>) -> ())? = nil, progress update: @escaping (Progress) -> () = { _ in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true }) -> Result<Data, Error> where Number: FixedWidthInteger {
         precondition(Thread.current != .main)
         return Result {
-            let data = try await { self.queue.addOperation(
+            let data = try await {
                 self.request(totalBytes: byteCount
                     , packetSize: 64
                     , timeoutInterval: timeout
@@ -86,10 +86,10 @@ public final class _InsideGadgetsController<Platform: Gibby.Platform>: ThreadSaf
                     , progress: { _, progress in
                         update(progress)
                         self.continue()
-                }
+                    }
                     , responseEvaluator: responseEvaluator
                     , result: $0)
-                )
+                .start()
             }
             self.stop()
             return data
