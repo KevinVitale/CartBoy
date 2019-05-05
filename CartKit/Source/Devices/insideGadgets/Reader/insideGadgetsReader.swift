@@ -10,7 +10,7 @@ public final class InsideGadgetsReader<Cartridge: Gibby.Cartridge>: NSObject {
 }
 
 extension InsideGadgetsReader: CartridgeReader, CartridgeArchiver {
-    public func header(result: @escaping (Result<Cartridge.Header, CartridgeReaderError<Cartridge>>) -> ()) {
+    public func header(result: @escaping (Result<Cartridge.Platform.Header, CartridgeReaderError<Cartridge>>) -> ()) {
         fatalError("Reader does not support platform: \(Cartridge.Platform.self)")
     }
     
@@ -80,7 +80,7 @@ extension InsideGadgetsReader {
         )
     }
     
-    func header(prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> ()) -> Result<Cartridge.Header, SerialPortRequestError> {
+    func header(prepare: @escaping (InsideGadgetsCartridgeController<Cartridge.Platform>) -> ()) -> Result<Cartridge.Platform.Header, SerialPortRequestError> {
         let headerRange = Cartridge.Platform.headerRange
         let readData = self
             .read(totalBytes: headerRange.count
@@ -88,7 +88,7 @@ extension InsideGadgetsReader {
                 , prepare: { prepare($0) }
             )
         return readData.flatMap {
-            let header = Cartridge.Header(bytes: $0)
+            let header = Cartridge.Platform.Header(bytes: $0)
             guard header.isLogoValid else {
                 return .failure(.noError)
             }

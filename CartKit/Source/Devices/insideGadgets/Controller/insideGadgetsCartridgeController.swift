@@ -49,7 +49,7 @@ extension ORSSerialPortManager.PortProfile {
 }
 
 extension InsideGadgetsCartridgeController {
-    public static func reader<Cartridge: Gibby.Cartridge>(for cartridge: Cartridge.Type, matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) -> Result<InsideGadgetsReader<Cartridge>, Error> where Cartridge.Platform == Platform {
+    public static func reader(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) -> Result<InsideGadgetsReader<Platform.Cartridge>, Error> {
         return Result { .init(controller: try .init(matching: portProfile)) }
     }
     

@@ -6,7 +6,7 @@ import CartKit
 class CartridgeTests: XCTestCase {
     func testHeaderResult() {
         let exp = expectation(description: "")
-        switch InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self) {
+        switch InsideGadgetsCartridgeController<GameboyClassic>.reader() {
         case .failure(let error):
             XCTFail("\(error)")
             exp.fulfill()
@@ -27,7 +27,7 @@ class CartridgeTests: XCTestCase {
     
     func testCartridgeResult() {
         let exp = expectation(description: "")
-        switch InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self) {
+        switch InsideGadgetsCartridgeController<GameboyClassic>.reader() {
         case .failure(let error):
             XCTFail("\(error)")
             exp.fulfill()
@@ -50,7 +50,7 @@ class CartridgeTests: XCTestCase {
     
     func testBackupResult() {
         let exp = expectation(description: "")
-        switch InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self) {
+        switch InsideGadgetsCartridgeController<GameboyClassic>.reader() {
         case .failure(let error):
             XCTFail("\(error)")
             exp.fulfill()
@@ -73,7 +73,7 @@ class CartridgeTests: XCTestCase {
     
     func testRestoreResult() {
         let exp = expectation(description: "")
-        switch InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self) {
+        switch InsideGadgetsCartridgeController<GameboyClassic>.reader() {
         case .failure(let error):
             XCTFail("\(error)")
             exp.fulfill()
@@ -104,7 +104,7 @@ class CartridgeTests: XCTestCase {
     
     func testDeleteResult() {
         let exp = expectation(description: "")
-        switch InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self) {
+        switch InsideGadgetsCartridgeController<GameboyClassic>.reader() {
         case .failure(let error):
             XCTFail("\(error)")
             exp.fulfill()
