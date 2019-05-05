@@ -4,7 +4,7 @@ import Gibby
 import CartKit
 
 extension Cartridge {
-    fileprivate var md5: String {
+    fileprivate var md5String: String {
         return Data(self[0..<self.endIndex]).md5.hexString(separator: "").lowercased()
     }
 }
@@ -40,7 +40,7 @@ class CartridgeTests: XCTestCase {
             }) {
                 switch $0 {
                 case .success(let cartridge):
-                    print("MD5:", cartridge.md5)
+                    print("MD5:", cartridge.md5String)
                     exp.fulfill()
                 case .failure(let error):
                     XCTFail("\(error)")
