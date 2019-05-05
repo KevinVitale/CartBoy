@@ -168,7 +168,7 @@ extension _InsideGadgetsController where Platform == GameboyClassic {
     }
     
     @discardableResult
-    private func mbc2<Header: Gibby.Header>(fix header: Header) -> Bool where Header.Platform == Platform {
+    private func mbc2(fix header: Platform.Header) -> Bool {
         switch header.configuration {
         case .two:
             return (
