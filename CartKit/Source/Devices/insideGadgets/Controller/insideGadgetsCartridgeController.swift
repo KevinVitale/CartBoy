@@ -19,23 +19,6 @@ public class InsideGadgetsCartridgeController<Platform: Gibby.Platform>: ThreadS
     private let queue: OperationQueue = .init()
 
     /**
-     Sends `data` to the serial port
-     
-     This sends `data`, then waits upto `timeout` following the transfer.
-     
-     - Parameter data: The data to send.
-     - Parameter timeout: A duration, in microseconds, to halt following `send`.
-     
-     - Warning: `timeout` halts on the function's calling thread.
-     
-     - Returns: `true`, if the serial port successfully sends the `data`.
-     */
-    @discardableResult
-    override final func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
-        return super.send(data, timeout: timeout)
-    }
-
-    /**
      Opens the serial port.
      
      In addition to being opened, the serial port is explicitly configured as
