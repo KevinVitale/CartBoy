@@ -6,20 +6,15 @@ import CartKit
 class CartridgeTests: XCTestCase {
     func testHeaderResult() {
         let exp = expectation(description: "")
-        switch InsideGadgetsCartridgeController<GameboyClassic>.reader() {
-        case .failure(let error):
-            XCTFail("\(error)")
-            exp.fulfill()
-        case .success(let reader):
-            reader.header {
-                switch $0 {
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                case .success(let header):
-                    print(header)
-                    exp.fulfill()
-                }
+        let controller = try! _InsideGadgetsController<GameboyClassic>(matching: .GBxCart)
+        controller.scanHeader {
+            switch $0 {
+            case .success(let header):
+                print(header)
+                exp.fulfill()
+            case .failure(let error):
+                XCTFail("\(error)")
+                exp.fulfill()
             }
         }
         waitForExpectations(timeout: 5)
