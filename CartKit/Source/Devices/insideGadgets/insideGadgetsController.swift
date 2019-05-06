@@ -1,7 +1,7 @@
 import ORSSerial
 import Gibby
 
-public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerialPortController, CartridgeController {
+public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerialPortController, CartridgeReader {
     /**
      */
     public override init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
@@ -68,7 +68,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
             .map { data -> Platform.Header in .init(bytes: data) }
             .flatMap { header in
                 guard header.isLogoValid else {
-                    return .failure(CartridgeControllerError<Platform>.invalidHeader)
+                    return .failure(CartridgeReaderError<Platform>.invalidHeader)
                 }
                 return .success(header)
             }
@@ -84,7 +84,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                 case is GameboyClassic.Type: progress = Progress(totalUnitCount: Int64((header as! GameboyClassic.Header).romSize))
                 case is GameboyAdvance.Type: progress = Progress(totalUnitCount: Int64((self as! insideGadgetsController<GameboyAdvance>).romSize()))
                 default:
-                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
                 }
                 let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
                     DispatchQueue.main.sync {
@@ -100,7 +100,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                         .romDataResult(updating: progress, header: header as! GameboyClassic.Header)
                         .map { .init(bytes: $0) }
                 default:
-                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
                 }
         }
     }
@@ -115,7 +115,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                 case is GameboyClassic.Type: progress = Progress(totalUnitCount: Int64((header as! GameboyClassic.Header).ramSize))
                 case is GameboyAdvance.Type: progress = Progress(totalUnitCount: Int64((self as! insideGadgetsController<GameboyAdvance>).ramSize()))
                 default:
-                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
                 }
                 let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
                     DispatchQueue.main.sync {
@@ -130,7 +130,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                     return (self as! insideGadgetsController<GameboyClassic>)
                         .ramDataResult(updating: progress, header: header as! GameboyClassic.Header)
                 default:
-                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
                 }
         }
     }
@@ -145,7 +145,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                 case is GameboyClassic.Type: progress = Progress(totalUnitCount: Int64((header as! GameboyClassic.Header).ramSize))
                 case is GameboyAdvance.Type: progress = Progress(totalUnitCount: Int64((self as! insideGadgetsController<GameboyAdvance>).ramSize()))
                 default:
-                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
                 }
                 let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
                     DispatchQueue.main.sync {
@@ -160,7 +160,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                     return (self as! insideGadgetsController<GameboyClassic>)
                         .write(saveData: data, updating: progress, header: header as! GameboyClassic.Header)
                 default:
-                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
                 }
         }
     }
@@ -172,7 +172,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                 switch Platform.self {
                 case is GameboyClassic.Type: return .success(Data(count: ($0 as! GameboyClassic.Header).ramSize))
                 case is GameboyAdvance.Type: return .success(Data(count: (self as! insideGadgetsController<GameboyAdvance>).ramSize()))
-                default: return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
+                default: return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
                 }
             }
             .flatMap { self.restoreResult($0, update) }
