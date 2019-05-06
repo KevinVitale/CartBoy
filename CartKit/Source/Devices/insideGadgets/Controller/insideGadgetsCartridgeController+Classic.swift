@@ -2,19 +2,9 @@ import Gibby
 
 extension InsideGadgetsCartridgeController where Platform == GameboyClassic {
     @discardableResult
-    func restore(_ data: Data) -> Bool {
-        return send("W".data(using: .ascii)! + data)
-    }
-
-    @discardableResult
     func set<Number>(bank: Number, at address: Platform.AddressSpace, timeout: UInt32 = 250) -> Bool where Number : FixedWidthInteger {
         return ( send("B", number: address, radix: 16, timeout: timeout)
             &&   send("B", number:    bank, radix: 10, timeout: timeout))
-    }
-    
-    @discardableResult
-    func toggleRAM(on enabled: Bool, timeout: UInt32 = 250) -> Bool {
-        return set(bank: enabled ? 0x0A : 0x00, at: 0, timeout: timeout)
     }
 
     @discardableResult
@@ -30,20 +20,6 @@ extension InsideGadgetsCartridgeController where Platform == GameboyClassic {
         )
     }
 
-    @discardableResult
-    func mbc2<Header: Gibby.Header>(fix header: Header) -> Bool where Header.Platform == Platform {
-        switch header.configuration {
-        case .two:
-            return (
-                self.go(to: 0x0)
-             && self.read()
-             && self.stop()
-            )
-        default:
-            return false
-        }
-    }
-    
     @discardableResult
     func flash<Number>(byte: Number, at address: Platform.AddressSpace, timeout: UInt32 = 250) -> Bool where Number : FixedWidthInteger {
         return ( send("F", number: address)

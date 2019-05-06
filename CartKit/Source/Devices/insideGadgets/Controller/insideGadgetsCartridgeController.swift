@@ -49,10 +49,6 @@ extension ORSSerialPortManager.PortProfile {
 }
 
 extension InsideGadgetsCartridgeController {
-    public static func reader(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) -> Result<InsideGadgetsReader<Platform.Cartridge>, Error> {
-        return Result { .init(controller: try .init(matching: portProfile)) }
-    }
-    
     public static func writer<FlashCartridge: CartKit.FlashCartridge>(for cartridge: FlashCartridge.Type, matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) -> Result<InsideGadgetsWriter<FlashCartridge>, Error> where FlashCartridge.Platform == Platform {
         return Result { .init(controller: try .init(matching: portProfile)) }
     }
