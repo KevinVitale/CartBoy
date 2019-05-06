@@ -9,6 +9,12 @@ extension Cartridge {
     }
 }
 
+fileprivate func saveFileAndMD5(named title: String, extension fileExtension: String = "sav") throws -> (data: Data, md5: String) {
+    let data = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)"))
+    let MD5 = data.md5.hexString(separator: "").lowercased()
+    return (data, MD5)
+}
+
 class CartridgeTests: XCTestCase {
     func testHeaderResult() {
         let exp = expectation(description: "")
@@ -56,7 +62,6 @@ class CartridgeTests: XCTestCase {
     
     func testBackupResult() {
         let exp = expectation(description: "")
-        
         do {
             let controller = try insideGadgetsController<GameboyClassic>()
             controller.backupSave(progress: {
@@ -80,53 +85,45 @@ class CartridgeTests: XCTestCase {
     
     func testRestoreResult() {
         let exp = expectation(description: "")
-        switch InsideGadgetsCartridgeController<GameboyClassic>.reader() {
-        case .failure(let error):
-            XCTFail("\(error)")
-            exp.fulfill()
-        case .success(let reader):
-            //------------------------------------------------------------------
-            func saveFileAndMD5(named title: String, extension fileExtension: String = "sav") throws -> (data: Data, md5: String) {
-                let data = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)"))
-                let MD5 = data.md5.hexString(separator: "").lowercased()
-                return (data, MD5)
-            }
-            //------------------------------------------------------------------
-            let saveFile = try! saveFileAndMD5(named: "POKEMON YELLOW")
-            print("MD5: \(saveFile.md5)")
-            reader.restore(data: saveFile.data, progress: {
+        do {
+            let saveFile = try saveFileAndMD5(named: "POKEMON YELLOW")
+            let controller = try insideGadgetsController<GameboyClassic>()
+            controller.restoreSave(data: saveFile.data, progress: {
                 print($0)
             }) {
                 switch $0 {
+                case .success:
+                    exp.fulfill()
                 case .failure(let error):
                     XCTFail("\(error)")
                     exp.fulfill()
-                case .success:
-                    exp.fulfill()
                 }
             }
+        } catch {
+            XCTFail("\(error)")
+            exp.fulfill()
         }
         waitForExpectations(timeout: 5)
     }
     
     func testDeleteResult() {
         let exp = expectation(description: "")
-        switch InsideGadgetsCartridgeController<GameboyClassic>.reader() {
-        case .failure(let error):
-            XCTFail("\(error)")
-            exp.fulfill()
-        case .success(let reader):
-            reader.delete(progress: {
+        do {
+            let controller = try insideGadgetsController<GameboyClassic>()
+            controller.deleteSave(progress: {
                 print($0)
             }) {
                 switch $0 {
+                case .success:
+                    exp.fulfill()
                 case .failure(let error):
                     XCTFail("\(error)")
                     exp.fulfill()
-                case .success:
-                    exp.fulfill()
                 }
             }
+        } catch {
+            XCTFail("\(error)")
+            exp.fulfill()
         }
         waitForExpectations(timeout: 5)
     }

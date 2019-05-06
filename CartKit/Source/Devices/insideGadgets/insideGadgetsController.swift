@@ -64,7 +64,14 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                 case is GameboyAdvance.Type: ()
                 default: (/* TODO: INVALID PLATFORM ERROR */)
                 }
-        }).map { .init(bytes: $0)}
+            })
+            .map { data -> Platform.Header in .init(bytes: data) }
+            .flatMap { header in
+                guard header.isLogoValid else {
+                    return .failure(CartridgeControllerError<Platform>.invalidHeader)
+                }
+                return .success(header)
+            }
     }
     
     private func cartridgeResult(_ update: @escaping ProgressCallback) -> Result<Platform.Cartridge, Error> {
@@ -77,7 +84,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                 case is GameboyClassic.Type: progress = Progress(totalUnitCount: Int64((header as! GameboyClassic.Header).romSize))
                 case is GameboyAdvance.Type: progress = Progress(totalUnitCount: Int64((self as! insideGadgetsController<GameboyAdvance>).romSize()))
                 default:
-                    return .failure(CartridgeControllerError.platformNotSupported)
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
                 let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
                     DispatchQueue.main.sync {
@@ -93,7 +100,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                         .romDataResult(updating: progress, header: header as! GameboyClassic.Header)
                         .map { .init(bytes: $0) }
                 default:
-                    return .failure(CartridgeControllerError.platformNotSupported)
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
         }
     }
@@ -108,7 +115,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                 case is GameboyClassic.Type: progress = Progress(totalUnitCount: Int64((header as! GameboyClassic.Header).ramSize))
                 case is GameboyAdvance.Type: progress = Progress(totalUnitCount: Int64((self as! insideGadgetsController<GameboyAdvance>).ramSize()))
                 default:
-                    return .failure(CartridgeControllerError.platformNotSupported)
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
                 let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
                     DispatchQueue.main.sync {
@@ -123,9 +130,52 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                     return (self as! insideGadgetsController<GameboyClassic>)
                         .ramDataResult(updating: progress, header: header as! GameboyClassic.Header)
                 default:
-                    return .failure(CartridgeControllerError.platformNotSupported)
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
         }
+    }
+
+    private func restoreResult(_ data: Data, _ update: @escaping ProgressCallback) -> Result<(), Error> {
+        return self
+            .headerResult()
+            .flatMap { header in
+                var progress: Progress!
+                //--------------------------------------------------------------
+                switch Platform.self {
+                case is GameboyClassic.Type: progress = Progress(totalUnitCount: Int64((header as! GameboyClassic.Header).ramSize))
+                case is GameboyAdvance.Type: progress = Progress(totalUnitCount: Int64((self as! insideGadgetsController<GameboyAdvance>).ramSize()))
+                default:
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
+                }
+                let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
+                    DispatchQueue.main.sync {
+                        update(change.newValue ?? 0)
+                    }
+                }
+                //--------------------------------------------------------------
+                defer { observer.invalidate() }
+                //--------------------------------------------------------------
+                switch Platform.self {
+                case is GameboyClassic.Type:
+                    return (self as! insideGadgetsController<GameboyClassic>)
+                        .write(saveData: data, updating: progress, header: header as! GameboyClassic.Header)
+                default:
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
+                }
+        }
+    }
+    
+    private func deleteResult(_ update: @escaping ProgressCallback) -> Result<(), Error> {
+        return self
+            .headerResult()
+            .flatMap {
+                switch Platform.self {
+                case is GameboyClassic.Type: return .success(Data(count: ($0 as! GameboyClassic.Header).ramSize))
+                case is GameboyAdvance.Type: return .success(Data(count: (self as! insideGadgetsController<GameboyAdvance>).ramSize()))
+                default: return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
+                }
+            }
+            .flatMap { self.restoreResult($0, update) }
     }
     
     public func read<Number>(byteCount: Number, startingAt address: Platform.AddressSpace, timeout: TimeInterval = -1.0, prepare: (() -> ())? = nil, progress update: @escaping (Progress) -> () = { _ in }, responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true }) -> Result<Data, Error> where Number: FixedWidthInteger {
@@ -135,16 +185,16 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                 self.request(totalBytes: byteCount
                     , packetSize: 64
                     , timeoutInterval: timeout
-                    , prepare: {
-                        $0.stop()
+                    , prepare: { _ in
+                        self.stop()
                         prepare?()
-                        $0.go(to: address)
-                        $0.read()
-                }
+                        self.go(to: address)
+                        self.read()
+                    }
                     , progress: { _, progress in
                         update(progress)
                         self.continue()
-                }
+                    }
                     , responseEvaluator: responseEvaluator
                     , result: $0)
                     .start()
@@ -169,6 +219,18 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
     public func backupSave(progress: @escaping ProgressCallback, _ result: @escaping (Result<Data, Error>) -> ()) {
         self.queue.addOperation(BlockOperation {
             result(self.backupResult(progress))
+        })
+    }
+    
+    public func restoreSave(data: Data, progress: @escaping ProgressCallback, _ result: @escaping (Result<(), Error>) -> ()) {
+        self.queue.addOperation(BlockOperation {
+            result(self.restoreResult(data, progress))
+        })
+    }
+    
+    public func deleteSave(progress: @escaping ProgressCallback, _ result: @escaping (Result<(), Error>) -> ()) {
+        self.queue.addOperation(BlockOperation {
+            result(self.deleteResult(progress))
         })
     }
 }
@@ -209,6 +271,11 @@ extension insideGadgetsController where Platform == GameboyClassic {
         default:
             return false
         }
+    }
+    
+    @discardableResult
+    private func send(saveData data: Data) -> Bool {
+        return send("W".data(using: .ascii)! + data)
     }
     
     fileprivate func romDataResult(updating progress: Progress, header: Platform.Header) -> Result<Data, Error> {
@@ -272,6 +339,51 @@ extension insideGadgetsController where Platform == GameboyClassic {
                 progress.resignCurrent()
             }
             return backupData
+        }
+    }
+    
+    fileprivate func write(saveData data: Data, updating progress: Progress, header: Platform.Header) -> Result<(), Error> {
+        return Result {
+            for bank in 0..<header.ramBanks {
+                let startIndex = bank * header.ramBankSize
+                let endIndex   = startIndex.advanced(by: header.ramBankSize)
+                //--------------------------------------------------------------
+                let slice  = data[startIndex..<endIndex]
+                let ramBankSize = Int64(slice.count)
+                //--------------------------------------------------------------
+                progress.becomeCurrent(withPendingUnitCount: ramBankSize)
+                //--------------------------------------------------------------
+                _ = try await {
+                    self.request(totalBytes: ramBankSize / 64
+                        , packetSize: 1
+                        , prepare: { _ in
+                            if bank == 0 { self.toggleRAM(on: true) }
+                            //--------------------------------------------------
+                            self.stop()
+                            self.mbc2(fix: header)
+                            //--------------------------------------------------
+                            // SET: the 'RAM' mode (MBC1-ONLY)
+                            //--------------------------------------------------
+                            if case .one = header.configuration {
+                                self.set(bank: 1, at: 0x6000)
+                            }
+                            //--------------------------------------------------
+                            self.set(bank: bank, at: 0x4000)
+                            self.go(to: 0xA000)
+                            self.send(saveData: slice[slice.startIndex..<slice.startIndex.advanced(by: 64)])
+                        }
+                        , progress: { _, progress in
+                            let startAddress = Int(progress.completedUnitCount * 64).advanced(by: slice.startIndex)
+                            let rangeOfBytes = startAddress..<Int(startAddress + 64)
+                            self.send(saveData: slice[rangeOfBytes])
+                        }
+                        , responseEvaluator: { _ in true }
+                        , result: $0)
+                        .start()
+                }
+                //--------------------------------------------------------------
+                progress.resignCurrent()
+            }
         }
     }
 }
