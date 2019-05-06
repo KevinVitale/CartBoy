@@ -65,8 +65,8 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
                 default: (/* TODO: INVALID PLATFORM ERROR */)
                 }
             })
-            .map { data -> Platform.Header in .init(bytes: data) }
-            .flatMap { header in
+            .flatMap { data in
+                let header = Platform.Header(bytes: data)
                 guard header.isLogoValid else {
                     return .failure(CartridgeReaderError<Platform>.invalidHeader)
                 }
