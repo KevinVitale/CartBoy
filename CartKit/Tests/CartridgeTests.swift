@@ -202,4 +202,45 @@ class CartridgeTests: XCTestCase {
         }
         waitForExpectations(timeout: 10)
     }
+    
+    func testCartridgeEraser() {
+        let exp = expectation(description: "")
+        do {
+            let controller = try insideGadgetsController<GameboyClassic>()
+            controller.erase(AM29F016B.self) {
+                switch $0 {
+                case .success:
+                    exp.fulfill()
+                case .failure(let error):
+                    XCTFail("\(error)")
+                    exp.fulfill()
+                }
+            }
+        } catch {
+            XCTFail("\(error)")
+            exp.fulfill()
+        }
+        waitForExpectations(timeout: 20)
+    }
+    
+    func testCartridgeDetermineFlash() {
+        let exp = expectation(description: "")
+        do {
+            let controller = try insideGadgetsController<GameboyClassic>()
+            controller.flashCartDescription {
+                switch $0 {
+                case .success(let description):
+                    print(description)
+                    exp.fulfill()
+                case .failure(let error):
+                    XCTFail("\(error)")
+                    exp.fulfill()
+                }
+            }
+        } catch {
+            XCTFail("\(error)")
+            exp.fulfill()
+        }
+        waitForExpectations(timeout: 20)
+    }
 }

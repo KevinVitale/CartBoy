@@ -1,5 +1,13 @@
 import Gibby
 
+public protocol CartridgeEraser {
+    func erase<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type, _ result: @escaping (Result<(), Error>) -> ())
+}
+
+public enum CartridgeEraserError<FlashCartridge: CartKit.FlashCartridge>: Error {
+    case unsupportedChipset(FlashCartridge.Type)
+}
+
 public protocol CartridgeWriter {
     associatedtype FlashCartridge: CartKit.FlashCartridge
 

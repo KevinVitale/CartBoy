@@ -1,7 +1,7 @@
 import ORSSerial
 import Gibby
 
-public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerialPortController, CartridgeReader {
+public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerialPortController {
     /**
      */
     public override init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
@@ -15,7 +15,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
     /// can materialize. However, `SerialPortRequest` is to receive serial port
     /// delegate callbacks on the main thread, so if the thread that starts the
     /// request is also the main thread **a deadlock is guaranteed to occur**.
-    private let queue = OperationQueue()
+    fileprivate let queue = OperationQueue()
     
     /**
      Opens the serial port.
@@ -28,7 +28,9 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
     public override func open() -> ORSSerialPort {
         return super.open().configuredAsGBxCart()
     }
-    
+}
+
+extension insideGadgetsController: CartridgeReader {
     @discardableResult
     private func `continue`() -> Bool {
         return send("1".bytes())
@@ -201,6 +203,21 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
             }
             self.stop()
             return data
+        }
+    }
+    
+    public func sendAndWait(_ block: @escaping () -> (), responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true }) -> Result<Data, Error> {
+        precondition(Thread.current != .main)
+        return Result { try await
+            {
+                self.request(totalBytes: 1
+                    , packetSize: 1
+                    , prepare: { _ in block() }
+                    , progress: { _, _ in }
+                    , responseEvaluator: responseEvaluator
+                    , result: $0)
+                .start()
+            }
         }
     }
     
@@ -385,5 +402,107 @@ extension insideGadgetsController where Platform == GameboyClassic {
                 progress.resignCurrent()
             }
         }
+    }
+}
+
+extension insideGadgetsController: CartridgeEraser {
+    @discardableResult
+    private func flash<Number>(byte: Number, at address: Platform.AddressSpace, timeout: UInt32 = 250) -> Bool where Number : FixedWidthInteger {
+        return ( send("F", number: address)
+            &&   send("", number: byte)
+        )
+    }
+    
+    @discardableResult
+    private func romMode() -> Bool {
+        return send("G".bytes())
+    }
+    
+    @discardableResult
+    private func pin(mode: String) -> Bool {
+        return (
+            send("P".bytes())
+         && send(mode.bytes())
+        )
+    }
+    
+    private func resetFlashModeResult<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type) -> Result<(), Error> {
+        switch chipset {
+        case is AM29F016B.Type:
+            return self
+                .sendAndWait({ self.flash(byte: 0xF0, at: 0x00) }) { $0!.starts(with: [0x31]) }
+                .map { _ in () }
+        default:
+            return .failure(CartridgeEraserError.unsupportedChipset(chipset))
+        }
+    }
+    
+    private func sendEraseFlashProgramResult<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type) -> Result<(), Error> {
+        switch chipset {
+        case is AM29F016B.Type:
+            return self
+                .sendAndWait({
+                    self.romMode()
+                    self.pin(mode: "W")
+                    self.flash(byte: 0xAA, at: 0x555)
+                })
+                .flatMap { _ in self.sendAndWait({ self.flash(byte: 0x55, at: 0x2AA) }) }
+                .flatMap { _ in self.sendAndWait({ self.flash(byte: 0x80, at: 0x555) }) }
+                .flatMap { _ in self.sendAndWait({ self.flash(byte: 0xAA, at: 0x555) }) }
+                .flatMap { _ in self.sendAndWait({ self.flash(byte: 0x55, at: 0x2AA) }) }
+                .flatMap { _ in self.sendAndWait({ self.flash(byte: 0x10, at: 0x555) }) }
+                .map { _ in () }
+        default:
+            return .failure(CartridgeEraserError.unsupportedChipset(chipset))
+        }
+    }
+    
+    private func flushBufferResult(_ byteCount: Int = 64, startingAt address: Platform.AddressSpace = 0) -> Result<Data, Error> {
+        return self.read(byteCount: byteCount, startingAt: address)
+    }
+
+    public func erase<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type, _ result: @escaping (Result<(), Error>) -> ()) {
+        return result(.failure(CartridgeEraserError.unsupportedChipset(chipset)))
+    }
+    
+    public func erase(_ chipset: AM29F016B.Type, _ result: @escaping (Result<(), Error>) -> ()) {
+        self.queue.addOperation(BlockOperation {
+            result(self
+                .resetFlashModeResult(chipset)
+                .flatMap { self.flushBufferResult() }
+                .flatMap { _ in self.sendEraseFlashProgramResult(chipset) }
+                .flatMap { _ in
+                    self.read(byteCount: 1
+                        , startingAt: 0x0000
+                        , timeout: 30
+                        , responseEvaluator: {
+                            guard $0!.starts(with: [0xFF]) else {
+                                self.continue()
+                                return false
+                            }
+                            return true
+                    })
+                }
+                .flatMap { _ in self.resetFlashModeResult(chipset) }
+                .map { _ in () }
+            )
+        })
+    }
+    
+    private func determineFlashCartResult(bitFlipped: Bool = true) -> Result<String, Error> {
+        return self
+            .sendAndWait({ self.flash(byte: bitFlipped ? 0xAA : 0xA9, at: 0xAAA) })
+            .flatMap { _ in self.sendAndWait({ self.flash(byte: 0x55, at: 0x555) }) }
+            .flatMap { _ in self.sendAndWait({ self.flash(byte: 0x90, at: 0xAAA) }) }
+            .flatMap { _ in self.flushBufferResult().map { $0.hexString() } }
+            .flatMap { description in
+                self.sendAndWait({ self.flash(byte: 0xF0, at: 0x00) }).map { _ in description }
+            }
+    }
+    
+    public func flashCartDescription(_ result: @escaping (Result<String, Error>) -> ()) {
+        self.queue.addOperation(BlockOperation {
+            result(self.determineFlashCartResult())
+        })
     }
 }
