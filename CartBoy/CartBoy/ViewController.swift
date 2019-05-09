@@ -16,6 +16,7 @@ class CartInfoController: NSObject {
     @IBAction func readHeader(_ sender: Any?) {
         _queue.async(flags: .barrier) {
             do {
+                
                 throw CocoaError(.featureUnsupported)
             }
             catch {
@@ -50,8 +51,8 @@ class ContentViewController: NSViewController {
     @IBAction func readHeader(_ sender: Any?) {
         print(#function)
         do {
-            let reader = try InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self).get()
-            reader.header {
+            let reader = try insideGadgetsController<GameboyClassic>()
+            reader.scanHeader {
                 switch $0 {
                 case .failure(let error):
                     print(error)
@@ -67,8 +68,8 @@ class ContentViewController: NSViewController {
     @IBAction func readCartridge(_ sender: Any?) {
         print(#function)
         do {
-            let reader = try InsideGadgetsCartridgeController.reader(for: GameboyClassic.Cartridge.self).get()
-            reader.cartridge(progress: { [weak self] in
+            let reader = try insideGadgetsController<GameboyClassic>()
+            reader.readCartridge(progress: { [weak self] in
                 self?.cartridgeProgressBar.doubleValue = $0
             }) {
                 switch $0 {
