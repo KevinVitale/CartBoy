@@ -4,7 +4,7 @@ import Gibby
 public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerialPortController {
     /**
      */
-    public override init(matching portProfile: ORSSerialPortManager.PortProfile = .GBxCart) throws {
+    public override init(matching portProfile: ORSSerialPortManager.PortProfile = .usb(vendorID: 6790, productID: 29987)) throws {
         try super.init(matching: portProfile)
     }
     
@@ -27,6 +27,60 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
      */
     public override func open() -> ORSSerialPort {
         return super.open().configuredAsGBxCart()
+    }
+
+    /**
+     */
+    private func determineVoltageResult() -> Result<Voltage, Error> {
+        return self
+            .sendAndWait({ self.send("C".bytes()) })
+            .flatMap {
+                guard let voltage = Voltage($0.first ?? .min) else {
+                    return .failure(VoltageError.invalidVoltage)
+                }
+                return .success(voltage)
+        }
+    }
+    
+    /**
+     */
+    public func currentVoltage(_ result: @escaping (Result<Voltage, Error>) -> ()) {
+        self.queue.addOperation(BlockOperation {
+            result(self.determineVoltageResult())
+        })
+    }
+    
+    /**
+     */
+    public func voltageMatchesPlatform(_ result: @escaping (Result<(), Error>) -> ()) {
+        self.queue.addOperation(BlockOperation {
+            result(self
+                .determineVoltageResult()
+                .flatMap {
+                    switch (Platform.self, $0) {
+                    case (is GameboyClassic.Type, .high): return .success(())
+                    case (is GameboyAdvance.Type, .low): return .success(())
+                    default: return .failure(VoltageCheckError.voltageMismatch(expected: Platform.self))
+                    }
+                }
+            )
+        })
+    }
+    
+    /**
+     */
+    public func voltageMatches<FlashCartridge: CartKit.FlashCartridge>(_ flashCartridge: FlashCartridge, _ result: @escaping (Result<(), Error>) -> ()) {
+        self.queue.addOperation(BlockOperation {
+            result(self
+                .determineVoltageResult()
+                .flatMap {
+                    guard flashCartridge.voltage == $0 else {
+                        return .failure(VoltageCheckError.voltageMismatch(expected: Platform.self))
+                    }
+                    return .success(())
+                }
+            )
+        })
     }
 }
 
@@ -70,7 +124,7 @@ extension insideGadgetsController: CartridgeReader {
             .flatMap { data in
                 let header = Platform.Header(bytes: data)
                 guard header.isLogoValid else {
-                    return .failure(CartridgeReaderError<Platform>.invalidHeader)
+                    return .failure(CartridgeControllerError<Platform>.invalidHeader)
                 }
                 return .success(header)
             }
@@ -86,7 +140,7 @@ extension insideGadgetsController: CartridgeReader {
                 case is GameboyClassic.Type: progress = Progress(totalUnitCount: Int64((header as! GameboyClassic.Header).romSize))
                 case is GameboyAdvance.Type: progress = Progress(totalUnitCount: Int64((self as! insideGadgetsController<GameboyAdvance>).romSize()))
                 default:
-                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
                 let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
                     DispatchQueue.main.sync {
@@ -102,7 +156,7 @@ extension insideGadgetsController: CartridgeReader {
                         .romDataResult(updating: progress, header: header as! GameboyClassic.Header)
                         .map { .init(bytes: $0) }
                 default:
-                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
         }
     }
@@ -117,7 +171,7 @@ extension insideGadgetsController: CartridgeReader {
                 case is GameboyClassic.Type: progress = Progress(totalUnitCount: Int64((header as! GameboyClassic.Header).ramSize))
                 case is GameboyAdvance.Type: progress = Progress(totalUnitCount: Int64((self as! insideGadgetsController<GameboyAdvance>).ramSize()))
                 default:
-                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
                 let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
                     DispatchQueue.main.sync {
@@ -132,7 +186,7 @@ extension insideGadgetsController: CartridgeReader {
                     return (self as! insideGadgetsController<GameboyClassic>)
                         .ramDataResult(updating: progress, header: header as! GameboyClassic.Header)
                 default:
-                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
         }
     }
@@ -147,7 +201,7 @@ extension insideGadgetsController: CartridgeReader {
                 case is GameboyClassic.Type: progress = Progress(totalUnitCount: Int64((header as! GameboyClassic.Header).ramSize))
                 case is GameboyAdvance.Type: progress = Progress(totalUnitCount: Int64((self as! insideGadgetsController<GameboyAdvance>).ramSize()))
                 default:
-                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
                 let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
                     DispatchQueue.main.sync {
@@ -160,9 +214,9 @@ extension insideGadgetsController: CartridgeReader {
                 switch Platform.self {
                 case is GameboyClassic.Type:
                     return (self as! insideGadgetsController<GameboyClassic>)
-                        .write(saveData: data, updating: progress, header: header as! GameboyClassic.Header)
+                        .writeSaveResult(data, updating: progress, header: header as! GameboyClassic.Header)
                 default:
-                    return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
+                    return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
         }
     }
@@ -174,7 +228,7 @@ extension insideGadgetsController: CartridgeReader {
                 switch Platform.self {
                 case is GameboyClassic.Type: return .success(Data(count: ($0 as! GameboyClassic.Header).ramSize))
                 case is GameboyAdvance.Type: return .success(Data(count: (self as! insideGadgetsController<GameboyAdvance>).ramSize()))
-                default: return .failure(CartridgeReaderError.platformNotSupported(Platform.self))
+                default: return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
                 }
             }
             .flatMap { self.restoreResult($0, update) }
@@ -261,6 +315,10 @@ extension insideGadgetsController where Platform == GameboyAdvance {
     @discardableResult
     fileprivate func ramSize() -> Int {
         return 0
+    }
+    
+    fileprivate func writeFlashResult<FlashCartridge: CartKit.FlashCartridge>(_ flashCartridge: FlashCartridge, updating progress: Progress) -> Result<(), Error> {
+        return .failure(CartridgeControllerError.platformNotSupported(Platform.self))
     }
 }
 
@@ -359,7 +417,7 @@ extension insideGadgetsController where Platform == GameboyClassic {
         }
     }
     
-    fileprivate func write(saveData data: Data, updating progress: Progress, header: Platform.Header) -> Result<(), Error> {
+    fileprivate func writeSaveResult(_ data: Data, updating progress: Progress, header: Platform.Header) -> Result<(), Error> {
         return Result {
             for bank in 0..<header.ramBanks {
                 let startIndex = bank * header.ramBankSize
@@ -403,9 +461,61 @@ extension insideGadgetsController where Platform == GameboyClassic {
             }
         }
     }
+    
+    fileprivate func writeFlashResult<FlashCartridge: CartKit.FlashCartridge>(_ flashCartridge: FlashCartridge, updating progress: Progress) -> Result<(), Error> {
+        return Result {
+            let header = flashCartridge.header as! Platform.Header
+            for bank in 0..<header.romBanks {
+                let startIndex = FlashCartridge.Index(bank * header.romBankSize)
+                let endIndex   = FlashCartridge.Index(startIndex.advanced(by: header.romBankSize))
+                //--------------------------------------------------------------
+                let slice  = flashCartridge[startIndex..<endIndex]
+                let romBankSize = Int64(slice.count)
+                //--------------------------------------------------------------
+                progress.becomeCurrent(withPendingUnitCount: romBankSize)
+                //--------------------------------------------------------------
+                _ = try await {
+                    self.request(totalBytes: (slice.count / 64)
+                        , packetSize: 1
+                        , prepare: { _ in
+                            self.stop()
+                            self.set(bank: bank, at: 0x2100)
+                            self.go(to: bank > 0 ? 0x4000 : 0x0000)
+                            
+                            let startAddress = slice.startIndex
+                            let bytesInRange = startAddress..<FlashCartridge.Index(startAddress + 64)
+                            let bytesToWrite = "T".data(using: .ascii)! + Data(slice[bytesInRange])
+                            
+                            self.send(bytesToWrite)
+                        }
+                        , progress: { _, progress in
+                            let startAddress = FlashCartridge.Index(progress.completedUnitCount * 64).advanced(by: Int(slice.startIndex))
+                            let bytesInRange = startAddress..<FlashCartridge.Index(startAddress + 64)
+                            let bytesToWrite = "T".data(using: .ascii)! + Data(slice[bytesInRange])
+                            self.send(bytesToWrite)
+                        }
+                        , responseEvaluator: { _ in true }
+                        , result: $0)
+                        .start()
+                }
+                //--------------------------------------------------------------
+                progress.resignCurrent()
+            }
+        }
+    }
 }
 
-extension insideGadgetsController: CartridgeEraser {
+extension insideGadgetsController: CartridgeWriter {
+    private struct ClassicROMSlice<FlashCartridge: CartKit.FlashCartridge> where FlashCartridge.Platform == GameboyClassic {
+        init(bank: Int, slice: Slice<FlashCartridge>) {
+            self.bank = bank
+            self.slice = slice
+        }
+        
+        let bank: Int
+        let slice: Slice<FlashCartridge>
+    }
+    
     @discardableResult
     private func flash<Number>(byte: Number, at address: Platform.AddressSpace, timeout: UInt32 = 250) -> Bool where Number : FixedWidthInteger {
         return ( send("F", number: address)
@@ -425,18 +535,77 @@ extension insideGadgetsController: CartridgeEraser {
          && send(mode.bytes())
         )
     }
-    
-    private func resetFlashModeResult<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type) -> Result<(), Error> {
+
+    fileprivate func resetFlashModeResult<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type) -> Result<(), Error> {
         switch chipset {
         case is AM29F016B.Type:
             return self
                 .sendAndWait({ self.flash(byte: 0xF0, at: 0x00) }) { $0!.starts(with: [0x31]) }
                 .map { _ in () }
         default:
-            return .failure(CartridgeEraserError.unsupportedChipset(chipset))
+            return .failure(CartridgeFlashError.unsupportedChipset(chipset))
         }
     }
     
+    private func sendWriteFlashProgramResult<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type) -> Result<(), Error> {
+        switch chipset {
+        case is AM29F016B.Type:
+            let hexCodes = [ // '555'
+                (0x555, 0xAA)
+             ,  (0x2AA, 0x55)
+             ,  (0x555, 0xA0)
+            ]
+            return self
+                .sendAndWait({
+                    self.romMode()
+                    self.pin(mode: "W")
+                    self.send("E".bytes())
+                    self.send("", number: hexCodes[0].0)
+                })
+                .flatMap { _ in self.sendAndWait({ self.send("", number: hexCodes[0].1) }, responseEvaluator: { $0!.starts(with: [0x31]) }) }
+                .flatMap { _ in self.sendAndWait({ self.send("", number: hexCodes[1].0) }, responseEvaluator: { $0!.starts(with: [0x31]) }) }
+                .flatMap { _ in self.sendAndWait({ self.send("", number: hexCodes[1].1) }, responseEvaluator: { $0!.starts(with: [0x31]) }) }
+                .flatMap { _ in self.sendAndWait({ self.send("", number: hexCodes[2].0) }, responseEvaluator: { $0!.starts(with: [0x31]) }) }
+                .flatMap { _ in self.sendAndWait({ self.send("", number: hexCodes[2].1) }, responseEvaluator: { $0!.starts(with: [0x31]) }) }
+                .map { _ in () }
+        default:
+            return .failure(CartridgeFlashError.unsupportedChipset(chipset))
+        }
+    }
+
+    private func flashDataResult<FlashCartridge: CartKit.FlashCartridge>(_ flashCartridge: FlashCartridge, _ update: @escaping ProgressCallback) -> Result<(), Error> {
+        let platform = type(of: flashCartridge).Platform.self
+        var progress = Progress(totalUnitCount: Int64(flashCartridge.count))
+        //--------------------------------------------------------------
+        let observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
+            DispatchQueue.main.sync {
+                update(change.newValue ?? 0)
+            }
+        }
+        //--------------------------------------------------------------
+        defer { observer.invalidate() }
+        //--------------------------------------------------------------
+        switch platform {
+        case is GameboyClassic.Type:
+            return (self as! insideGadgetsController<GameboyClassic>)
+                .writeFlashResult(flashCartridge, updating: progress)
+        default:
+            return .failure(CartridgeControllerError.platformNotSupported(platform))
+        }
+    }
+    
+    public func write<FlashCartridge: CartKit.FlashCartridge>(_ flashCartridge: FlashCartridge, progress: @escaping ProgressCallback, _ result: @escaping ((Result<(), Error>) -> ())) {
+        self.queue.addOperation(BlockOperation {
+            result(self.eraseResult(type(of: flashCartridge))
+                .flatMap { self.flushBufferResult().map { _ in } }
+                .flatMap { self.sendWriteFlashProgramResult(type(of: flashCartridge)) }
+                .flatMap { self.flashDataResult(flashCartridge, progress) }
+            )
+        })
+    }
+}
+
+extension insideGadgetsController: CartridgeEraser {
     private func sendEraseFlashProgramResult<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type) -> Result<(), Error> {
         switch chipset {
         case is AM29F016B.Type:
@@ -453,42 +622,47 @@ extension insideGadgetsController: CartridgeEraser {
                 .flatMap { _ in self.sendAndWait({ self.flash(byte: 0x10, at: 0x555) }) }
                 .map { _ in () }
         default:
-            return .failure(CartridgeEraserError.unsupportedChipset(chipset))
+            return .failure(CartridgeFlashError.unsupportedChipset(chipset))
         }
     }
     
     private func flushBufferResult(_ byteCount: Int = 64, startingAt address: Platform.AddressSpace = 0) -> Result<Data, Error> {
         return self.read(byteCount: byteCount, startingAt: address)
     }
+    
+    fileprivate func eraseResult<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type) -> Result<(), Error> {
+        return self
+            .resetFlashModeResult(chipset)
+            .flatMap { self.flushBufferResult() }
+            .flatMap { _ in self.sendEraseFlashProgramResult(chipset) }
+            .flatMap { _ in
+                self.read(byteCount: 1
+                    , startingAt: 0x0000
+                    , timeout: 30
+                    , responseEvaluator: {
+                        guard $0!.starts(with: [0xFF]) else {
+                            self.continue()
+                            return false
+                        }
+                        return true
+                })
+            }
+            .flatMap { _ in self.resetFlashModeResult(chipset) }
+            .map { _ in () }
+    }
 
     public func erase<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type, _ result: @escaping (Result<(), Error>) -> ()) {
-        return result(.failure(CartridgeEraserError.unsupportedChipset(chipset)))
+        return result(.failure(CartridgeFlashError.unsupportedChipset(chipset)))
     }
     
     public func erase(_ chipset: AM29F016B.Type, _ result: @escaping (Result<(), Error>) -> ()) {
         self.queue.addOperation(BlockOperation {
-            result(self
-                .resetFlashModeResult(chipset)
-                .flatMap { self.flushBufferResult() }
-                .flatMap { _ in self.sendEraseFlashProgramResult(chipset) }
-                .flatMap { _ in
-                    self.read(byteCount: 1
-                        , startingAt: 0x0000
-                        , timeout: 30
-                        , responseEvaluator: {
-                            guard $0!.starts(with: [0xFF]) else {
-                                self.continue()
-                                return false
-                            }
-                            return true
-                    })
-                }
-                .flatMap { _ in self.resetFlashModeResult(chipset) }
-                .map { _ in () }
-            )
+            result(self.eraseResult(chipset))
         })
     }
-    
+}
+
+extension insideGadgetsController {
     private func determineFlashCartResult(bitFlipped: Bool = true) -> Result<String, Error> {
         return self
             .sendAndWait({ self.flash(byte: bitFlipped ? 0xAA : 0xA9, at: 0xAAA) })
@@ -497,7 +671,7 @@ extension insideGadgetsController: CartridgeEraser {
             .flatMap { _ in self.flushBufferResult().map { $0.hexString() } }
             .flatMap { description in
                 self.sendAndWait({ self.flash(byte: 0xF0, at: 0x00) }).map { _ in description }
-            }
+        }
     }
     
     public func flashCartDescription(_ result: @escaping (Result<String, Error>) -> ()) {

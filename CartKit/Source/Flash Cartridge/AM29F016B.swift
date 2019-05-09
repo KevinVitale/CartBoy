@@ -5,6 +5,17 @@ public protocol FlashCartridge: Gibby.Cartridge {
     var voltage: Voltage { get }
 }
 
+extension FlashCartridge {
+    /// Override if the `Flash Cartridge` requires special consideration.
+    public var voltage: Voltage {
+        switch Platform.self {
+        case is GameboyClassic.Type: return .high
+        case is GameboyAdvance.Type: return .low
+        default: fatalError("Unspecified platform: \(Platform.self)")
+        }
+    }
+}
+
 public struct AM29F016B: FlashCartridge {
     public init(contentsOf url: URL) throws {
         self = .init(bytes: try Data(contentsOf: url))
@@ -18,10 +29,6 @@ public struct AM29F016B: FlashCartridge {
     public typealias Index    = Platform.Cartridge.Index
     
     private let cartridge: Platform.Cartridge
-    
-    public var voltage: Voltage {
-        return .high
-    }
 
     public subscript(position: Index) -> Data.Element {
         return cartridge[Index(position)]

@@ -17,7 +17,7 @@ public protocol CartridgeReader: SerialPortController {
     func deleteSave(progress: @escaping ProgressCallback, _ result: @escaping (Result<(), Error>) -> ())
 }
 
-public enum CartridgeReaderError<Platform: Gibby.Platform>: Error {
+public enum CartridgeControllerError<Platform: Gibby.Platform>: Error {
     case platformNotSupported(Platform.Type)
     case invalidHeader
 }
