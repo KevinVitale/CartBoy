@@ -114,4 +114,8 @@ extension ORSSerialPort {
     public var vendorID: Int {
         return (ioDeviceAttributes[kUSBVendorID] as? Int) ?? NSNotFound
     }
+    
+    public var portProfile: ORSSerialPortManager.PortProfile {
+        return .usb(vendorID: self.vendorID, productID: self.productID)
+    }
 }
