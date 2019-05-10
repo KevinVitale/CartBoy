@@ -1,7 +1,7 @@
 import ORSSerial
 import Gibby
 
-public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerialPortController {
+public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerialPortController, CartridgeController {
     /**
      */
     public override init(matching portProfile: ORSSerialPortManager.PortProfile = .usb(vendorID: 6790, productID: 29987)) throws {
@@ -16,7 +16,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
     /// delegate callbacks on the main thread, so if the thread that starts the
     /// request is also the main thread **a deadlock is guaranteed to occur**.
     fileprivate let queue = OperationQueue()
-    
+
     /**
      Opens the serial port.
      
@@ -84,7 +84,7 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
     }
 }
 
-extension insideGadgetsController: CartridgeReader {
+extension insideGadgetsController {
     @discardableResult
     private func `continue`() -> Bool {
         return send("1".bytes())
@@ -505,17 +505,7 @@ extension insideGadgetsController where Platform == GameboyClassic {
     }
 }
 
-extension insideGadgetsController: CartridgeWriter {
-    private struct ClassicROMSlice<FlashCartridge: CartKit.FlashCartridge> where FlashCartridge.Platform == GameboyClassic {
-        init(bank: Int, slice: Slice<FlashCartridge>) {
-            self.bank = bank
-            self.slice = slice
-        }
-        
-        let bank: Int
-        let slice: Slice<FlashCartridge>
-    }
-    
+extension insideGadgetsController {
     @discardableResult
     private func flash<Number>(byte: Number, at address: Platform.AddressSpace, timeout: UInt32 = 250) -> Bool where Number : FixedWidthInteger {
         return ( send("F", number: address)
@@ -605,7 +595,7 @@ extension insideGadgetsController: CartridgeWriter {
     }
 }
 
-extension insideGadgetsController: CartridgeEraser {
+extension insideGadgetsController {
     private func sendEraseFlashProgramResult<FlashCartridge: CartKit.FlashCartridge>(_ chipset: FlashCartridge.Type) -> Result<(), Error> {
         switch chipset {
         case is AM29F016B.Type:
