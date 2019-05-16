@@ -1,2 +1,2 @@
 # CartBoy
-<img width=256 src="./Misc/Readme/CartBoy-Logo.png" />
+<img width=256 src="./Misc/Readme/CartBoy-Promo.png" />
