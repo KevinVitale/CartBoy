@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A1408B0228DB606009952CB /* Gibby.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5722557D050026A149 /* Gibby.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0A1408B1228DB606009952CB /* ORSSerial.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5922557D050026A149 /* ORSSerial.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0A1408B2228DB672009952CB /* CartKit.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0ABCB891226E40F600790192 /* CartKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0A4B4AAB22526227004BB0B0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4B4AAA22526227004BB0B0 /* AppDelegate.swift */; };
 		0A4B4AAF22526227004BB0B0 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4B4AAE22526227004BB0B0 /* Document.swift */; };
 		0A4B4AB222526227004BB0B0 /* Document.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0A4B4AB022526227004BB0B0 /* Document.xcdatamodeld */; };
@@ -52,6 +55,22 @@
 			remoteInfo = CartKit;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0A1408AF228DB5FB009952CB /* Copy Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				0A1408B2228DB672009952CB /* CartKit.framework in Copy Frameworks */,
+				0A1408B0228DB606009952CB /* Gibby.framework in Copy Frameworks */,
+				0A1408B1228DB606009952CB /* ORSSerial.framework in Copy Frameworks */,
+			);
+			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0A4B4AA822526227004BB0B0 /* CartBoy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CartBoy.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -185,6 +204,7 @@
 				0A4B4AA422526227004BB0B0 /* Sources */,
 				0A4B4AA522526227004BB0B0 /* Frameworks */,
 				0A4B4AA622526227004BB0B0 /* Resources */,
+				0A1408AF228DB5FB009952CB /* Copy Frameworks */,
 			);
 			buildRules = (
 			);
