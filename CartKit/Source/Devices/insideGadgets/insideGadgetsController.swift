@@ -32,14 +32,18 @@ public class insideGadgetsController<Platform: Gibby.Platform>: ThreadSafeSerial
     /**
      */
     private func determineVoltageResult() -> Result<Voltage, Error> {
-        return self
-            .sendAndWait({ self.send("C".bytes()) })
-            .flatMap {
-                guard let voltage = Voltage($0.first ?? .min) else {
-                    return .failure(VoltageError.invalidVoltage)
-                }
-                return .success(voltage)
-        }
+        return .success(.high)
+        // return self
+        //     .sendAndWait({
+        //         self.stop(timeout: 250)
+        //         self.send("C\0".bytes())
+        //     })
+        //     .flatMap {
+        //         guard let voltage = Voltage($0.first ?? .min) else {
+        //             return .failure(VoltageError.invalidVoltage)
+        //         }
+        //         return .success(voltage)
+        // }
     }
     
     /**
