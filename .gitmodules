@@ -1,6 +1,6 @@
 [submodule "Gibby"]
 	path = Dependencies/Gibby
-	url = ./Dependencies/Gibby
+	url = git@github.com:KevinVitale/Gibby.git
 [submodule "ORSSerialPort"]
 	path = Dependencies/ORSSerialPort
 	url = git@github.com:KevinVitale/ORSSerialPort.git
