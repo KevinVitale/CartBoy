@@ -953,66 +953,98 @@
             <objects>
                 <viewController id="zJl-5I-umX" customClass="ContentViewController" customModule="CartBoy" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="V34-7O-fdd">
-                        <rect key="frame" x="0.0" y="0.0" width="450" height="264"/>
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <box boxType="secondary" borderType="none" title="ACTIONS" translatesAutoresizingMaskIntoConstraints="NO" id="AjQ-0N-OOm">
-                                <rect key="frame" x="-3" y="-4" width="456" height="268"/>
+                            <box boxType="secondary" borderType="none" title="COPY &amp; FLASH" translatesAutoresizingMaskIntoConstraints="NO" id="AjQ-0N-OOm">
+                                <rect key="frame" x="-3" y="-4" width="456" height="304"/>
                                 <view key="contentView" id="s64-Hl-4MC">
-                                    <rect key="frame" x="0.0" y="0.0" width="456" height="247"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="456" height="283"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <tabView translatesAutoresizingMaskIntoConstraints="NO" id="lbY-eX-HPS">
-                                            <rect key="frame" x="-3" y="137" width="462" height="116"/>
-                                            <constraints>
-                                                <constraint firstAttribute="height" constant="100" id="Y4T-y5-i8I"/>
-                                            </constraints>
-                                            <font key="font" metaFont="system"/>
-                                            <tabViewItems>
-                                                <tabViewItem label="Read" identifier="" id="jRN-wh-HpS">
-                                                    <view key="view" id="PLO-a8-gwB">
-                                                        <rect key="frame" x="10" y="33" width="442" height="70"/>
-                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <box title="Box" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="eWB-rm-rjw">
+                                            <rect key="frame" x="1" y="16" width="454" height="259"/>
+                                            <view key="contentView" id="kP9-u9-uzk">
+                                                <rect key="frame" x="3" y="3" width="448" height="253"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="PtO-Fu-RrY">
+                                                        <rect key="frame" x="14" y="205" width="73" height="32"/>
+                                                        <buttonCell key="cell" type="push" title="Copy" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="XhN-OE-Z6K">
+                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                            <font key="font" metaFont="system"/>
+                                                        </buttonCell>
+                                                        <connections>
+                                                            <action selector="read:" target="zJl-5I-umX" id="09C-JH-S8L"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Kr1-RF-D9R">
+                                                        <rect key="frame" x="14" y="172" width="73" height="32"/>
+                                                        <buttonCell key="cell" type="push" title="Flash" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="nTn-sP-ePS">
+                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                            <font key="font" metaFont="system"/>
+                                                        </buttonCell>
+                                                        <connections>
+                                                            <action selector="write:" target="zJl-5I-umX" id="V1O-ZO-xUK"/>
+                                                        </connections>
+                                                    </button>
+                                                    <progressIndicator wantsLayer="YES" maxValue="1" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="UFJ-GN-Bbc">
+                                                        <rect key="frame" x="89" y="180" width="339" height="20"/>
+                                                    </progressIndicator>
+                                                    <progressIndicator wantsLayer="YES" maxValue="1" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="pBq-TQ-xtR">
+                                                        <rect key="frame" x="89" y="213" width="339" height="20"/>
+                                                    </progressIndicator>
+                                                    <customView hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Fow-So-yfL">
+                                                        <rect key="frame" x="89" y="156" width="81" height="17"/>
                                                         <subviews>
-                                                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bUI-6O-xpa">
-                                                                <rect key="frame" x="14" y="22" width="71" height="32"/>
-                                                                <buttonCell key="cell" type="push" title="Read" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="bC9-Le-K6g">
-                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                </buttonCell>
-                                                                <connections>
-                                                                    <action selector="read:" target="zJl-5I-umX" id="a2e-0t-SFk"/>
-                                                                </connections>
-                                                            </button>
-                                                            <progressIndicator wantsLayer="YES" maxValue="1" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="myI-De-okl">
-                                                                <rect key="frame" x="87" y="30" width="335" height="20"/>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="aIH-EE-56L">
+                                                                <rect key="frame" x="-2" y="0.0" width="61" height="17"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" title="Erasing..." id="s6p-8I-NgF">
+                                                                    <font key="font" usesAppearanceFont="YES"/>
+                                                                    <color key="textColor" name="tertiaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="rEq-OG-MF8">
+                                                                <rect key="frame" x="65" y="0.0" width="16" height="16"/>
                                                             </progressIndicator>
                                                         </subviews>
                                                         <constraints>
-                                                            <constraint firstAttribute="trailing" secondItem="myI-De-okl" secondAttribute="trailing" constant="20" symbolic="YES" id="2Px-so-vEb"/>
-                                                            <constraint firstItem="bUI-6O-xpa" firstAttribute="top" secondItem="PLO-a8-gwB" secondAttribute="top" constant="20" symbolic="YES" id="JJs-uD-qoX"/>
-                                                            <constraint firstItem="myI-De-okl" firstAttribute="centerY" secondItem="bUI-6O-xpa" secondAttribute="centerY" id="OzQ-E5-oAL"/>
-                                                            <constraint firstItem="bUI-6O-xpa" firstAttribute="leading" secondItem="PLO-a8-gwB" secondAttribute="leading" constant="20" symbolic="YES" id="TmQ-sS-M7g"/>
-                                                            <constraint firstItem="myI-De-okl" firstAttribute="leading" secondItem="bUI-6O-xpa" secondAttribute="trailing" constant="8" symbolic="YES" id="qLG-dZ-CHU"/>
+                                                            <constraint firstItem="rEq-OG-MF8" firstAttribute="centerY" secondItem="aIH-EE-56L" secondAttribute="centerY" id="0gm-Q6-FMb"/>
+                                                            <constraint firstItem="aIH-EE-56L" firstAttribute="top" secondItem="Fow-So-yfL" secondAttribute="top" id="9fy-Cm-51V"/>
+                                                            <constraint firstAttribute="trailing" secondItem="rEq-OG-MF8" secondAttribute="trailing" id="Nae-5J-Ag2"/>
+                                                            <constraint firstItem="rEq-OG-MF8" firstAttribute="leading" secondItem="aIH-EE-56L" secondAttribute="trailing" constant="8" symbolic="YES" id="bQG-Xj-Ez7"/>
+                                                            <constraint firstAttribute="bottom" secondItem="aIH-EE-56L" secondAttribute="bottom" id="hFT-UY-t2R"/>
+                                                            <constraint firstItem="aIH-EE-56L" firstAttribute="leading" secondItem="Fow-So-yfL" secondAttribute="leading" id="wYC-Cy-hp5"/>
                                                         </constraints>
-                                                    </view>
-                                                </tabViewItem>
-                                                <tabViewItem label="Write" identifier="" id="oPf-i9-h5T">
-                                                    <view key="view" id="9Ae-sv-tRi">
-                                                        <rect key="frame" x="10" y="33" width="442" height="70"/>
-                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                    </view>
-                                                </tabViewItem>
-                                            </tabViewItems>
-                                            <connections>
-                                                <outlet property="delegate" destination="zJl-5I-umX" id="t4e-h0-YMn"/>
-                                            </connections>
-                                        </tabView>
+                                                    </customView>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="PtO-Fu-RrY" firstAttribute="leading" secondItem="Kr1-RF-D9R" secondAttribute="leading" id="2Ey-Xe-B8B"/>
+                                                    <constraint firstItem="PtO-Fu-RrY" firstAttribute="trailing" secondItem="Kr1-RF-D9R" secondAttribute="trailing" id="3D9-4u-ZfX"/>
+                                                    <constraint firstAttribute="trailing" secondItem="UFJ-GN-Bbc" secondAttribute="trailing" constant="20" symbolic="YES" id="44b-hC-bth"/>
+                                                    <constraint firstItem="Fow-So-yfL" firstAttribute="leading" secondItem="UFJ-GN-Bbc" secondAttribute="leading" id="CNT-o2-GIF"/>
+                                                    <constraint firstItem="PtO-Fu-RrY" firstAttribute="width" secondItem="Kr1-RF-D9R" secondAttribute="width" id="EmV-vD-o2E"/>
+                                                    <constraint firstItem="pBq-TQ-xtR" firstAttribute="leading" secondItem="PtO-Fu-RrY" secondAttribute="trailing" constant="8" symbolic="YES" id="LzI-ek-tJ3"/>
+                                                    <constraint firstItem="PtO-Fu-RrY" firstAttribute="leading" secondItem="kP9-u9-uzk" secondAttribute="leading" constant="20" id="XXE-cH-hsV"/>
+                                                    <constraint firstItem="pBq-TQ-xtR" firstAttribute="centerY" secondItem="PtO-Fu-RrY" secondAttribute="centerY" id="d41-XG-wla"/>
+                                                    <constraint firstItem="Fow-So-yfL" firstAttribute="top" secondItem="UFJ-GN-Bbc" secondAttribute="bottom" constant="8" id="haP-NP-114"/>
+                                                    <constraint firstItem="Kr1-RF-D9R" firstAttribute="top" secondItem="PtO-Fu-RrY" secondAttribute="bottom" constant="12" id="kPD-uS-W9o"/>
+                                                    <constraint firstItem="PtO-Fu-RrY" firstAttribute="top" secondItem="kP9-u9-uzk" secondAttribute="top" constant="20" id="n0x-Z8-QTP"/>
+                                                    <constraint firstItem="UFJ-GN-Bbc" firstAttribute="leading" secondItem="Kr1-RF-D9R" secondAttribute="trailing" constant="8" symbolic="YES" id="tMK-vC-Zpg"/>
+                                                    <constraint firstItem="Kr1-RF-D9R" firstAttribute="leading" secondItem="kP9-u9-uzk" secondAttribute="leading" constant="20" id="uiI-yX-Gsz"/>
+                                                    <constraint firstItem="UFJ-GN-Bbc" firstAttribute="centerY" secondItem="Kr1-RF-D9R" secondAttribute="centerY" id="wk4-ww-ZCp"/>
+                                                    <constraint firstAttribute="trailing" secondItem="pBq-TQ-xtR" secondAttribute="trailing" constant="20" symbolic="YES" id="z6I-dO-iQt"/>
+                                                </constraints>
+                                            </view>
+                                            <font key="titleFont" metaFont="smallSystem"/>
+                                        </box>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="lbY-eX-HPS" firstAttribute="leading" secondItem="s64-Hl-4MC" secondAttribute="leading" constant="4" id="2bg-2W-SnU"/>
-                                        <constraint firstItem="lbY-eX-HPS" firstAttribute="top" secondItem="s64-Hl-4MC" secondAttribute="top" id="ooV-Ju-iKZ"/>
-                                        <constraint firstAttribute="trailing" secondItem="lbY-eX-HPS" secondAttribute="trailing" constant="4" id="qbK-Nq-fdS"/>
+                                        <constraint firstItem="eWB-rm-rjw" firstAttribute="top" secondItem="s64-Hl-4MC" secondAttribute="top" constant="10" id="Fwa-nh-vwf"/>
+                                        <constraint firstAttribute="trailing" secondItem="eWB-rm-rjw" secondAttribute="trailing" constant="4" id="GAX-nw-ei0"/>
+                                        <constraint firstItem="eWB-rm-rjw" firstAttribute="leading" secondItem="s64-Hl-4MC" secondAttribute="leading" constant="4" id="hsi-DM-qO7"/>
+                                        <constraint firstAttribute="bottom" secondItem="eWB-rm-rjw" secondAttribute="bottom" constant="20" symbolic="YES" id="t5i-Ty-bxA"/>
                                     </constraints>
                                 </view>
                                 <font key="titleFont" size="12" name="HelveticaNeue-Bold"/>
@@ -1026,12 +1058,16 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="progressBar" destination="myI-De-okl" id="XSo-bj-LN2"/>
+                        <outlet property="readProgressBar" destination="pBq-TQ-xtR" id="qZo-hG-ajb"/>
+                        <outlet property="spinnerProgressBar" destination="rEq-OG-MF8" id="vEM-Z5-aWZ"/>
+                        <outlet property="statusTextField" destination="aIH-EE-56L" id="Jf8-na-3PS"/>
+                        <outlet property="statusView" destination="Fow-So-yfL" id="SfO-iz-jnM"/>
+                        <outlet property="writeProgressBar" destination="UFJ-GN-Bbc" id="V4p-N9-V3t"/>
                     </connections>
                 </viewController>
                 <customObject id="Bkh-gp-e6s" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="54" y="2101"/>
+            <point key="canvasLocation" x="54" y="2122"/>
         </scene>
         <!--Cart Info View Controller-->
         <scene sceneID="cAR-OA-NNy">
