@@ -91,14 +91,12 @@ class CartInfoViewController: ContextViewController {
     }
     
     @IBAction func readHeader(_ sender: Any?) {
-        self.context.perform {
-            let header = self.clearGridViewDisplay
-                .flatMap { Result { try insideGadgetsController<GameboyClassic>() } }
-                .flatMap { controller in Result { try await { controller.scanHeader($0) } } }
-                .flatMap { header in self.updateClassicHeaderUI(with: header) }
-                .flatMap { header in self.updateClassicSaveUI(with: header) }
-            
-            switch header {
+        insideGadgetsController.perform { controller in
+            switch self.clearGridViewDisplay
+                .flatMap({ controller.flatMap({ $0.header(for: GameboyClassic.self) }) })
+                .flatMap({ header in self.updateClassicHeaderUI(with: header) })
+                .flatMap({ header in self.updateClassicSaveUI(with: header) })
+            {
             case .success: (/* no-op */)
             case .failure(let error): self.context.display(error: error, in: self)
             }
@@ -106,18 +104,15 @@ class CartInfoViewController: ContextViewController {
     }
     
     @IBAction func readSaveData(_ sender: Any?) {
-        self.context.perform {
-            let result = Result<(Data, GameboyClassic.Header), Error> {
-                DispatchQueue.main.sync { self.saveDataProgressBar.isHidden = false }
-                let controller = try insideGadgetsController<GameboyClassic>()
-                let header     = try await { controller.scanHeader($0) }
-                let saveData   = try await { controller.backupSave(progress: {
-                    self.context.update(progressBar: self.saveDataProgressBar, with: $0)
-                }, $0) }
-                return (saveData, header)
-            }
-            
-            switch result {
+        self.saveDataProgressBar.isHidden = false
+        insideGadgetsController.perform {
+            switch $0
+                .flatMap({ controller in controller.header(for: GameboyClassic.self).map { (controller, $0) } })
+                .flatMap({ (controller, header) in
+                    controller
+                        .backupSave(for: GameboyClassic.self, progress: { amount in self.context.update(progressBar: self.saveDataProgressBar, with: amount) })
+                        .map { ($0, header) }
+            }) {
             case .success(let saveData, let header):
                 DispatchQueue.main.sync {
                     let savePanel = NSSavePanel()
@@ -152,28 +147,17 @@ class CartInfoViewController: ContextViewController {
             }
             
             self.saveDataProgressBar.isHidden = false
-
-            self.context.perform {
-                let result = Result<(), Error> {
-                    let controller = try insideGadgetsController<GameboyClassic>()
-                    let _/*header*/= try await { controller.scanHeader($0) }
-                    /*
-                    let _ /*erase*/= try await { controller.deleteSave(progress: {
-                        self.context.update(progressBar: self.saveDataProgressBar, with: $0)
-                    }, $0) }
-                     */
-                    let restoreData: Void = try await { controller.restoreSave(data: data, progress: {
-                        self.context.update(progressBar: self.saveDataProgressBar, with: $0)
-                    }, $0) }
-                    return restoreData
+            
+            insideGadgetsController.perform {
+                defer {
+                    DispatchQueue.main.sync {
+                        self.saveDataProgressBar.isHidden = true
+                        self.saveDataProgressBar.doubleValue = 0.0
+                    }
                 }
-                
-                DispatchQueue.main.sync {
-                    self.saveDataProgressBar.isHidden = true
-                    self.saveDataProgressBar.doubleValue = 0.0
-                }
-                
-                switch result {
+                switch $0.flatMap({ controller in
+                  controller.restoreSave(for: GameboyClassic.self, data: data, progress: { amount in self.context.update(progressBar: self.saveDataProgressBar, with: amount) })
+                }) {
                 case .success: ()
                 case .failure(let error): self.context.display(error: error, in: self)
                 }
@@ -200,22 +184,18 @@ class CartInfoViewController: ContextViewController {
             
             self.saveDataProgressBar.isHidden = false
             
-            self.context.perform {
-                let result = Result<(), Error> {
-                    let controller = try insideGadgetsController<GameboyClassic>()
-                    let _/*header*/= try await { controller.scanHeader($0) }
-                    let eraseData: Void = try await { controller.deleteSave(progress: {
-                        self.context.update(progressBar: self.saveDataProgressBar, with: $0)
-                    }, $0) }
-                    return eraseData
+            insideGadgetsController.perform {
+                defer {
+                    DispatchQueue.main.sync {
+                        self.saveDataProgressBar.isHidden = true
+                        self.saveDataProgressBar.doubleValue = 0.0
+                    }
                 }
-                
-                DispatchQueue.main.sync {
-                    self.saveDataProgressBar.isHidden = true
-                    self.saveDataProgressBar.doubleValue = 0.0
-                }
-                
-                switch result {
+                switch $0.flatMap({ controller in
+                    controller.deleteSave(for: GameboyClassic.self, progress: { amount in
+                        self.context.update(progressBar: self.saveDataProgressBar, with: amount)
+                    })
+                }) {
                 case .success(): ()
                 case .failure(let error): self.context.display(error: error, in: self)
                 }

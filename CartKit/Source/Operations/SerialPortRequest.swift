@@ -41,14 +41,10 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
                     let upToCount = self.isCancelled ? 0 : self.progress.totalUnitCount
                     let data      = self.response.prefix(upTo: Int(upToCount))
                     self.result   = .success(data)
-                    DispatchQueue.main.async {
-                        self.complete()
-                    }
+                    self.complete()
                 }
                 else {
-                    DispatchQueue.main.async {
-                        self.perform(self.progress)
-                    }
+                    self.perform(self.progress)
                 }
             }
         }
@@ -105,9 +101,7 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
         
         self.queue.asyncAfter(deadline: deadline) { [weak self] in
             if self?.isExecuting == true {
-                DispatchQueue.main.async {
-                    self?.timedOut()
-                }
+                self?.timedOut()
             }
         }
         self.perform(self.progress)
