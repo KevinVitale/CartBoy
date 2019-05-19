@@ -33,12 +33,11 @@ class ProductInfoViewController: ContextViewController {
     }
     
     @IBAction func readProductInfo(_ sender: Any?) {
-        self.context.perform {
-            let result = Result { try insideGadgetsController<GameboyClassic>() }
-                .flatMap { controller in Result { try await { controller.currentVoltage($0) } } }
-                .flatMap { self.updateProductInfoResult(voltage: $0.rawValue, website: "www.insideGadgets.com") }
-
-            switch result {
+        insideGadgetsController.perform { controller in
+            switch controller
+                .flatMap({ controller in .success(Voltage.high) /* controller.voltage() */ })
+                .flatMap({ self.updateProductInfoResult(voltage: $0.rawValue, website: "www.insideGadgets.com") })
+            {
             case .success: ()
             case .failure(let error):
                 self.context.display(error: error, in: self)

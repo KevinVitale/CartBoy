@@ -20,217 +20,109 @@ fileprivate func romFileURL(named title: String, extension fileExtension: String
 }
 
 class CartridgeTests: XCTestCase {
-    func testHeaderResult() {
+    func testHeader() {
         let exp = expectation(description: "")
-        do {
-            let controller = try insideGadgetsController<GameboyClassic>()
-            controller.scanHeader {
-                switch $0 {
-                case .success(let header):
-                    print(header)
-                    exp.fulfill()
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                }
+        insideGadgetsController.perform { controller in
+            defer { exp.fulfill() }
+            switch controller.flatMap({ $0.header(for: GameboyClassic.self) }) {
+            case .success(let header): print(header)
+            case .failure(let error):  XCTFail("\(error)")
             }
-        } catch {
-            XCTFail("\(error)")
-            exp.fulfill()
         }
         waitForExpectations(timeout: 5)
     }
     
-    func testCartridgeResult() {
+    func testCartridge() {
         let exp = expectation(description: "")
-        do {
-            let controller = try insideGadgetsController<GameboyClassic>()
-            controller.readCartridge(progress: {
-                print($0)
-            }) {
-                switch $0 {
-                case .success(let cartridge):
-                    print("MD5:", cartridge.md5String)
-                    exp.fulfill()
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                }
+        insideGadgetsController.perform { controller in
+            defer { exp.fulfill() }
+            switch controller
+                .flatMap({ $0.cartridge(for: GameboyClassic.self, progress: { print($0) }) })
+            {
+            case .success(let cartridge): print(cartridge.header); print(cartridge.md5String)
+            case .failure(let error):  XCTFail("\(error)")
             }
-        } catch {
-            XCTFail("\(error)")
-            exp.fulfill()
         }
         waitForExpectations(timeout: 20)
     }
     
-    func testBackupResult() {
+    func testBackupSave() {
         let exp = expectation(description: "")
-        do {
-            let controller = try insideGadgetsController<GameboyClassic>()
-            controller.backupSave(progress: {
-                print($0)
-            }) {
-                switch $0 {
-                case .success(let saveData):
-                    print("MD5:", saveData.md5.hexString(separator: "").lowercased())
-                    exp.fulfill()
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                }
+        insideGadgetsController.perform { controller in
+            defer { exp.fulfill() }
+            switch controller.flatMap({ $0.backupSave(for: GameboyClassic.self, progress: { print($0) }) }) {
+            case .success(let saveData): print(saveData)
+            case .failure(let error):  XCTFail("\(error)")
             }
-        } catch {
-            XCTFail("\(error)")
-            exp.fulfill()
+        }
+        waitForExpectations(timeout: 20)
+    }
+    
+    func testRestoreSave() {
+        let exp = expectation(description: "")
+        insideGadgetsController.perform { controller in
+            defer { exp.fulfill() }
+            switch controller
+                .flatMap({ controller in Result { (controller, try saveFileAndMD5(named: "POKEMON YELLOW")) } })
+                .flatMap({ $0.restoreSave(for: GameboyClassic.self, data: $1.data, progress: { print($0) }) })
+            {
+            case .success: ()
+            case .failure(let error):  XCTFail("\(error)")
+            }
         }
         waitForExpectations(timeout: 5)
     }
     
-    func testRestoreResult() {
+    func testDeleteSave() {
         let exp = expectation(description: "")
-        do {
-            let saveFile = try saveFileAndMD5(named: "POKEMON YELLOW")
-            let controller = try insideGadgetsController<GameboyClassic>()
-            controller.restoreSave(data: saveFile.data, progress: {
-                print($0)
-            }) {
-                switch $0 {
-                case .success:
-                    exp.fulfill()
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                }
+        insideGadgetsController.perform { controller in
+            defer { exp.fulfill() }
+            switch controller.flatMap({ $0.deleteSave(for: GameboyClassic.self, progress: { print($0) })})
+            {
+            case .success: ()
+            case .failure(let error):  XCTFail("\(error)")
             }
-        } catch {
-            XCTFail("\(error)")
-            exp.fulfill()
         }
         waitForExpectations(timeout: 5)
     }
     
-    func testDeleteResult() {
+    func testVoltage() {
         let exp = expectation(description: "")
-        do {
-            let controller = try insideGadgetsController<GameboyClassic>()
-            controller.deleteSave(progress: {
-                print($0)
-            }) {
-                switch $0 {
-                case .success:
-                    exp.fulfill()
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                }
+        insideGadgetsController.perform { controller in
+            defer { exp.fulfill() }
+            switch controller.flatMap({ $0.voltage() })
+            {
+            case .success(let voltage): print(voltage)
+            case .failure(let error):  XCTFail("\(error)")
             }
-        } catch {
-            XCTFail("\(error)")
-            exp.fulfill()
         }
         waitForExpectations(timeout: 5)
     }
-
+    
     func testWriteResult() {
         let exp = expectation(description: "")
-        do {
-            let controller = try insideGadgetsController<GameboyClassic>()
-            let flashCart = try AM29F016B(contentsOf: romFileURL(named: "POKEMON YELLOW"))
-            controller.write(flashCart, progress: { print($0) }) {
-                switch $0 {
-                case .success:
-                    exp.fulfill()
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                }
+        insideGadgetsController.perform { controller in
+            defer { exp.fulfill() }
+            switch controller
+                .map({ controller in (controller, "POKEMON YELLOW") })
+                .flatMap({ (controller, fileName) in Result { (controller, try AM29F016B(contentsOf: romFileURL(named: fileName))) } })
+                .flatMap({ (controller, flashCartridge) in controller.write(to: flashCartridge, progress: { print($0) }) })
+            {
+            case .success: ()
+            case .failure(let error):  XCTFail("\(error)")
             }
-        } catch {
-            XCTFail("\(error)")
-            exp.fulfill()
         }
         waitForExpectations(timeout: 300)
     }
     
     func testCartridgeEraser() {
         let exp = expectation(description: "")
-        do {
-            let controller = try insideGadgetsController<GameboyClassic>()
-            controller.erase(AM29F016B.self) {
-                switch $0 {
-                case .success:
-                    exp.fulfill()
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                }
+        insideGadgetsController.perform { controller in
+            defer { exp.fulfill() }
+            switch controller.flatMap({ $0.erase(chipset: AM29F016B.self) }) {
+            case .success: ()
+            case .failure(let error):  XCTFail("\(error)")
             }
-        } catch {
-            XCTFail("\(error)")
-            exp.fulfill()
-        }
-        waitForExpectations(timeout: 20)
-    }
-    
-    func testCartridgeDetermineFlash() {
-        let exp = expectation(description: "")
-        do {
-            let controller = try insideGadgetsController<GameboyClassic>()
-            controller.flashCartDescription {
-                switch $0 {
-                case .success(let description):
-                    print(description)
-                    exp.fulfill()
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                }
-            }
-        } catch {
-            XCTFail("\(error)")
-            exp.fulfill()
-        }
-        waitForExpectations(timeout: 20)
-    }
-    
-    func testCurrentVoltage() {
-        let exp = expectation(description: "")
-        do {
-            let controller = try insideGadgetsController<GameboyClassic>()
-            controller.currentVoltage {
-                switch $0 {
-                case .success(let voltage):
-                    print(voltage)
-                    exp.fulfill()
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                }
-            }
-        } catch {
-            XCTFail("\(error)")
-            exp.fulfill()
-        }
-        waitForExpectations(timeout: 20)
-    }
-    
-    func testVoltageMatchedPlatform() {
-        let exp = expectation(description: "")
-        do {
-            let controller = try insideGadgetsController<GameboyAdvance>()
-            controller.voltageMatchesPlatform {
-                switch $0 {
-                case .success:
-                    exp.fulfill()
-                case .failure(let error):
-                    XCTFail("\(error)")
-                    exp.fulfill()
-                }
-            }
-        } catch {
-            XCTFail("\(error)")
-            exp.fulfill()
         }
         waitForExpectations(timeout: 20)
     }

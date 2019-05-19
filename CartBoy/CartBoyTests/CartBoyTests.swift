@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import CartBoy
+import CartKit
 
 class CartBoyTests: XCTestCase {
 

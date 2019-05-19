@@ -1,4 +1,4 @@
 import Gibby
 
-public final class insideGadgetsMiniController: insideGadgetsController<GameboyClassic> {
-}
+// public class insideGadgetsMiniController: insideGadgetsController<GameboyClassic> {
+// }

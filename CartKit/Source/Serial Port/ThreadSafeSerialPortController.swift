@@ -34,7 +34,6 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
     /**
      */
     public final func openReader(delegate: ORSSerialPortDelegate?) {
-        precondition(Thread.current != .main)
         self.isOpenCondition.whileLocked {
             while self.currentDelegate != nil {
                 self.isOpenCondition.wait()
@@ -42,10 +41,8 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
             //------------------------------------------------------------------
             self.delegate = delegate
             //------------------------------------------------------------------
-            DispatchQueue.main.sync {
-                if self.reader.isOpen == false {
-                    self.open()
-                }
+            if self.reader.isOpen == false {
+                self.open()
             }
         }
     }
