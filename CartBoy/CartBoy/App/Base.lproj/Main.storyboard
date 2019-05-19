@@ -744,7 +744,6 @@
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 </view>
                                 <color key="fillColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                <font key="titleFont" metaFont="smallSystem"/>
                             </box>
                             <containerView translatesAutoresizingMaskIntoConstraints="NO" id="50H-Vk-vdg">
                                 <rect key="frame" x="45" y="0.0" width="600" height="325"/>
@@ -765,7 +764,6 @@
                                     <constraint firstAttribute="height" constant="2" id="eNM-5x-rXw"/>
                                 </constraints>
                                 <color key="borderColor" name="unemphasizedSelectedTextBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                <font key="titleFont" metaFont="smallSystem"/>
                             </box>
                             <customView translatesAutoresizingMaskIntoConstraints="NO" id="dEH-wc-qj7">
                                 <rect key="frame" x="45" y="0.0" width="600" height="512"/>
@@ -953,23 +951,23 @@
             <objects>
                 <viewController id="zJl-5I-umX" customClass="ContentViewController" customModule="CartBoy" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="V34-7O-fdd">
-                        <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="301"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <box boxType="secondary" borderType="none" title="COPY &amp; FLASH" translatesAutoresizingMaskIntoConstraints="NO" id="AjQ-0N-OOm">
-                                <rect key="frame" x="-3" y="-4" width="456" height="304"/>
+                                <rect key="frame" x="-3" y="-4" width="456" height="305"/>
                                 <view key="contentView" id="s64-Hl-4MC">
-                                    <rect key="frame" x="0.0" y="0.0" width="456" height="283"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="456" height="284"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <box title="Box" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="eWB-rm-rjw">
-                                            <rect key="frame" x="1" y="16" width="454" height="259"/>
+                                            <rect key="frame" x="1" y="16" width="454" height="260"/>
                                             <view key="contentView" id="kP9-u9-uzk">
-                                                <rect key="frame" x="3" y="3" width="448" height="253"/>
+                                                <rect key="frame" x="3" y="3" width="448" height="254"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="PtO-Fu-RrY">
-                                                        <rect key="frame" x="14" y="205" width="73" height="32"/>
+                                                        <rect key="frame" x="14" y="206" width="73" height="32"/>
                                                         <buttonCell key="cell" type="push" title="Copy" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="XhN-OE-Z6K">
                                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                             <font key="font" metaFont="system"/>
@@ -979,7 +977,7 @@
                                                         </connections>
                                                     </button>
                                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Kr1-RF-D9R">
-                                                        <rect key="frame" x="14" y="172" width="73" height="32"/>
+                                                        <rect key="frame" x="14" y="173" width="73" height="32"/>
                                                         <buttonCell key="cell" type="push" title="Flash" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="nTn-sP-ePS">
                                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                             <font key="font" metaFont="system"/>
@@ -989,13 +987,13 @@
                                                         </connections>
                                                     </button>
                                                     <progressIndicator wantsLayer="YES" maxValue="1" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="UFJ-GN-Bbc">
-                                                        <rect key="frame" x="89" y="180" width="339" height="20"/>
+                                                        <rect key="frame" x="89" y="181" width="339" height="20"/>
                                                     </progressIndicator>
                                                     <progressIndicator wantsLayer="YES" maxValue="1" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="pBq-TQ-xtR">
-                                                        <rect key="frame" x="89" y="213" width="339" height="20"/>
+                                                        <rect key="frame" x="89" y="214" width="339" height="20"/>
                                                     </progressIndicator>
                                                     <customView hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Fow-So-yfL">
-                                                        <rect key="frame" x="89" y="156" width="81" height="17"/>
+                                                        <rect key="frame" x="89" y="157" width="81" height="17"/>
                                                         <subviews>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="aIH-EE-56L">
                                                                 <rect key="frame" x="-2" y="0.0" width="61" height="17"/>
@@ -1027,6 +1025,7 @@
                                                     <constraint firstItem="PtO-Fu-RrY" firstAttribute="width" secondItem="Kr1-RF-D9R" secondAttribute="width" id="EmV-vD-o2E"/>
                                                     <constraint firstItem="pBq-TQ-xtR" firstAttribute="leading" secondItem="PtO-Fu-RrY" secondAttribute="trailing" constant="8" symbolic="YES" id="LzI-ek-tJ3"/>
                                                     <constraint firstItem="PtO-Fu-RrY" firstAttribute="leading" secondItem="kP9-u9-uzk" secondAttribute="leading" constant="20" id="XXE-cH-hsV"/>
+                                                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Fow-So-yfL" secondAttribute="bottom" constant="20" symbolic="YES" id="chz-1U-5Nc"/>
                                                     <constraint firstItem="pBq-TQ-xtR" firstAttribute="centerY" secondItem="PtO-Fu-RrY" secondAttribute="centerY" id="d41-XG-wla"/>
                                                     <constraint firstItem="Fow-So-yfL" firstAttribute="top" secondItem="UFJ-GN-Bbc" secondAttribute="bottom" constant="8" id="haP-NP-114"/>
                                                     <constraint firstItem="Kr1-RF-D9R" firstAttribute="top" secondItem="PtO-Fu-RrY" secondAttribute="bottom" constant="12" id="kPD-uS-W9o"/>
@@ -1037,7 +1036,6 @@
                                                     <constraint firstAttribute="trailing" secondItem="pBq-TQ-xtR" secondAttribute="trailing" constant="20" symbolic="YES" id="z6I-dO-iQt"/>
                                                 </constraints>
                                             </view>
-                                            <font key="titleFont" metaFont="smallSystem"/>
                                         </box>
                                     </subviews>
                                     <constraints>
@@ -1419,7 +1417,6 @@
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="171" id="bry-oA-Uhh"/>
                                             </constraints>
-                                            <font key="titleFont" metaFont="smallSystem"/>
                                         </box>
                                         <progressIndicator hidden="YES" wantsLayer="YES" maxValue="1" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="UOx-Oi-4bC">
                                             <rect key="frame" x="461" y="31" width="171" height="20"/>
@@ -1473,7 +1470,6 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="14" id="0ms-kK-dtq"/>
                                 </constraints>
-                                <font key="titleFont" metaFont="smallSystem"/>
                             </box>
                         </subviews>
                         <constraints>
