@@ -8,6 +8,8 @@ class CartInfoViewController: ContextViewController {
     @IBOutlet weak var saveDataProgressBar: NSProgressIndicator!
     @IBOutlet weak var saveActionsStackView: NSStackView!
     @IBOutlet weak var saveNotSupportedStackView: NSStackView!
+    
+    private typealias SelectedController = AnyCartridgeController<insideGadgetsController>
 
     private var clearGridViewDisplay: Result<(), Error> {
         return Result {
@@ -91,7 +93,7 @@ class CartInfoViewController: ContextViewController {
     }
     
     @IBAction func readHeader(_ sender: Any?) {
-        insideGadgetsController.perform { controller in
+        SelectedController.perform { controller in
             switch self.clearGridViewDisplay
                 .flatMap({ controller.flatMap({ $0.header(for: GameboyClassic.self) }) })
                 .flatMap({ header in self.updateClassicHeaderUI(with: header) })
@@ -105,7 +107,7 @@ class CartInfoViewController: ContextViewController {
     
     @IBAction func readSaveData(_ sender: Any?) {
         self.saveDataProgressBar.isHidden = false
-        insideGadgetsController.perform {
+        SelectedController.perform {
             switch $0
                 .flatMap({ controller in controller.header(for: GameboyClassic.self).map { (controller, $0) } })
                 .flatMap({ (controller, header) in
@@ -148,7 +150,7 @@ class CartInfoViewController: ContextViewController {
             
             self.saveDataProgressBar.isHidden = false
             
-            insideGadgetsController.perform {
+            SelectedController.perform {
                 defer {
                     DispatchQueue.main.sync {
                         self.saveDataProgressBar.isHidden = true
@@ -184,7 +186,7 @@ class CartInfoViewController: ContextViewController {
             
             self.saveDataProgressBar.isHidden = false
             
-            insideGadgetsController.perform {
+            SelectedController.perform {
                 defer {
                     DispatchQueue.main.sync {
                         self.saveDataProgressBar.isHidden = true

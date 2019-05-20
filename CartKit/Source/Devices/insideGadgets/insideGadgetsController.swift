@@ -121,10 +121,15 @@ extension insideGadgetsController: CartridgeController {
     }
     
     public func backupSave<Platform: Gibby.Platform>(for platform: Platform.Type, progress: @escaping (Double) -> ()) -> Result<Data, Error> {
-        return .failure(CartridgeControllerError.platformNotSupported(platform))
+        switch platform {
+        case is GameboyClassic.Type:
+            return self.backupSave(for: GameboyClassic.self, progress: progress)
+        default:
+            return .failure(CartridgeControllerError.platformNotSupported(platform))
+        }
     }
     
-    public func backupSave(for platform: GameboyClassic.Type, progress update: @escaping (Double) -> ()) -> Result<Data, Error> {
+    private func backupSave(for platform: GameboyClassic.Type, progress update: @escaping (Double) -> ()) -> Result<Data, Error> {
         return self
             .header(for: platform)
             .map { ($0, Progress(totalUnitCount: Int64($0.ramSize))) }
@@ -171,10 +176,15 @@ extension insideGadgetsController: CartridgeController {
     }
     
     public func restoreSave<Platform: Gibby.Platform>(for platform: Platform.Type, data: Data, progress: @escaping (Double) -> ()) -> Result<(), Error> {
-        return .failure(CartridgeControllerError.platformNotSupported(platform))
+        switch platform {
+        case is GameboyClassic.Type:
+            return self.restoreSave(for: GameboyClassic.self, data: data, progress: progress)
+        default:
+            return .failure(CartridgeControllerError.platformNotSupported(platform))
+        }
     }
     
-    public func restoreSave(for platform: GameboyClassic.Type, data: Data, progress update: @escaping (Double) -> ()) -> Result<(), Error> {
+    private func restoreSave(for platform: GameboyClassic.Type, data: Data, progress update: @escaping (Double) -> ()) -> Result<(), Error> {
         return self
             .header(for: platform)
             .map { ($0, Progress(totalUnitCount: Int64($0.ramSize))) }
@@ -233,16 +243,17 @@ extension insideGadgetsController: CartridgeController {
         }
     }
     
-    public func deleteSave<Platform: Gibby.Platform>(for platform: Platform.Type, progress: @escaping (Double) -> ()) -> Result<(), Error> {
-        return .failure(CartridgeControllerError.platformNotSupported(platform))
+    public func deleteSave<Platform: Gibby.Platform>(for platform: Platform.Type, progress updating: @escaping (Double) -> ()) -> Result<(), Error> {
+        switch platform {
+        case is GameboyClassic.Type:
+            return self
+                .header(for: GameboyClassic.self)
+                .flatMap { self.restoreSave(for: GameboyClassic.self, data: Data(count: $0.ramSize), progress: updating) }
+        default:
+            return .failure(CartridgeControllerError.platformNotSupported(platform))
+        }
     }
-    
-    public func deleteSave(for platform: GameboyClassic.Type, progress updating: @escaping (Double) -> ()) -> Result<(), Error> {
-        return self
-            .header(for: platform)
-            .flatMap { self.restoreSave(for: platform, data: Data(count: $0.ramSize), progress: updating) }
-    }
-    
+
     public func erase<FlashCartridge: CartKit.FlashCartridge>(chipset: FlashCartridge.Type) -> Result<(), Error> {
         return .failure(CartridgeFlashError.unsupportedChipset(chipset))
     }
