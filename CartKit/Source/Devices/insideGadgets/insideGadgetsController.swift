@@ -52,7 +52,7 @@ extension insideGadgetsController: CartridgeController {
                     , startingAt: Platform.headerRange.lowerBound
                     , prepare: {
                         switch platform {
-                        case is GameboyClassic.Type: self.toggleRAM(on: true)
+                        case is GameboyClassic.Type: self.toggleRAM(on: false)
                         default: (/* no-op */)
                         }
                 })
