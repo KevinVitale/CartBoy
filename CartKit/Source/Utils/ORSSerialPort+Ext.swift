@@ -15,7 +15,7 @@ extension ORSSerialPort {
 }
 
 extension ORSSerialPortManager {
-    public enum PortMatchingError: Error, CustomDebugStringConvertible {
+    public enum PortMatchingError: LocalizedError, CustomNSError, CustomDebugStringConvertible {
         case noMatching(profile: PortProfile)
         
         public var debugDescription: String {
@@ -23,6 +23,22 @@ extension ORSSerialPortManager {
             case .noMatching(let profile):
                 return "No ports found matching \(profile)."
             }
+        }
+        
+        public var errorDescription: String? {
+            return "Device Not Connected"
+        }
+        
+        public var recoverySuggestion: String? {
+            return "Please connect a supported device to your computer and try again."
+        }
+        
+        public static var errorDomain: String {
+            return "com.cartkit.serialport.device"
+        }
+        
+        public var errorCode: Int {
+            return 1
         }
     }
 }
