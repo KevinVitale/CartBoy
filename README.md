@@ -13,7 +13,7 @@
 `CartKit` is a companion framework, used by _CartBoy_, that
 defines general device support and functionality.
 
-### `CartridgeController`
+#### `CartridgeController`
 The `CartridgeController` protocol is adopted by a device (such
 as `insidgeGadgetsController`) that is capable of the following:
 
