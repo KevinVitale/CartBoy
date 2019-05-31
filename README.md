@@ -61,6 +61,10 @@ insideGadgetsController.perform { controller in
 	}
 }
 ```
+# Acknowledgements
+Special thanks to:
+- armadsen
+- insideGadgets
 
 # License
 ```
