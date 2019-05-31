@@ -17,7 +17,7 @@ defines general device support and functionality.
 The `CartridgeController` protocol is adopted by a device (such
 as `insidgeGadgetsController`) that is capable of the following:
 
- - Checking cartridge header; and,
+ - Reading the cartridge header; and,
  - copying cartridge ROM; and,
  - backing up save data (if supported); and,
  - restoring save data (if supported); and,
