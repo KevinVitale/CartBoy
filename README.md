@@ -18,7 +18,7 @@ The `CartridgeController` protocol is adopted by a device (such
 as `insidgeGadgetsController`) that is capable of the following:
 
  - Reading the cartridge header; and,
- - copying cartridge ROM; and,
+ - copying the cartridge ROM; and,
  - backing up save data (if supported); and,
  - restoring save data (if supported); and,
  - deleting save data (if supported); and,
