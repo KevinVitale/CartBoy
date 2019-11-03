@@ -3,6 +3,10 @@ import Gibby
 
 //MARK: - insideGadgetsController (Class) -
 public final class insideGadgetsController: ThreadSafeSerialPortController {
+    enum SetVoltageError: Error {
+        case unsupported
+    }
+    
     override init(matching portProfile: ORSSerialPortManager.PortProfile = .usb(vendorID: 6790, productID: 29987)) throws {
         try super.init(matching: portProfile)
     }
@@ -11,6 +15,48 @@ public final class insideGadgetsController: ThreadSafeSerialPortController {
         return super.open().configuredAsGBxCart()
     }
     
+    public func boardVersion() -> Result<Data, Swift.Error> {
+        precondition(Thread.current != .main)
+        return Result {
+            try await {
+                self.request(totalBytes: 1
+                    , packetSize: 1
+                    , prepare: { _ in
+                        self.send("h\0".bytes())
+                    }
+                    , progress: { _, _ in }
+                    , responseEvaluator: { _ in true }
+                    , result: $0)
+                    .start()
+            }
+        }
+    }
+    
+    public func set(voltage: Voltage) -> Result<Data, Swift.Error> {
+        precondition(Thread.current != .main)
+        return self.boardVersion().flatMap {
+            switch $0.hexString() {
+            case "1": fallthrough
+            case "2": return .success(Data())
+            default:  return
+                Result {
+                    try await {
+                        self.request(totalBytes: 1
+                            , packetSize: 1
+                            , prepare: { _ in
+                                let byteCmd = voltage == .low ? "3" : "5"
+                                self.send("\(byteCmd)\0".bytes(), timeout: 500)
+                        }
+                            , progress: { _, _ in }
+                            , responseEvaluator: { _ in true }
+                            , result: $0)
+                            .start()
+                    }
+                }
+            }
+        }
+    }
+
     public func voltage() -> Result<Voltage, Error> {
         precondition(Thread.current != .main)
         return Result {
@@ -362,8 +408,8 @@ extension insideGadgetsController {
     
     fileprivate func verify<Platform: Gibby.Platform>(platform: Platform.Type) -> Result<Platform.Type, Error> {
         switch platform {
-        case is GameboyClassic.Type: return .success(platform)
-        case is GameboyAdvance.Type: return .success(platform)
+        case is GameboyClassic.Type: return self.set(voltage: .high).flatMap { _ in .success(platform) }
+        case is GameboyAdvance.Type: return self.set(voltage: .low).flatMap { _ in .success(platform) }
         default: return .failure(CartridgeControllerError.platformNotSupported(platform))
         }
     }
