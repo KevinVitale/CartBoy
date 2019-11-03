@@ -86,6 +86,23 @@ class CartridgeTests: XCTestCase {
         waitForExpectations(timeout: 5)
     }
     
+    func testBoardVersion() {
+        let exp = expectation(description: "")
+        insideGadgetsController.perform { controller in
+            defer { exp.fulfill() }
+            switch controller.flatMap({
+                $0.boardVersion().map({
+                    $0.hexString()
+                })
+            })
+            {
+            case .success(let voltage): print(voltage)
+            case .failure(let error):  XCTFail("\(error)")
+            }
+        }
+        waitForExpectations(timeout: 5)
+    }
+    
     func testVoltage() {
         let exp = expectation(description: "")
         insideGadgetsController.perform { controller in
