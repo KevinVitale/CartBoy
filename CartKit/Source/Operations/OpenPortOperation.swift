@@ -16,6 +16,11 @@ import ORSSerial
  - SeeAlso: ThreadSafeSerialPortController
  */
 class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialPortDelegate {
+    /**
+     Create an `Operation` which will open a `controller`.
+     
+     - parameter controller: The controller to open.
+     */
     init(controller: Controller) {
         self.controller = controller
         super.init()
@@ -94,15 +99,23 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
      `super.main()` returns, the port is open and under its exclusive control.
      */
     @objc override func main() {
-        defer { self._isExecuting = true }
+        // 0. Set initial state...
         self._isReady = false
+        
+        // 1. Attempt to open the port...
         self.controller.openReader(delegate: self)
+        
         self.isReadyCondition.whileLocked {
+            // 2. Block execution here, and wait for the port to open.
             while !self.isReady {
                 self.isReadyCondition.wait()
             }
+            // ...then continue...
             super.main()
         }
+        
+        // 3. Subclasses are free to perform calls to the port.
+        self._isExecuting = true
     }
 
     func serialPortWasRemovedFromSystem(_ serialPort: ORSSerialPort) {
