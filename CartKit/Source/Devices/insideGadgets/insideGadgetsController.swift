@@ -3,10 +3,6 @@ import Gibby
 
 //MARK: - insideGadgetsController (Class) -
 public final class insideGadgetsController: ThreadSafeSerialPortController {
-    enum SetVoltageError: Error {
-        case unsupported
-    }
-    
     override init(matching portProfile: ORSSerialPortManager.PortProfile = .usb(vendorID: 6790, productID: 29987)) throws {
         try super.init(matching: portProfile)
     }
