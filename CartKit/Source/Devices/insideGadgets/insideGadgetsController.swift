@@ -38,11 +38,12 @@ public final class insideGadgetsController: ThreadSafeSerialPortController {
             switch $0.hexString() {
             case "1": fallthrough
             case "2": return .success(Data())
-            default:  return
-                Result {
+            default:
+                _ = try? Result {
                     try await {
                         self.request(totalBytes: 1
                             , packetSize: 1
+                            , timeoutInterval: 0.5
                             , prepare: { _ in
                                 let byteCmd = voltage == .low ? "3" : "5"
                                 self.send("\(byteCmd)\0".bytes(), timeout: 500)
@@ -52,7 +53,8 @@ public final class insideGadgetsController: ThreadSafeSerialPortController {
                             , result: $0)
                             .start()
                     }
-                }
+                }.get()
+                return .success(Data())
             }
         }
     }
