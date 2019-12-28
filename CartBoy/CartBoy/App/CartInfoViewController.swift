@@ -9,8 +9,6 @@ class CartInfoViewController: ContextViewController {
     @IBOutlet weak var saveActionsStackView: NSStackView!
     @IBOutlet weak var saveNotSupportedStackView: NSStackView!
     
-    private typealias SelectedController = AnyCartridgeController<insideGadgetsController>
-
     private var clearGridViewDisplay: Result<(), Error> {
         return Result {
             DispatchQueue.main.sync {
@@ -26,9 +24,24 @@ class CartInfoViewController: ContextViewController {
         }
     }
     
+    private var showSaveProgressBar: Result<(),Error> {
+        DispatchQueue.main.sync {
+            Result { self.saveDataProgressBar.isHidden = false }
+        }
+    }
+    
+    private var hideSaveProgressBar: Result<(),Error> {
+        DispatchQueue.main.sync {
+            Result {
+                self.saveDataProgressBar.isHidden = true
+                self.saveDataProgressBar.doubleValue = 0.0
+            }
+        }
+    }
+
     private func updateClassicSaveUI<Header: Gibby.Header>(with header: Header) -> Result<Header, Error> where Header.Platform == GameboyClassic {
-        return Result {
-            DispatchQueue.main.sync {
+        DispatchQueue.main.sync {
+            Result {
                 if header.configuration.hardware.contains(.ram) {
                     self.saveNotSupportedStackView?.isHidden = true
                     self.saveActionsStackView?.isHidden = false
@@ -43,8 +56,8 @@ class CartInfoViewController: ContextViewController {
     }
     
     private func updateClassicHeaderUI<Header: Gibby.Header>(with header: Header) -> Result<Header, Error> where Header.Platform == GameboyClassic {
-        return Result {
-            DispatchQueue.main.sync {
+        DispatchQueue.main.sync {
+            Result {
                 func set(string value: String, rowIndex: Int) {
                     DispatchQueue.main.async {
                         if let textField = self.gridView.cell(atColumnIndex: 1, rowIndex: rowIndex).contentView as? NSTextField {
@@ -78,63 +91,101 @@ class CartInfoViewController: ContextViewController {
         if let appDelegate = NSApp.delegate as? AppDelegate {
             appDelegate.cartInfoController = self
         }
+        self.clearHeaderUI(nil)
     }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.context.perform {
-            try! self.clearGridViewDisplay.get()
-            try! Result { Data(count: GameboyClassic.headerRange.count) }
-                .map { GameboyClassic.Header(bytes: $0) }
-                .map { self.updateClassicSaveUI(with: $0) }
-                .map { _ in () }
-                .get()
+
+    @IBAction func clearHeaderUI(_ sender: Any?) {
+        DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
+            let emptyHeaderData = Data(count: GameboyClassic.headerRange.count)
+            let emptyHeader     = GameboyClassic.Header(bytes: emptyHeaderData)
+            
+            switch self
+                .clearGridViewDisplay
+                .flatMap({ self.updateClassicSaveUI(with: emptyHeader) })
+            {
+            default: (/* no-op */)
+            }
         }
     }
     
     @IBAction func readHeader(_ sender: Any?) {
-        SelectedController.perform { controller in
-            switch self.clearGridViewDisplay
-                .flatMap({ controller.flatMap({ $0.header(for: GameboyClassic.self) }) })
-                .flatMap({ header in self.updateClassicHeaderUI(with: header) })
-                .flatMap({ header in self.updateClassicSaveUI(with: header) })
+        DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
+            switch self
+                .clearGridViewDisplay
+                .flatMap({
+                    SerialDevice<GBxCart>
+                        .connect()
+                        .header(forPlatform: GameboyClassic.self)
+                })
+                .flatMap({ self.updateClassicHeaderUI(with: $0) })
+                .flatMap({ self.updateClassicSaveUI(with: $0) })
             {
             case .success: (/* no-op */)
-            case .failure(let error): self.context.display(error: error, in: self)
+            case .failure(let error):
+                self.context.display(error: error, in: self)
+                self.clearHeaderUI(sender)
             }
         }
     }
     
     @IBAction func readSaveData(_ sender: Any?) {
-        self.saveDataProgressBar.isHidden = false
-        SelectedController.perform {
-            switch $0
-                .flatMap({ controller in controller.header(for: GameboyClassic.self).map { (controller, $0) } })
-                .flatMap({ (controller, header) in
-                    controller
-                        .backupSave(for: GameboyClassic.self, progress: { amount in self.context.update(progressBar: self.saveDataProgressBar, with: amount) })
-                        .map { ($0, header) }
-            }) {
-            case .success(let saveData, let header):
-                DispatchQueue.main.sync {
-                    let savePanel = NSSavePanel()
-                    savePanel.nameFieldStringValue = "\(header.title).sav"
+        DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
+            switch self
+                .showSaveProgressBar
+                .flatMap({
+                    SerialDevice<GBxCart>
+                        .connect()
+                        .header(forPlatform: GameboyClassic.self)
+                        .map { $0.title + ".sav" }
+                })
+                .flatMap({ fileName in
+                    SerialDevice<GBxCart>
+                        .connect()
+                        .backupSave(for: GameboyClassic.self, progress: {
+                            self.saveDataProgressBar.doubleValue = $0
+                        })
+                        .map { (fileName, $0) }
+                })
+                .flatMap({ result in
+                    self.hideSaveProgressBar.map { result }
+                })
+            {
+            case .success(let fileName, let saveData):
+                DispatchQueue.main.async {
+                    // Create the 'Save Panel' ---------------------------------
+                    let savePanel: NSSavePanel = {
+                        let savePanel = NSSavePanel()
+                        savePanel.nameFieldStringValue = fileName
+                        return savePanel
+                    }()
+                    // Dispaly it; get result ----------------------------------
                     self.context.display(savePanel: savePanel) { response in
-                        self.saveDataProgressBar.doubleValue = 0
-                        self.saveDataProgressBar.isHidden = true
+                        guard let url = savePanel.url,
+                            case .OK = response else
+                        {
+                            return /* no-op */
+                        }
                         
-                        guard let url = savePanel.url, case .OK = response else {
-                            return
-                        }
-                        do {
-                            try saveData.write(to: url)
-                        } catch {
-                            self.context.display(error: error, in: self)
-                        }
+                        do    { try saveData.write(to: url) }
+                        catch { self.context.display(error: error, in: self) }
                     }
+                    // ---------------------------------------------------------
                 }
-            case .failure(let error): self.context.display(error: error, in: self)
+            case .failure(let error):
+                self.context.display(error: error, in: self)
             }
+        }
+    }
+    
+    private func selectSaveFile(openPanelIn window: NSWindow, _ callback: @escaping (Data?) -> ()) {
+        let openPanel = NSOpenPanel()
+        openPanel.beginSheetModal(for: window) {
+            guard case .OK = $0, let url = openPanel.url, let data = try? Data(contentsOf: url) else {
+                callback(nil)
+                return
+            }
+            
+            callback(data)
         }
     }
     
@@ -142,25 +193,24 @@ class CartInfoViewController: ContextViewController {
         guard let window = NSApp.mainWindow else {
             return
         }
-        let openPanel = NSOpenPanel()
-        openPanel.beginSheetModal(for: window) {
-            guard case .OK = $0, let url = openPanel.url, let data = try? Data(contentsOf: url) else {
+        self.selectSaveFile(openPanelIn: window) { data in
+            guard let data = data else {
                 return
             }
             
-            self.saveDataProgressBar.isHidden = false
-            
-            SelectedController.perform {
-                defer {
-                    DispatchQueue.main.sync {
-                        self.saveDataProgressBar.isHidden = true
-                        self.saveDataProgressBar.doubleValue = 0.0
-                    }
-                }
-                switch $0.flatMap({ controller in
-                  controller.restoreSave(for: GameboyClassic.self, data: data, progress: { amount in self.context.update(progressBar: self.saveDataProgressBar, with: amount) })
-                }) {
-                case .success: ()
+            DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
+                switch self
+                    .showSaveProgressBar
+                    .flatMap({
+                        SerialDevice<GBxCart>
+                            .connect()
+                            .restoreSave(for: GameboyClassic.self, data: data, progress: {
+                                self.saveDataProgressBar.doubleValue = $0
+                            })
+                    })
+                    .flatMap({ self.hideSaveProgressBar })
+                {
+                case .success(): (/* no-op */)
                 case .failure(let error): self.context.display(error: error, in: self)
                 }
             }
@@ -184,22 +234,21 @@ class CartInfoViewController: ContextViewController {
                 return
             }
             
-            self.saveDataProgressBar.isHidden = false
-            
-            SelectedController.perform {
-                defer {
-                    DispatchQueue.main.sync {
-                        self.saveDataProgressBar.isHidden = true
-                        self.saveDataProgressBar.doubleValue = 0.0
-                    }
-                }
-                switch $0.flatMap({ controller in
-                    controller.deleteSave(for: GameboyClassic.self, progress: { amount in
-                        self.context.update(progressBar: self.saveDataProgressBar, with: amount)
+            DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
+                switch self
+                    .showSaveProgressBar
+                    .flatMap({
+                        SerialDevice<GBxCart>
+                            .connect()
+                            .deleteSave(for: GameboyClassic.self, progress: {
+                                self.saveDataProgressBar.doubleValue = $0
+                            })
                     })
-                }) {
-                case .success(): ()
-                case .failure(let error): self.context.display(error: error, in: self)
+                    .flatMap({ self.hideSaveProgressBar })
+                {
+                case .success(): (/* no-op */)
+                case .failure(let error):
+                    self.context.display(error: error, in: self)
                 }
             }
         }

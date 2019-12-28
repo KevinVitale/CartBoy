@@ -20,12 +20,23 @@ public protocol SerialPortController {
     func closePort() -> Bool
     
     /**
+     Notifies the receiver that the underlying serial port has been closed.
+     
+     Use this function to give the controller an opportunity to a prepare a full
+     shutdown of its own state, such as _signaling_ locks.
      */
-    func close(delegate: ORSSerialPortDelegate)
+    func serialPortWasClosed()
 }
 
 extension SerialPortController {
-    func request<Number>(totalBytes unitCount: Number, packetSize maxPacketLength: UInt, timeoutInterval: TimeInterval = -1.0, prepare block: @escaping ((Self) -> ()), progress update: @escaping (Self, _ with: Progress) -> (), responseEvaluator: @escaping ORSSerialPacketEvaluator, result: @escaping (Result<Data, SerialPortRequestError>) -> ()) -> SerialPortRequest<Self> where Number: FixedWidthInteger {
+    func request<Number>(totalBytes unitCount: Number,
+                   packetSize maxPacketLength: UInt,
+                              timeoutInterval: TimeInterval = -1.0,
+                                prepare block: @escaping ((Self) -> ()),
+                              progress update: @escaping (Self, _ with: Progress) -> (),
+                            responseEvaluator: @escaping ORSSerialPacketEvaluator,
+                                       result: @escaping (Result<Data, SerialPortRequestError>) -> ()) -> SerialPortRequest<Self> where Number: FixedWidthInteger
+    {
         return SerialPortRequest(controller: self
             , unitCount: Int64(unitCount)
             , timeoutInterval: timeoutInterval
