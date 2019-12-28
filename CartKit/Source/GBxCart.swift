@@ -157,142 +157,6 @@ public struct GBxCart: DeviceProfile {
         return ( serialDevice.send("F", number: address)
               && serialDevice.send("", number: byte ))
     }
-    
-    private static func eraseAM29F016B(_ serialDevice: SerialDevice) -> Result<(),Error> {
-        self.waitFor(serialDevice) {
-            self.flash(serialDevice, byte: 0xF0, at: 0x00)
-        }
-        .flatMap({ _ in self.flushBuffer(serialDevice, for: GameboyClassic.self) })
-        .flatMap({ _ in
-            self.waitFor(serialDevice) {
-                serialDevice.send("G".bytes())  // romMode
-                serialDevice.send("PW".bytes()) // pinMode
-                self.flash(serialDevice, byte: 0xAA, at: 0x555)
-            }
-        })
-        .flatMap({ _ in
-            self.waitFor(serialDevice, toReturn: { _ in true}) {
-                self.flash(serialDevice, byte: 0x55, at: 0x2AA)
-            }
-        })
-        .flatMap({ _ in
-            self.waitFor(serialDevice, toReturn: { _ in true}) {
-                self.flash(serialDevice, byte: 0x80, at: 0x555)
-            }
-        })
-        .flatMap({ _ in
-            self.waitFor(serialDevice, toReturn: { _ in true}) {
-                self.flash(serialDevice, byte: 0xAA, at: 0x555)
-            }
-        })
-        .flatMap({ _ in
-            self.waitFor(serialDevice, toReturn: { _ in true}) {
-                self.flash(serialDevice, byte: 0x55, at: 0x2AA)
-            }
-        })
-        .flatMap({ _ in
-            self.waitFor(serialDevice, toReturn: { _ in true}) {
-                self.flash(serialDevice, byte: 0x10, at: 0x555)
-            }
-        })
-        .flatMap({ _ in
-            self.read(fromSerialDevice: serialDevice,
-                              platform: GameboyClassic.self,
-                             byteCount: 1,
-                            startingAt: 0x0000,
-                               timeout: 30,
-                     responseEvaluator: {
-                        guard $0!.starts(with: [0xFF]) else {
-                            self.continue(serialDevice)
-                            return false
-                        }
-                        return true })
-        })
-        .flatMap({ _ in
-            self.waitFor(serialDevice) {
-                self.flash(serialDevice, byte: 0xF0, at: 0x00)
-            }
-        })
-        .map({ _ in })
-    }
-    
-    private static func flash(cartridge flashCartridge: AM29F016B,
-                                          serialDevice: SerialDevice,
-                                                update: ((Double) -> ())?) -> Result<(),Error>
-    {
-        self.eraseAM29F016B(serialDevice)
-            .flatMap({ self.flushBuffer(serialDevice, for: GameboyClassic.self) })
-            .flatMap({ _ in
-                let hexCodes = [ // '555'
-                    (0x555, 0xAA),
-                    (0x2AA, 0x55),
-                    (0x555, 0xA0)
-                ]
-                return self.waitFor(serialDevice) {
-                    serialDevice.send("G".bytes())  // romMode
-                    serialDevice.send("PW".bytes()) // pinMode
-                    serialDevice.send("E".bytes())  // romMode
-                    serialDevice.send("", number: hexCodes[0].0)
-                }
-                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[0].1) } }
-                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[1].0) } }
-                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[1].1) } }
-                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[2].0) } }
-                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[2].1) } }
-                .map { _ in () }
-            })
-            .flatMap({
-                let progress = Progress(totalUnitCount: Int64(flashCartridge.count))
-                //--------------------------------------------------------------
-                var observer: NSKeyValueObservation?
-                if let update = update {
-                    observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
-                        DispatchQueue.main.async {
-                            update(change.newValue ?? 0)
-                        }
-                    }
-                }
-                defer { observer?.invalidate() }
-                //--------------------------------------------------------------
-                return Result {
-                    let header = flashCartridge.header
-                    for bank in 0..<header.romBanks {
-                        let startIndex = bank * header.romBankSize
-                        let endIndex   = startIndex.advanced(by: header.romBankSize)
-                        //------------------------------------------------------
-                        let slice  = flashCartridge[startIndex..<endIndex]
-                        let romBankSize = Int64(slice.count)
-                        //------------------------------------------------------
-                        progress.becomeCurrent(withPendingUnitCount: romBankSize)
-                        //------------------------------------------------------
-                        _ = try await {
-                            serialDevice.request(totalBytes: (slice.count / 64),
-                                                 packetSize: 1,
-                                                 prepare: { _ in
-                                                    self.stopReading(from: serialDevice)
-                                                    self.setBank(serialDevice, bank: bank, at: 0x2100)
-                                                    self.seek(serialDevice, to: bank > 0 ? 0x4000 : 0x0000)
-                                                    
-                                                    let startAddress = slice.startIndex
-                                                    let bytesInRange = startAddress..<(startAddress + 64)
-                                                    let bytesToWrite = "T".data(using: .ascii)! + Data(slice[bytesInRange])
-                                                    
-                                                    serialDevice.send(bytesToWrite) },
-                                                 progress: { _, progress in
-                                                    let startAddress = Int((progress.completedUnitCount * 64).advanced(by: Int(slice.startIndex)))
-                                                    let bytesInRange = startAddress..<(startAddress + 64)
-                                                    let bytesToWrite = "T".data(using: .ascii)! + Data(slice[bytesInRange])
-                                                    serialDevice.send(bytesToWrite) },
-                                                 responseEvaluator: { _ in true },
-                                                 result: $0)
-                                .start()
-                        }
-                        //------------------------------------------------------
-                        progress.resignCurrent()
-                    }
-                }
-            })
-    }
 }
 
 extension ORSSerialPort {
@@ -612,15 +476,143 @@ fileprivate extension GBxCart {
         }
     }
     
-    static func serialDevice<FlashCartridge: CartKit.FlashCartridge>(_ serialDevice: SerialDevice, writeFlashCartridge flashCartridge: FlashCartridge, update: ((Double) -> ())?) -> Result<(),Error> {
-        switch flashCartridge {
-        case let flashCartridge as AM29F016B:
-            return self.flash(cartridge: flashCartridge, serialDevice: serialDevice, update: update)
-        default:
-            return .failure(CartridgeFlashError.unsupportedChipset(type(of: flashCartridge)))
-        }
-    }
     
+    static func flashAM29F016B(_ serialDevice: SerialDevice,
+                               flashCartridge: AM29F016B,
+                              progress update: ((Double) -> ())?) -> Result<(),Error>
+    {
+        self.eraseAM29F016B(serialDevice)
+            .flatMap({ self.flushBuffer(serialDevice, for: GameboyClassic.self) })
+            .flatMap({ _ in
+                let hexCodes = [ // '555'
+                    (0x555, 0xAA),
+                    (0x2AA, 0x55),
+                    (0x555, 0xA0)
+                ]
+                return self.waitFor(serialDevice) {
+                    serialDevice.send("G".bytes())  // romMode
+                    serialDevice.send("PW".bytes()) // pinMode
+                    serialDevice.send("E".bytes())  // romMode
+                    serialDevice.send("", number: hexCodes[0].0)
+                }
+                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[0].1) } }
+                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[1].0) } }
+                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[1].1) } }
+                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[2].0) } }
+                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[2].1) } }
+                .map { _ in () }
+            })
+            .flatMap({
+                let progress = Progress(totalUnitCount: Int64(flashCartridge.count))
+                //--------------------------------------------------------------
+                var observer: NSKeyValueObservation?
+                if let update = update {
+                    observer = progress.observe(\.fractionCompleted, options: [.new]) { _, change in
+                        DispatchQueue.main.async {
+                            update(change.newValue ?? 0)
+                        }
+                    }
+                }
+                defer { observer?.invalidate() }
+                //--------------------------------------------------------------
+                return Result {
+                    let header = flashCartridge.header
+                    for bank in 0..<header.romBanks {
+                        let startIndex = bank * header.romBankSize
+                        let endIndex   = startIndex.advanced(by: header.romBankSize)
+                        //------------------------------------------------------
+                        let slice  = flashCartridge[startIndex..<endIndex]
+                        let romBankSize = Int64(slice.count)
+                        //------------------------------------------------------
+                        progress.becomeCurrent(withPendingUnitCount: romBankSize)
+                        //------------------------------------------------------
+                        _ = try await {
+                            serialDevice.request(totalBytes: (slice.count / 64),
+                                                 packetSize: 1,
+                                                 prepare: { _ in
+                                                    self.stopReading(from: serialDevice)
+                                                    self.setBank(serialDevice, bank: bank, at: 0x2100)
+                                                    self.seek(serialDevice, to: bank > 0 ? 0x4000 : 0x0000)
+                                                    
+                                                    let startAddress = slice.startIndex
+                                                    let bytesInRange = startAddress..<(startAddress + 64)
+                                                    let bytesToWrite = "T".data(using: .ascii)! + Data(slice[bytesInRange])
+                                                    
+                                                    serialDevice.send(bytesToWrite) },
+                                                 progress: { _, progress in
+                                                    let startAddress = Int((progress.completedUnitCount * 64).advanced(by: Int(slice.startIndex)))
+                                                    let bytesInRange = startAddress..<(startAddress + 64)
+                                                    let bytesToWrite = "T".data(using: .ascii)! + Data(slice[bytesInRange])
+                                                    serialDevice.send(bytesToWrite) },
+                                                 responseEvaluator: { _ in true },
+                                                 result: $0)
+                                .start()
+                        }
+                        //------------------------------------------------------
+                        progress.resignCurrent()
+                    }
+                }
+            })
+    }
+
+    static func eraseAM29F016B(_ serialDevice: SerialDevice) -> Result<(),Error> {
+        self.waitFor(serialDevice) {
+            self.flash(serialDevice, byte: 0xF0, at: 0x00)
+            
+        }
+        .flatMap({ _ in self.flushBuffer(serialDevice, for: GameboyClassic.self) })
+        .flatMap({ _ in
+            self.waitFor(serialDevice) {
+                serialDevice.send("G".bytes())  // romMode
+                serialDevice.send("PW".bytes()) // pinMode
+                self.flash(serialDevice, byte: 0xAA, at: 0x555)
+            }
+        })
+        .flatMap({ _ in
+            self.waitFor(serialDevice, toReturn: { _ in true}) {
+                self.flash(serialDevice, byte: 0x55, at: 0x2AA)
+            }
+        })
+        .flatMap({ _ in
+            self.waitFor(serialDevice, toReturn: { _ in true}) {
+                self.flash(serialDevice, byte: 0x80, at: 0x555)
+            }
+        })
+        .flatMap({ _ in
+            self.waitFor(serialDevice, toReturn: { _ in true}) {
+                self.flash(serialDevice, byte: 0xAA, at: 0x555)
+            }
+        })
+        .flatMap({ _ in
+            self.waitFor(serialDevice, toReturn: { _ in true}) {
+                self.flash(serialDevice, byte: 0x55, at: 0x2AA)
+            }
+        })
+        .flatMap({ _ in
+            self.waitFor(serialDevice, toReturn: { _ in true}) {
+                self.flash(serialDevice, byte: 0x10, at: 0x555)
+            }
+        })
+        .flatMap({ _ in
+            self.read(fromSerialDevice: serialDevice,
+                              platform: GameboyClassic.self,
+                             byteCount: 1,
+                            startingAt: 0x0000,
+                               timeout: 30,
+                     responseEvaluator: {
+                        guard $0!.starts(with: [0xFF]) else {
+                            self.continue(serialDevice)
+                            return false
+                        }
+                        return true })
+        })
+        .flatMap({ _ in
+            self.waitFor(serialDevice) {
+                self.flash(serialDevice, byte: 0xF0, at: 0x00)
+            }
+        })
+        .map({ _ in })
+    }
 }
 
 public extension Result where Success == SerialDevice<GBxCart> {
@@ -684,8 +676,10 @@ public extension Result where Success == SerialDevice<GBxCart> {
         switch chipset.Platform.self {
         case is GameboyClassic.Type:
             switch chipset {
-            case is AM29F016B.Type: return resultFrom(GBxCart.serialDevice(_:erase:), chipset)
-            default: return .failure(CartridgeFlashError.unsupportedChipset(chipset))
+            case is AM29F016B.Type:
+                return resultFrom(GBxCart.eraseAM29F016B(_:))
+            default:
+                return .failure(CartridgeFlashError.unsupportedChipset(chipset))
             }
         case is GameboyAdvance.Type: fallthrough
         default: return .failure(CartridgeFlashError.unsupportedChipset(chipset))
@@ -698,8 +692,8 @@ public extension Result where Success == SerialDevice<GBxCart> {
         switch FlashCartridge.Platform.self {
         case is GameboyClassic.Type:
             switch flashCartridge {
-            case is AM29F016B:
-                return resultFrom(GBxCart.serialDevice(_:writeFlashCartridge:update:), flashCartridge, update)
+            case let flashCartridge as AM29F016B:
+                return resultFrom(GBxCart.flashAM29F016B(_:flashCartridge:progress:), flashCartridge, update)
             default:
                 return .failure(CartridgeFlashError.unsupportedChipset(type(of: flashCartridge)))
             }
