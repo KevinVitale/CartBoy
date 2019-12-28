@@ -1,18 +1,26 @@
 import Foundation
 import ORSSerial
 
+/**
+ A controller that blocks access to a serial port (described by `portProfile`)
+ while opened.
+ */
 open class ThreadSafeSerialPortController: NSObject, SerialPortController {
     /**
+     Creates an instance of the receiver **iff** the serial port described by
+     `portProfile` is connected to system.
+     
+     - parameter portProfile: Describes the serial port to be controlled.
      */
     init(matching portProfile: ORSSerialPortManager.PortProfile) throws {
         self.reader = try ORSSerialPortManager.port(matching: portProfile)
         super.init()
     }
     
-    ///
+    /// The underlying serial port.
     fileprivate let reader: ORSSerialPort
     
-    ///
+    /// A lock & checkpoint for whether the `reader` is opened by the receiver.
     private let isOpenCondition = NSCondition()
     
     /// Retain a strong reference. Prevents _deinit_ of `reader.delegate`.
@@ -89,7 +97,7 @@ extension ThreadSafeSerialPortController {
         return self.reader.close()
     }
     
-    public func close(delegate: ORSSerialPortDelegate) {
+    public func serialPortWasClosed() {
         self.isOpenCondition.whileLocked {
             self.delegate = nil
             self.isOpenCondition.signal()

@@ -85,7 +85,13 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
     
     @objc override func start() {
         if self.isAsynchronous {
-            Thread(target: self, selector: #selector(self.main), object: nil).start()
+            // `detached` seems to have the best performance, and incurs the
+            // least thread creation.
+            //
+            // Needs more testing.
+            OpenDispatchQueue.async(flags: .detached) {
+                self.main()
+            }
         }
         else {
             main()
@@ -130,9 +136,14 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
     }
 
     @objc func serialPortWasClosed(_ serialPort: ORSSerialPort) {
-        controller.close(delegate: self)
+        controller.serialPortWasClosed()
     }
     
     @objc func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
     }
 }
+
+private let OpenDispatchQueue = DispatchQueue(label: "com.cartkit.serialport.open.queue",
+                                                qos: .userInitiated,
+                                         attributes: .concurrent)
+

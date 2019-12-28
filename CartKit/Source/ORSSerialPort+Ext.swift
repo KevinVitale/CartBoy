@@ -1,19 +1,5 @@
 import ORSSerial
 
-extension ORSSerialPort {
-    @discardableResult
-    final func configuredAsGBxCart() -> ORSSerialPort {
-        self.allowsNonStandardBaudRates = true
-        self.baudRate = 1000000
-        self.dtr = true
-        self.rts = true
-        self.numberOfDataBits = 8
-        self.numberOfStopBits = 1
-        self.parity = .none
-        return self
-    }
-}
-
 extension ORSSerialPortManager {
     public enum PortMatchingError: LocalizedError, CustomNSError, CustomDebugStringConvertible {
         case noMatching(profile: PortProfile)

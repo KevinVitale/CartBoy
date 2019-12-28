@@ -9,10 +9,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var cleanup: () -> () = { }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        let observer = ORSSerialPortManager.shared().observe(\.availablePorts, options: [.initial, .new]) { _, change in
-            if let _ = change.newValue?.filter({ $0.productID != NSNotFound || $0.vendorID != NSNotFound }).first {
-                self.cartInfoController.readHeader(self)
-                self.productInfoController.readProductInfo(self)
+        let observer = ORSSerialPortManager.shared().observe(\.availablePorts, options: [.initial, .new, .old]) { _, change in
+            if change.oldValue == nil || change.kind == .removal {
+                self.productInfoController.clearProductInfo(nil)
+                self.cartInfoController.clearHeaderUI(nil)
+            }
+            
+            if change
+                .newValue?
+                .filter({ $0.productID != NSNotFound || $0.vendorID != NSNotFound })
+                .isEmpty == false
+            {
+                let delay: DispatchTimeInterval = (change.kind == .insertion ? .milliseconds(1250) : .seconds(0))
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    self.productInfoController.readProductInfo(self)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(125)) {
+                        self.cartInfoController.readHeader(self)
+                    }
+                }
             }
         }
         self.cleanup = {

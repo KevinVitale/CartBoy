@@ -9,35 +9,56 @@ extension Cartridge {
     }
 }
 
+extension Data {
+    fileprivate var md5String: String {
+        return self.md5.hexString(separator: "").lowercased()
+    }
+}
+
 fileprivate func saveFileAndMD5(named title: String, extension fileExtension: String = "sav") throws -> (data: Data, md5: String) {
     let data = try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)"))
     let MD5 = data.md5.hexString(separator: "").lowercased()
     return (data, MD5)
 }
 
-fileprivate func romFileURL(named title: String, extension fileExtension: String = "gb") -> URL {
+fileprivate func saveFileAndMD5Result(named title: String, extension fileExtension: String = "sav") -> Result<(data: Data, md5: String),Error> {
+    Result {
+        try saveFileAndMD5(named: title, extension: fileExtension)
+    }
+}
+
+fileprivate func romFileURL(named title: String, extension fileExtension: String = "gbc") -> URL {
     return URL(fileURLWithPath: "/Users/kevin/Desktop/\(title).\(fileExtension)")
 }
 
 class CartridgeTests: XCTestCase {
     func testHeader() {
-        let exp = expectation(description: "")
-        insideGadgetsController.perform { controller in
-            defer { exp.fulfill() }
-            switch controller.flatMap({ $0.header(for: GameboyClassic.self) }) {
-            case .success(let header): print(header)
-            case .failure(let error):  XCTFail("\(error)")
-            }
+        switch SerialDevice<GBxCart>
+            .connect()
+            .header(forPlatform: GameboyClassic.self)
+        {
+        case .success(let header): print(header)
+        case .failure(let error):  XCTFail("\(error)")
         }
-        waitForExpectations(timeout: 5)
     }
     
     func testCartridge() {
+        switch SerialDevice<GBxCart>
+            .connect()
+            .cartridge(forPlatform: GameboyClassic.self)
+        {
+        case .success(let cartridge): print(cartridge.header); print(cartridge.md5String)
+        case .failure(let error):  XCTFail("\(error)")
+        }
+    }
+    
+    func testCartridgeAsync() {
         let exp = expectation(description: "")
-        insideGadgetsController.perform { controller in
+        DispatchQueue.global(qos: .userInitiated).async {
             defer { exp.fulfill() }
-            switch controller
-                .flatMap({ $0.cartridge(for: GameboyClassic.self, progress: { print($0) }) })
+            switch SerialDevice<GBxCart>
+                .connect()
+                .cartridge(forPlatform: GameboyClassic.self, progress: { print($0) })
             {
             case .success(let cartridge): print(cartridge.header); print(cartridge.md5String)
             case .failure(let error):  XCTFail("\(error)")
@@ -47,11 +68,24 @@ class CartridgeTests: XCTestCase {
     }
     
     func testBackupSave() {
+        switch SerialDevice<GBxCart>
+            .connect()
+            .backupSave(for: GameboyClassic.self)
+        {
+        case .success(let saveData): print(saveData.md5String)
+        case .failure(let error):  XCTFail("\(error)")
+        }
+    }
+    
+    func testBackupSaveAsync() {
         let exp = expectation(description: "")
-        insideGadgetsController.perform { controller in
+        DispatchQueue.global(qos: .userInitiated).async {
             defer { exp.fulfill() }
-            switch controller.flatMap({ $0.backupSave(for: GameboyClassic.self, progress: { print($0) }) }) {
-            case .success(let saveData): print(saveData)
+            switch SerialDevice<GBxCart>
+                .connect()
+                .backupSave(for: GameboyClassic.self, progress: { print($0) })
+            {
+            case .success(let saveData): print(saveData.md5String)
             case .failure(let error):  XCTFail("\(error)")
             }
         }
@@ -59,12 +93,30 @@ class CartridgeTests: XCTestCase {
     }
     
     func testRestoreSave() {
+        switch saveFileAndMD5Result(named: "POKEMON YELLOW")
+            .flatMap({
+                SerialDevice<GBxCart>
+                    .connect()
+                    .restoreSave(for: GameboyClassic.self, data: $0.data)
+            })
+        {
+        case .success: ()
+        case .failure(let error):  XCTFail("\(error)")
+        }
+    }
+    
+    func testRestoreSaveAsync() {
         let exp = expectation(description: "")
-        insideGadgetsController.perform { controller in
+        DispatchQueue.global(qos: .userInitiated).async {
             defer { exp.fulfill() }
-            switch controller
-                .flatMap({ controller in Result { (controller, try saveFileAndMD5(named: "POKEMON YELLOW")) } })
-                .flatMap({ $0.restoreSave(for: GameboyClassic.self, data: $1.data, progress: { print($0) }) })
+            switch saveFileAndMD5Result(named: "POKEMON YELLOW")
+                .flatMap({
+                    SerialDevice<GBxCart>
+                        .connect()
+                        .restoreSave( for: GameboyClassic.self,
+                                     data: $0.data,
+                                 progress: { print($0) } )
+                })
             {
             case .success: ()
             case .failure(let error):  XCTFail("\(error)")
@@ -74,10 +126,22 @@ class CartridgeTests: XCTestCase {
     }
     
     func testDeleteSave() {
+        switch SerialDevice<GBxCart>
+            .connect()
+            .deleteSave(for: GameboyClassic.self)
+        {
+        case .success: (/* no-op */)
+        case .failure(let error):  XCTFail("\(error)")
+        }
+    }
+    
+    func testDeleteSaveAsync() {
         let exp = expectation(description: "")
-        insideGadgetsController.perform { controller in
+        DispatchQueue.global(qos: .userInitiated).async {
             defer { exp.fulfill() }
-            switch controller.flatMap({ $0.deleteSave(for: GameboyClassic.self, progress: { print($0) })})
+            switch SerialDevice<GBxCart>
+                .connect()
+                .deleteSave( for: GameboyClassic.self, progress: { print($0) })
             {
             case .success: ()
             case .failure(let error):  XCTFail("\(error)")
@@ -87,60 +151,67 @@ class CartridgeTests: XCTestCase {
     }
     
     func testBoardVersion() {
-        let exp = expectation(description: "")
-        insideGadgetsController.perform { controller in
-            defer { exp.fulfill() }
-            switch controller.flatMap({
-                $0.boardVersion().map({
-                    $0.hexString()
-                })
-            })
-            {
-            case .success(let voltage): print(voltage)
-            case .failure(let error):  XCTFail("\(error)")
-            }
+        switch SerialDevice<GBxCart>
+            .connect()
+            .version()
+        {
+        case .success(let voltage): print(voltage)
+        case .failure(let error):  XCTFail("\(error)")
         }
-        waitForExpectations(timeout: 5)
     }
     
     func testVoltage() {
-        let exp = expectation(description: "")
-        insideGadgetsController.perform { controller in
-            defer { exp.fulfill() }
-            switch controller.flatMap({ $0.voltage() })
-            {
-            case .success(let voltage): print(voltage)
-            case .failure(let error):  XCTFail("\(error)")
-            }
+        switch SerialDevice<GBxCart>
+            .connect()
+            .voltage()
+        {
+        case .success(let voltage): print(voltage)
+        case .failure(let error):  XCTFail("\(error)")
         }
-        waitForExpectations(timeout: 5)
     }
     
-    func testWriteResult() {
+    func testChipsetFlash_AM29F016B() {
+        switch Result(catching: {
+            try AM29F016B(contentsOf: romFileURL(named: "POKEMON YELLOW"))
+        })
+        .flatMap({
+            SerialDevice
+                .connect()
+                .write(flashCartridge: $0)
+        })
+        {
+        case .success: (/* no-op */)
+        case .failure(let error): XCTFail("\(error)")
+        }
+    }
+    
+    func testChipsetFlash_AM29F016B_Async() {
         let exp = expectation(description: "")
-        insideGadgetsController.perform { controller in
+        DispatchQueue.global(qos: .userInitiated).async {
             defer { exp.fulfill() }
-            switch controller
-                .map({ controller in (controller, "POKEMON YELLOW") })
-                .flatMap({ (controller, fileName) in Result { (controller, try AM29F016B(contentsOf: romFileURL(named: fileName))) } })
-                .flatMap({ (controller, flashCartridge) in controller.write(to: flashCartridge, progress: { print($0) }) })
+            switch Result(catching: {
+                try AM29F016B(contentsOf: romFileURL(named: "POKEMON YELLOW"))
+            })
+                .flatMap({
+                    SerialDevice
+                        .connect()
+                        .write(flashCartridge: $0, progress: { print($0) })
+                })
             {
-            case .success: ()
-            case .failure(let error):  XCTFail("\(error)")
+            case .success: (/* no-op */)
+            case .failure(let error): XCTFail("\(error)")
             }
         }
         waitForExpectations(timeout: 300)
     }
     
-    func testCartridgeEraser() {
-        let exp = expectation(description: "")
-        insideGadgetsController.perform { controller in
-            defer { exp.fulfill() }
-            switch controller.flatMap({ $0.erase(chipset: AM29F016B.self) }) {
-            case .success: ()
-            case .failure(let error):  XCTFail("\(error)")
-            }
+    func testChipsetErase_AM29F016B() {
+        switch SerialDevice<GBxCart>
+            .connect()
+            .erase(flashCartridge: AM29F016B.self)
+        {
+        case .success: ()
+        case .failure(let error):  XCTFail("\(error)")
         }
-        waitForExpectations(timeout: 20)
     }
 }

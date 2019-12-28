@@ -32,16 +32,23 @@ class ProductInfoViewController: ContextViewController {
         }
     }
     
+    @IBAction func clearProductInfo(_ sender: Any?) {
+        DispatchQueue.global().async {
+            try! self.updateProductInfoResult().get()
+        }
+    }
+    
     @IBAction func readProductInfo(_ sender: Any?) {
-        insideGadgetsController.perform { controller in
-            switch controller
-                .flatMap({ controller in .success(Voltage.high) /* controller.voltage() */ })
-                .flatMap({ self.updateProductInfoResult(voltage: $0.rawValue, website: "www.insideGadgets.com") })
+        DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
+            switch self.updateProductInfoResult()
+                .flatMap({ _       in SerialDevice<GBxCart>.connect().voltage() })
+                .flatMap({ voltage in SerialDevice<GBxCart>.connect().version().map { ($0, voltage.rawValue) } })
+                .flatMap({ self.updateProductInfoResult(firmware: $0.0, voltage: $0.1, website: "insideGadgets.com") })
             {
-            case .success: ()
+            case .success(): (/* no-op */)
             case .failure(let error):
                 self.context.display(error: error, in: self)
-                try! self.updateProductInfoResult().get()
+                self.clearProductInfo(nil)
             }
         }
     }
