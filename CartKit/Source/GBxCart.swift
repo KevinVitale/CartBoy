@@ -175,8 +175,7 @@ extension ORSSerialPort {
 
 fileprivate extension GBxCart {
     static func version(_ serialDevice: SerialDevice) -> Result<Data,Error> {
-        // precondition(Thread.current != .main)
-        return Result {
+        Result {
             try await {
                 serialDevice.request(totalBytes: 1,
                                      packetSize: 1,
@@ -192,8 +191,7 @@ fileprivate extension GBxCart {
     }
     
     static func voltage<Platform: Gibby.Platform>(forPlatform platform: Platform.Type) -> Result<Voltage,Error> {
-        // precondition(Thread.current != .main)
-        return Result<Voltage,Error>(catching: {
+        Result<Voltage,Error>(catching: {
             switch platform {
             case is GameboyClassic.Type: return .high
             case is GameboyAdvance.Type: return .low
@@ -203,8 +201,7 @@ fileprivate extension GBxCart {
     }
 
     static func voltage(_ serialDevice: SerialDevice) -> Result<Voltage,Error> {
-        // precondition(Thread.current != .main)
-        return Result {
+        Result {
             let data = try await {
                 serialDevice.request(totalBytes: 1,
                                      packetSize: 1,
@@ -225,8 +222,7 @@ fileprivate extension GBxCart {
     }
     
     static func serialDevice(_ serialDevice: SerialDevice, setVoltage voltage: Voltage) -> Result<(),Error> {
-        //precondition(Thread.current != .main)
-        return version(serialDevice).flatMap({ version in
+        version(serialDevice).flatMap({ version in
             let pcbVersion = Int(version.hexString()) ?? .min
             // -----------------------------------------------------------------
             guard pcbVersion > 2 else {
@@ -258,9 +254,7 @@ fileprivate extension GBxCart {
     }
 
     static func serialDevice<Platform: Gibby.Platform>(_ serialDevice: SerialDevice, readHeaderFor platform: Platform.Type) -> Result<Platform.Header,Error> {
-        // precondition(Thread.current != .main)
-        return self
-            .voltage(forPlatform: platform)
+        self.voltage(forPlatform: platform)
             .flatMap({ self.serialDevice(serialDevice, setVoltage: $0) })
             .flatMap({
                 self.read(fromSerialDevice: serialDevice,
