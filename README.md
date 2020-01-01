@@ -13,9 +13,9 @@
 `CartKit` is a companion framework, used by _CartBoy_, that
 defines general device support and functionality.
 
-#### `CartridgeController`
-The `CartridgeController` protocol is adopted by a device (such
-as `insidgeGadgetsController`) that is capable of the following:
+#### `SerialDevice<GBxCart>`
+The `SerialDevice<GBxCart>` is the cart reader device from
+`insidgeGadgetsController` that is capable of the following:
 
  - Reading the cartridge header; and,
  - copying the cartridge ROM; and,
@@ -25,41 +25,47 @@ as `insidgeGadgetsController`) that is capable of the following:
  - flashing new ROMs to compatible cartridges; and,
  - erasing existing ROMs from compatrible cartridges.
 
-A `CartridgeController` performs its functions from a `perform` 
-block (which runs on its own `DispatchQueue`); devices cannot
-be instantiated directly, thus the `perform` block is passed the
-result of a controller that can be used.
+A `SerialDevice<GBxCart>` cannot be instantiated directly; instead
+use `connect` and call any of its appropriate functions.
 
 ##### Read cartridge header
-Simply `flatMap` a `controller` into the `header` function, and
-check the `Result`.
+Simply `connect` to the `controller`, read the `header`, and
+check the `Result`:
 
 ```swift
-// Note: `perform` block is performed on a separate queue.
-insideGadgetsController.perform { controller in
-	switch controller.flatMap({ $0.header(for: GameboyClassic.self) })	
-	{
-		case .success(let header): (/* do something w/header */)
-		case .failure(let error):  (/* handle error */)
-	}
+switch SerialDevice<GBxCart>
+    .connect()
+    .header(forPlatform: GameboyClassic.self)
+{
+case .success(let header): print(header)
+case .failure(let error): print(error)
 }
 ```
 
-##### Copy cartridge ROM
-Similarly, to copy a cartridge's ROM to your Mac, `flatMap`
-the `controller` into the `cartridge` function—which also
-includes a callback updating the __progress__—and check the
-`Result`.
+##### Copy a cartridge's ROM
+Some functions let you get updates on the progress of an operation
+(such as when copying a cartridge to your Mac). In these cases **you
+must call the operation from queue other than the main one**.
+
+If you omit providing a progress callback, the operation blocks the
+main thread; this maybe useful for a number of scenarios (such as unit
+tests).
+
+If you want the progress reported, then wrap the operation within a
+`DispatchQueue.async` call (not doing so results in a runtime exception
+being thrown):
 
 ```swift
-// Note: `perform` block is performed on a separate queue.
-insideGadgetsController.perform { controller in
-	switch controller.flatMap({ $0.cartridge(for: GameboyClassic.self, progress: { print($0) }) })
-	{
-		case .success(let cartridge): (/* do something w/cartridge */)
-		case .failure(let error):  (/* handle error */)
-	}
+DispatchQueue.global(qos: .userInitiated).async {
+    switch SerialDevice<GBxCart>
+        .connect()
+        .cartridge(forPlatform: GameboyClassic.self, progress: { print($0) })
+    {
+    case .success(let cartridge): print(cartridge.header)
+    case .failure(let error):  print(error)
+    }
 }
+
 ```
 # Acknowledgements
 Special thanks to:
