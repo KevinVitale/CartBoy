@@ -37,20 +37,17 @@ extension SerialPortController {
                             responseEvaluator: @escaping ORSSerialPacketEvaluator,
                                        result: @escaping (Result<Data, SerialPortRequestError>) -> ()) -> SerialPortRequest<Self> where Number: FixedWidthInteger
     {
-        return SerialPortRequest(controller: self
-            , unitCount: Int64(unitCount)
-            , timeoutInterval: timeoutInterval
-            , maxPacketLength: maxPacketLength
-            , responseEvaluator: { data in responseEvaluator(data!) }
-            , perform: { progress in
-                if progress.completedUnitCount == 0 {
-                    block(self)
-                }
-                else {
-                    update(self, progress)
-                }
-        }) {
-            result($0)
-        }
+        SerialPortRequest(     controller: self,
+                                unitCount: Int64(unitCount),
+                          timeoutInterval: timeoutInterval,
+                          maxPacketLength: maxPacketLength,
+                        responseEvaluator: { data in responseEvaluator(data!) },
+                                  perform: { progress in
+                                    if progress.completedUnitCount == 0 {
+                                        block(self)
+                                    }
+                                    else {
+                                        update(self, progress)
+                                    }}) { result($0) }
     }
 }
