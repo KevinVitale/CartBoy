@@ -117,30 +117,10 @@ public struct GBxCart: DeviceProfile {
         }
     }
     
-    private static let TerminatingResponse: ((Data?) -> Bool) = { $0!.starts(with: [0x31]) }
-
-    private static func waitFor( _ serialDevice: SerialDevice,
-                                 atMost timeout: TimeInterval = -1,
-                     toReturn responseEvaluator: @escaping ORSSerialPacketEvaluator = TerminatingResponse,
-                              fromRequest block: @escaping () -> () ) -> Result<Data, Error>
-    {
-        Result { try await {
-            serialDevice.request(totalBytes: 1
-                , packetSize: 1
-                , timeoutInterval: timeout
-                , prepare: { _ in block() }
-                , progress: { _, _ in }
-                , responseEvaluator: responseEvaluator
-                , result: $0)
-                .start()
-            }
-        }
-    }
-    
-    private static func flushBuffer<Platform: Gibby.Platform>(_ serialDevice: SerialDevice,
-                                                                for platform: Platform.Type,
-                                                                   byteCount: Int = 64,
-                                                          startingAt address: Platform.AddressSpace = 0) -> Result<Data, Error>
+    static func flushBuffer<Platform: Gibby.Platform>(_ serialDevice: SerialDevice,
+                                                        for platform: Platform.Type,
+                                                           byteCount: Int = 64,
+                                                  startingAt address: Platform.AddressSpace = 0) -> Result<Data, Error>
     {
         self.read(fromSerialDevice: serialDevice,
                           platform: platform,
@@ -149,10 +129,10 @@ public struct GBxCart: DeviceProfile {
     }
 
     @discardableResult
-    private static func flash(_ serialDevice: SerialDevice,
-                                 byte: Int,
-                           at address: Int,
-                              timeout: UInt32 = 250) -> Bool
+    static func flash(_ serialDevice: SerialDevice,
+                                byte: Int,
+                          at address: Int,
+                             timeout: UInt32 = 250) -> Bool
     {
         return ( serialDevice.send("F", number: address)
               && serialDevice.send("", number: byte ))
@@ -476,26 +456,28 @@ fileprivate extension GBxCart {
                               progress update: ((Double) -> ())?) -> Result<(),Error>
     {
         self.eraseAM29F016B(serialDevice)
-            .flatMap({ self.flushBuffer(serialDevice, for: GameboyClassic.self) })
-            .flatMap({ _ in
-                let hexCodes = [ // '555'
-                    (0x555, 0xAA),
-                    (0x2AA, 0x55),
-                    (0x555, 0xA0)
-                ]
-                return self.waitFor(serialDevice) {
-                    serialDevice.send("G".bytes())  // romMode
-                    serialDevice.send("PW".bytes()) // pinMode
-                    serialDevice.send("E".bytes())  // romMode
-                    serialDevice.send("", number: hexCodes[0].0)
+            .flatMap {
+                self.flushBuffer(serialDevice, for: GameboyClassic.self)
+                    .flatMap { _ in
+                        let hexCodes = [ // '555'
+                            (0x555, 0xAA),
+                            (0x2AA, 0x55),
+                            (0x555, 0xA0)
+                        ]
+                        return serialDevice.waitFor(TerminatingResponse) {
+                            serialDevice.send("G".bytes())  // romMode
+                            serialDevice.send("PW".bytes()) // pinMode
+                            serialDevice.send("E".bytes())  // romMode
+                            serialDevice.send("", number: hexCodes[0].0)
+                        }
+                        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { serialDevice.send("", number: hexCodes[0].1) } }
+                        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { serialDevice.send("", number: hexCodes[1].0) } }
+                        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { serialDevice.send("", number: hexCodes[1].1) } }
+                        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { serialDevice.send("", number: hexCodes[2].0) } }
+                        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { serialDevice.send("", number: hexCodes[2].1) } }
+                        .map { _ in () }
                 }
-                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[0].1) } }
-                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[1].0) } }
-                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[1].1) } }
-                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[2].0) } }
-                .flatMap { _ in self.waitFor(serialDevice) { serialDevice.send("", number: hexCodes[2].1) } }
-                .map { _ in () }
-            })
+            }
             .flatMap({
                 let progress = Progress(totalUnitCount: Int64(flashCartridge.count))
                 //--------------------------------------------------------------
@@ -550,49 +532,27 @@ fileprivate extension GBxCart {
     }
 
     static func eraseAM29F016B(_ serialDevice: SerialDevice) -> Result<(),Error> {
-        self.waitFor(serialDevice) {
+        serialDevice.waitFor(TerminatingResponse) {
             self.flash(serialDevice, byte: 0xF0, at: 0x00)
-            
         }
-        .flatMap({ _ in self.flushBuffer(serialDevice, for: GameboyClassic.self) })
-        .flatMap({ _ in
-            self.waitFor(serialDevice) {
-                serialDevice.send("G".bytes())  // romMode
-                serialDevice.send("PW".bytes()) // pinMode
-                self.flash(serialDevice, byte: 0xAA, at: 0x555)
+        .flatMap { _ in self.flushBuffer(serialDevice, for: GameboyClassic.self) }
+        .flatMap { _ in Result {
+            serialDevice.send("G".bytes())  // romMode
+            serialDevice.send("PW".bytes()) // pinMode
             }
-        })
+        }
+        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { self.flash(serialDevice, byte: 0xAA, at: 0x555) } }
+        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { self.flash(serialDevice, byte: 0x55, at: 0x2AA) } }
+        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { self.flash(serialDevice, byte: 0x80, at: 0x555) } }
+        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { self.flash(serialDevice, byte: 0xAA, at: 0x555) } }
+        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { self.flash(serialDevice, byte: 0x55, at: 0x2AA) } }
+        .flatMap { _ in serialDevice.waitFor(TerminatingResponse) { self.flash(serialDevice, byte: 0x10, at: 0x555) } }
         .flatMap({ _ in
-            self.waitFor(serialDevice, toReturn: { _ in true}) {
-                self.flash(serialDevice, byte: 0x55, at: 0x2AA)
-            }
-        })
-        .flatMap({ _ in
-            self.waitFor(serialDevice, toReturn: { _ in true}) {
-                self.flash(serialDevice, byte: 0x80, at: 0x555)
-            }
-        })
-        .flatMap({ _ in
-            self.waitFor(serialDevice, toReturn: { _ in true}) {
-                self.flash(serialDevice, byte: 0xAA, at: 0x555)
-            }
-        })
-        .flatMap({ _ in
-            self.waitFor(serialDevice, toReturn: { _ in true}) {
-                self.flash(serialDevice, byte: 0x55, at: 0x2AA)
-            }
-        })
-        .flatMap({ _ in
-            self.waitFor(serialDevice, toReturn: { _ in true}) {
-                self.flash(serialDevice, byte: 0x10, at: 0x555)
-            }
-        })
-        .flatMap({ _ in
+            /// Starts (and continues) erasing the memory off the flash chip. Stops when hitting '0xFF'.
             self.read(fromSerialDevice: serialDevice,
                               platform: GameboyClassic.self,
                              byteCount: 1,
                             startingAt: 0x0000,
-                               timeout: 30,
                      responseEvaluator: {
                         guard $0!.starts(with: [0xFF]) else {
                             self.continue(serialDevice)
@@ -600,12 +560,12 @@ fileprivate extension GBxCart {
                         }
                         return true })
         })
-        .flatMap({ _ in
-            self.waitFor(serialDevice) {
+        .flatMap { _ in
+            serialDevice.waitFor(TerminatingResponse) {
                 self.flash(serialDevice, byte: 0xF0, at: 0x00)
             }
-        })
-        .map({ _ in })
+            .map({ _ in })
+        }
     }
 }
 

@@ -67,11 +67,7 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
         guard let data = data else {
             return false
         }
-        /*
-        if data != Data([0x31]) {
-            print(#function, data.hexString(), String(data: data, encoding: .ascii)!)
-        }
-         */
+        // log(data)
         return self.reader.send(data)
     }
     
@@ -82,6 +78,11 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
         return self.send(data, timeout: timeout)
     }
     
+    private func log(_ data: Data) {
+        if data != Data([0x31]) {
+            print(#function, data.hexString(), String(data: data, encoding: .ascii)!)
+        }
+    }
 }
 
 extension ThreadSafeSerialPortController {
@@ -104,3 +105,24 @@ extension ThreadSafeSerialPortController {
         }
     }
 }
+
+extension ThreadSafeSerialPortController {
+    func waitFor( atMost timeout: TimeInterval = -1,
+             _ responseEvaluator: @escaping ORSSerialPacketEvaluator = AnyResponse,
+               fromRequest block: @escaping () -> () ) -> Result<Data, Error>
+    {
+        Result { try await {
+            request(totalBytes: 1,
+                    packetSize: 1,
+               timeoutInterval: timeout,
+                       prepare: { _ in block() },
+                      progress: { _, _ in },
+             responseEvaluator: responseEvaluator,
+                        result: $0).start()
+            }
+        }
+    }
+}
+
+let AnyResponse:         ORSSerialPacketEvaluator = { _ in true }
+let TerminatingResponse: ORSSerialPacketEvaluator = { $0!.starts(with: [0x31]) }
