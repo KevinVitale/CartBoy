@@ -85,11 +85,7 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
     
     @objc override func start() {
         if self.isAsynchronous {
-            // `detached` seems to have the best performance, and incurs the
-            // least thread creation.
-            //
-            // Needs more testing.
-            OpenDispatchQueue.async(flags: .detached) {
+            OpenDispatchQueue.async {
                 self.main()
             }
         }
@@ -143,7 +139,7 @@ class OpenPortOperation<Controller: SerialPortController>: Operation, ORSSerialP
     }
 }
 
-private let OpenDispatchQueue = DispatchQueue(label: "com.cartkit.serialport.open.queue",
-                                                qos: .userInitiated,
-                                         attributes: .concurrent)
+let OpenDispatchQueue = DispatchQueue(label: "com.cartkit.serialport.open.queue",
+                                      qos: .userInteractive,
+                                      attributes: .concurrent)
 

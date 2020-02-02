@@ -12,6 +12,20 @@ extension Data {
     }
 }
 
+extension Result where Success == Data, Failure == Swift.Error {
+    public func write(toDirectoryPath path: String, fileName: @autoclosure @escaping () -> String) -> Result<URL,Failure> {
+        flatMap { data in
+            do {
+                let filePathURL = URL(fileURLWithPath: path).appendingPathComponent(fileName())
+                try data.write(to: filePathURL)
+                return .success(filePathURL)
+            } catch {
+                return .failure(error)
+            }
+        }
+    }
+}
+
 extension BinaryInteger {
     func bytes(radix: Int = 16, uppercase: Bool = true, using encoding: String.Encoding = .ascii) -> Data? {
         guard let data = String(self, radix: radix, uppercase: uppercase).data(using: encoding) else {

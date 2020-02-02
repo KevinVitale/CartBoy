@@ -16,6 +16,12 @@ extension FlashCartridge {
     }
 }
 
+extension FlashCartridge {
+    public static func load(_ url: URL) -> Result<Self,Error> {
+        Result { try Self.init(contentsOf: url) }
+    }
+}
+
 public struct AM29F016B: FlashCartridge {
     public init(contentsOf url: URL) throws {
         self = .init(bytes: try Data(contentsOf: url))

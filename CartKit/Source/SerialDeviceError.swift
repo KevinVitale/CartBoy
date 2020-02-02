@@ -3,26 +3,30 @@ import Gibby
 
 public enum SerialDeviceError<Platform: Gibby.Platform>: LocalizedError, CustomNSError {
     case platformNotSupported(Platform.Type)
-    case invalidHeader
+    case underlyingMD5Error
+    case mismatchedMD5(computed: String, expected: String)
     
     public var errorDescription: String? {
         switch self {
         case .platformNotSupported(let platform): return NSLocalizedString("\(platform) not supported".capitalized, comment: "")
-        case .invalidHeader: return NSLocalizedString("Invalid Cartridge Header", comment: "")
+        case .underlyingMD5Error: return NSLocalizedString("Unknown error occurred while computing MD5 digest", comment: "")
+        case .mismatchedMD5(let computed, let expected): return NSLocalizedString("MD5 does not match: \(computed) (expected: \(expected)", comment: "")
         }
     }
     
     public var recoverySuggestion: String? {
         switch self {
-        case .platformNotSupported: return nil
-        case .invalidHeader: return NSLocalizedString("The cartridge's header is either missing or otherwise not valid. Reseat the cartridge in the device and try again.", comment: "")
+        case .mismatchedMD5         :fallthrough
+        case .underlyingMD5Error    :fallthrough
+        case .platformNotSupported  :return nil
         }
     }
     
     public var errorCode: Int {
         switch self {
-        case .platformNotSupported: return 111
-        case .invalidHeader: return 101
+        case .platformNotSupported :return 101
+        case .underlyingMD5Error   :return 200
+        case .mismatchedMD5        :return 201
         }
     }
     

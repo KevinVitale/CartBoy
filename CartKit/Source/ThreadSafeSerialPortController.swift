@@ -58,7 +58,7 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
     /**
      */
     @discardableResult
-    func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
+    public func send(_ data: Data?, timeout: UInt32? = nil) -> Bool {
         defer {
             if let timeout = timeout {
                 usleep(timeout)
@@ -70,14 +70,7 @@ open class ThreadSafeSerialPortController: NSObject, SerialPortController {
         // log(data)
         return self.reader.send(data)
     }
-    
-    @discardableResult
-    func send<Number>(_ command: String, number: Number, radix: Int = 16, terminate: Bool = true, timeout: UInt32? = nil) -> Bool where Number : FixedWidthInteger {
-        let numberAsString = String(number, radix: radix, uppercase: true)
-        let data = ("\(command)\(numberAsString)" + (terminate ? "\0" : "")).data(using: .ascii)!
-        return self.send(data, timeout: timeout)
-    }
-    
+
     private func log(_ data: Data) {
         if data != Data([0x31]) {
             print(#function, data.hexString(), String(data: data, encoding: .ascii)!)
@@ -106,23 +99,4 @@ extension ThreadSafeSerialPortController {
     }
 }
 
-extension ThreadSafeSerialPortController {
-    func waitFor( atMost timeout: TimeInterval = -1,
-             _ responseEvaluator: @escaping ORSSerialPacketEvaluator = AnyResponse,
-               fromRequest block: @escaping () -> () ) -> Result<Data, Error>
-    {
-        Result { try await {
-            request(totalBytes: 1,
-                    packetSize: 1,
-               timeoutInterval: timeout,
-                       prepare: { _ in block() },
-                      progress: { _, _ in },
-             responseEvaluator: responseEvaluator,
-                        result: $0).start()
-            }
-        }
-    }
-}
-
-let AnyResponse:         ORSSerialPacketEvaluator = { _ in true }
 let TerminatingResponse: ORSSerialPacketEvaluator = { $0!.starts(with: [0x31]) }
