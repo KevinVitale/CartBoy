@@ -15,8 +15,6 @@
 		0A30B83423B125C8007B7154 /* SerialDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A30B83323B125C8007B7154 /* SerialDevice.swift */; };
 		0A30B83A23B1336A007B7154 /* GBxCart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A30B83923B1336A007B7154 /* GBxCart.swift */; };
 		0A58A73223B6C6AD00D90347 /* DeviceProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A58A73123B6C6AD00D90347 /* DeviceProfile.swift */; };
-		0A58A73423B6C76500D90347 /* SerialDevice+Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A58A73323B6C76500D90347 /* SerialDevice+Result.swift */; };
-		0A61C750223711BA001D653D /* SwiftCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */; };
 		0A61C76522371701001D653D /* SerialPortController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A61C76422371701001D653D /* SerialPortController.swift */; };
 		0A67DE6521F4CCC0009CA98F /* ORSSerialPort+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */; };
 		0A973E78225A72AD000D3555 /* Await.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A973E77225A72AD000D3555 /* Await.swift */; };
@@ -26,7 +24,8 @@
 		0AC92F8821F95FB200605C82 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AC92F8521F95F8D00605C82 /* Gibby.framework */; };
 		0AC92F8921F95FC400605C82 /* CartKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD810521F381AF00D548C8 /* CartKit.framework */; };
 		0AC92F8A21F95FD100605C82 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAD80EF21F380F900D548C8 /* ORSSerial.framework */; };
-		0ADE2865224846FE00BD4E6A /* AM29F016B.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ADE2860224846FE00BD4E6A /* AM29F016B.swift */; };
+		0ACE711123DDF92F0079EDC8 /* SerialDeviceSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ACE711023DDF92F0079EDC8 /* SerialDeviceSession.swift */; };
+		0AD9F40C23E0B4C100F4D606 /* GBxCart+Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD9F40B23E0B4C100F4D606 /* GBxCart+Result.swift */; };
 		0AE7F270221D942A00D86827 /* NSCondition+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE7F26F221D942A00D86827 /* NSCondition+Ext.swift */; };
 		0AF9224123B6E79100B5A03F /* SerialDeviceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF9224023B6E79100B5A03F /* SerialDeviceError.swift */; };
 /* End PBXBuildFile section */
@@ -72,7 +71,6 @@
 		0A30B83923B1336A007B7154 /* GBxCart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBxCart.swift; sourceTree = "<group>"; };
 		0A3DD4D021F2A64800BCC6D4 /* ORSSerial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ORSSerial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A58A73123B6C6AD00D90347 /* DeviceProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProfile.swift; sourceTree = "<group>"; };
-		0A58A73323B6C76500D90347 /* SerialDevice+Result.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SerialDevice+Result.swift"; sourceTree = "<group>"; };
 		0A61C76422371701001D653D /* SerialPortController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialPortController.swift; sourceTree = "<group>"; };
 		0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ORSSerialPort+Ext.swift"; sourceTree = "<group>"; };
 		0A973E77225A72AD000D3555 /* Await.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Await.swift; sourceTree = "<group>"; };
@@ -80,9 +78,10 @@
 		0AAD80F621F3815B00D548C8 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AAD810521F381AF00D548C8 /* CartKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CartKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AAD810721F381AF00D548C8 /* CartKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CartKit.h; sourceTree = "<group>"; };
-		0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftCrypto.swift; sourceTree = "<group>"; };
 		0AC59C542234A4DE0040BAA4 /* OpenPortOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenPortOperation.swift; sourceTree = "<group>"; };
 		0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gibby.xcodeproj; path = ../Dependencies/Gibby/Gibby.xcodeproj; sourceTree = "<group>"; };
+		0ACE711023DDF92F0079EDC8 /* SerialDeviceSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialDeviceSession.swift; sourceTree = "<group>"; };
+		0AD9F40B23E0B4C100F4D606 /* GBxCart+Result.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GBxCart+Result.swift"; sourceTree = "<group>"; };
 		0ADE2860224846FE00BD4E6A /* AM29F016B.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AM29F016B.swift; sourceTree = "<group>"; };
 		0AE7F26F221D942A00D86827 /* NSCondition+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSCondition+Ext.swift"; sourceTree = "<group>"; };
 		0AF9224023B6E79100B5A03F /* SerialDeviceError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialDeviceError.swift; sourceTree = "<group>"; };
@@ -165,15 +164,15 @@
 				0A11DB6122127E1600C7DD13 /* Data+Ext.swift */,
 				0A58A73123B6C6AD00D90347 /* DeviceProfile.swift */,
 				0A30B83923B1336A007B7154 /* GBxCart.swift */,
+				0AD9F40B23E0B4C100F4D606 /* GBxCart+Result.swift */,
 				0AE7F26F221D942A00D86827 /* NSCondition+Ext.swift */,
 				0AC59C542234A4DE0040BAA4 /* OpenPortOperation.swift */,
 				0A67DE6421F4CCC0009CA98F /* ORSSerialPort+Ext.swift */,
 				0A30B83323B125C8007B7154 /* SerialDevice.swift */,
-				0A58A73323B6C76500D90347 /* SerialDevice+Result.swift */,
 				0AF9224023B6E79100B5A03F /* SerialDeviceError.swift */,
+				0ACE711023DDF92F0079EDC8 /* SerialDeviceSession.swift */,
 				0A0DF2B1225AC07B002278BE /* SerialPortRequest.swift */,
 				0A61C76422371701001D653D /* SerialPortController.swift */,
-				0AB2682A22360EF5001D6CF1 /* SwiftCrypto.swift */,
 				0A11E6E62242F7EF007F60E3 /* ThreadSafeSerialPortController.swift */,
 				0A11E6E8224423C2007F60E3 /* Voltage.swift */,
 			);
@@ -347,16 +346,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A61C750223711BA001D653D /* SwiftCrypto.swift in Sources */,
 				0A58A73223B6C6AD00D90347 /* DeviceProfile.swift in Sources */,
-				0ADE2865224846FE00BD4E6A /* AM29F016B.swift in Sources */,
 				0A61C76522371701001D653D /* SerialPortController.swift in Sources */,
 				0A30B83A23B1336A007B7154 /* GBxCart.swift in Sources */,
 				0A0DF2B2225AC07B002278BE /* SerialPortRequest.swift in Sources */,
 				0AC59C562234A5180040BAA4 /* OpenPortOperation.swift in Sources */,
+				0AD9F40C23E0B4C100F4D606 /* GBxCart+Result.swift in Sources */,
 				0A11E6E72242F7EF007F60E3 /* ThreadSafeSerialPortController.swift in Sources */,
 				0A11DB6222127E1600C7DD13 /* Data+Ext.swift in Sources */,
-				0A58A73423B6C76500D90347 /* SerialDevice+Result.swift in Sources */,
+				0ACE711123DDF92F0079EDC8 /* SerialDeviceSession.swift in Sources */,
 				0A11E6E9224423C2007F60E3 /* Voltage.swift in Sources */,
 				0A30B83423B125C8007B7154 /* SerialDevice.swift in Sources */,
 				0AF9224123B6E79100B5A03F /* SerialDeviceError.swift in Sources */,

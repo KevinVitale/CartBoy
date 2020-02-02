@@ -33,3 +33,7 @@ public func await<T>(_ body: (@escaping (T) -> Void) -> Void) -> T {
     }
     return result!
 }
+
+public func waitFor<T,ErrorType>(_ body: (@escaping (Result<T,ErrorType>) -> Void) -> Void) -> Result<T,Swift.Error> {
+    Result { try await(body) }
+}

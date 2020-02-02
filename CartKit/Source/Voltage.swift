@@ -15,6 +15,10 @@ public enum Voltage: String, CustomDebugStringConvertible {
     public var debugDescription: String {
         return self.rawValue
     }
+    
+    var bytes: Data? {
+        (self == .low ? "3" : "5").bytes()
+    }
 }
 
 public enum VoltageError: Error {

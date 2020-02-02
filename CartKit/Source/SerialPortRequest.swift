@@ -17,36 +17,36 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
                perform block: @escaping (Progress) -> (),
            response callback: @escaping (Result<Data,SerialPortRequestError>) -> ())
     {
-        self.request = ORSSerialRequest(dataToSend: .init(),
-                                          userInfo: nil,
-                                   timeoutInterval: timeoutInterval,
-                                responseDescriptor: ORSSerialPacketDescriptor(maximumPacketLength: maxPacketLength,
-                                                                                         userInfo: nil,
-                                                                                responseEvaluator: responseEvaluator)
-        )
+        self.timeout = timeoutInterval
+        self.responseDescriptor = ORSSerialPacketDescriptor(maximumPacketLength: maxPacketLength, userInfo: nil, responseEvaluator: responseEvaluator)
         self.perform  = block
         self.progress = Progress(totalUnitCount: unitCount)
         self.callback = callback
+        self.response = Data(capacity: Int(unitCount))
         super.init(controller: controller)
     }
     
     // MARK: - Private Properties
     //--------------------------------------------------------------------------
-    private let    queue: DispatchQueue = .init(label: "com.cartkit.serialport.request.queue")
+    private let    queue: DispatchQueue = .init(label: "com.cartkit.serialport.request.queue", target: OpenDispatchQueue)
     private let  perform: (Progress) -> ()
     private let callback: (Result<Data,SerialPortRequestError>) -> ()
-    private let  request: ORSSerialRequest
     private var   result: Result<Data,SerialPortRequestError> = .failure(.noError)
-    private var response: Data = .init() {
+    private var  timeout: TimeInterval
+    private var responseDescriptor: ORSSerialPacketDescriptor
+    private var response: Data {
         didSet {
-            self.progress.completedUnitCount = Int64(self.response.count)
-            self.checkProgress()
+            queue.async(flags: .barrier) {
+                self.progress.completedUnitCount = Int64(self.response.count)
+                self.checkProgress()
+            }
         }
     }
     
     private var packet: Data = .init() {
         didSet {
-            if let packetLength = self.request.responseDescriptor?.maximumPacketLength, packetLength > 0, packet.count % Int(packetLength) == 0 {
+            let packetLength = self.responseDescriptor.maximumPacketLength
+            if packetLength > 0, packet.count % Int(packetLength) == 0 {
                 response.append(packet)
                 packet.removeAll()
             }
@@ -54,9 +54,8 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
     }
     
     private func setupOperationTimeout() {
-        let timeoutInterval        = self.request.timeoutInterval
-        let deadline: DispatchTime = timeoutInterval >= 0 ? .now() + .seconds(Int(timeoutInterval)) : .distantFuture
-        
+        let deadline: DispatchTime = timeout >= 0 ? .now() + .seconds(Int(timeout)) : .distantFuture
+
         self.queue.asyncAfter(deadline: deadline) { [weak self] in
             if self?.isExecuting == true {
                 self?.timedOut()
@@ -74,6 +73,9 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
             let data      = self.response.prefix(upTo: Int(upToCount))
             self.result   = .success(data)
             self.complete()
+        }
+        else if self.progress.isCancelled {
+            self.cancel()
         }
         else {
             self.perform(self.progress)
@@ -110,6 +112,7 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
     //--------------------------------------------------------------------------
     override final func complete() {
         super.complete()
+        self.perform(self.progress)
         self.callback(result)
     }
 
@@ -131,7 +134,7 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
     // MARK: - Did Receive Data
     //--------------------------------------------------------------------------
     override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
-        let isValidPacket = self.request.responseDescriptor?.dataIsValidPacket(data) ?? false
+        let isValidPacket = self.responseDescriptor.dataIsValidPacket(data)
         (isValidPacket && self.isExecuting) ? self.packet.append(data) : ()
     }
 }

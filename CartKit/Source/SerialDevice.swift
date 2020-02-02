@@ -32,6 +32,8 @@ public class SerialDevice<Device: DeviceProfile>: ThreadSafeSerialPortController
     }
 }
 
+/*
 public enum CartridgeFlashError<FlashCartridge: CartKit.FlashCartridge>: Error {
     case unsupportedChipset(FlashCartridge.Type)
 }
+ */

@@ -17,3 +17,5 @@ public protocol DeviceProfile {
      */
     static func configure(serialPort: ORSSerialPort) -> ORSSerialPort
 }
+
+
