@@ -32,89 +32,130 @@ public protocol SerialPortController {
 }
 
 extension Data {
-    static func bytes<Number: FixedWidthInteger>(forCommand command: String, number: Number, radix: Int = 16, terminate: Bool = true) -> Data? {
+    /**
+     *
+     */
+    public static func bytes<Number: FixedWidthInteger>(forCommand command: String = "", number: Number, radix: Int = 16, terminate: Bool = true) -> Data? {
         let numberAsString  = String(number, radix: radix, uppercase: true)
         return ("\(command)\(numberAsString)" + (terminate ? "\0" : "")).data(using: .ascii)!
     }
 }
 
 extension SerialPortController {
-    func command(sending bytes: @escaping () -> Data?) -> Result<Self,Swift.Error> {
-        dispatchPrecondition(condition: .notOnQueue(.main))
-        return waitFor {
-            SerialPortRequest(
-                controller        :self,
-                unitCount         :0,
-                timeoutInterval   :0.5,
-                maxPacketLength   :1,
-                responseEvaluator :{ _ in true },
-                perform           :{ _ in self.send(bytes(), timeout: 250) },
-                response          :$0
-            ).start()
-        }
-        .map { _ in self }
-    }
-    
-    func read(byteCount: Int64, didUpdateData update :@escaping (Progress) -> ()) -> Result<Data,Swift.Error> {
-        dispatchPrecondition(condition: .notOnQueue(.main))
-        return waitFor {
-            SerialPortRequest(
-                controller :self,
-                unitCount  :byteCount,
-                perform    :update,
-                response   :$0
-            ).start()
-        }
-    }
-    
-    func write(numberOfConfirmations count: Int64, didUpdateData update :@escaping (Progress) -> ()) -> Result<Data,Swift.Error> {
+    /**
+     *
+     */
+    fileprivate func timeout(sending bytes: @escaping () -> Data?) -> Result<Self,Swift.Error> {
         dispatchPrecondition(condition: .notOnQueue(.main))
         return waitFor {
             SerialPortRequest(
                 controller      :self,
-                unitCount       :count,
-                maxPacketLength :1,
-                perform         :update,
+                unitCount       :0,    /* Important: set this to '0', otherwise `perform` will call `self.send` twice. */
+                timeoutInterval :0.5,
+                packetByteSize  :1,    /* Note: ignored, because we'll never read any data (or get any response). */
+                perform         :{ _ in self.send(bytes(), timeout: 250) },
                 response        :$0
+                ).start()
+        }
+        .map { _ in self }
+    }
+    
+    /**
+     *
+     */
+    fileprivate func requestFrom(numberOfBytes byteCount: Int64, _ update :@escaping (Progress) -> ()) -> Result<Data,Swift.Error> {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        return waitFor {
+            SerialPortRequest(
+                controller     :self,
+                unitCount      :byteCount,
+                packetByteSize :64,
+                perform        :update,
+                response       :$0
+            ).start()
+        }
+    }
+    
+    /**
+     *
+     */
+    fileprivate func sendTo(numberOfConfirmations count: Int64, _ update: @escaping (Progress) -> ()) -> Result<Data,Swift.Error> {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        return waitFor {
+            SerialPortRequest(
+                controller     :self,
+                unitCount      :count,
+                packetByteSize :1,
+                perform        :update,
+                response       :$0
             ).start()
         }
     }
 }
 
+public enum SerialPortSanityCheckError<SerialDevice: SerialPortController>: Error {
+    case isNotType(SerialDevice.Type)
+}
+
 extension Result where Success: SerialPortController, Failure == Swift.Error {
-    func command(sending bytes: @autoclosure @escaping () -> Data?) -> Result<Success, Failure> {
+    internal func isTypeOf<SerialDeviceType: SerialPortController>(_ serialDeviceType: SerialDeviceType.Type) -> Result<SerialDeviceType,Failure> {
+        flatMap {
+            guard let serialDevice = $0 as? SerialDeviceType else {
+                return .failure(SerialPortSanityCheckError.isNotType(SerialDeviceType.self))
+            }
+            return .success(serialDevice)
+        }
+    }
+    
+    internal func timeout(sending bytes: @autoclosure @escaping () -> Data?) -> Result<Success, Failure> {
         flatMap { serialDevice in
-            switch serialDevice.command(sending: bytes) {
+            switch serialDevice.timeout(sending: bytes) {
             case .failure(_): return .success(serialDevice)
             case .success(_): return .success(serialDevice)
             }
         }
     }
     
-    func read(byteCount: Int, didUpdateData callback: @escaping (Success, Progress) -> ()) -> Result<Data,Error> {
+    /**
+     *
+     */
+    internal func read(byteCount: Int, progressDidUpdate callback: @escaping (Success, Progress) -> ()) -> Result<Data,Error> {
         flatMap { serialDevice in
-            serialDevice.read(byteCount: Int64(byteCount)) {
+            serialDevice.requestFrom(numberOfBytes: Int64(byteCount)) {
+                callback(serialDevice, $0)
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    internal func write(numberOfConfirmations count: Int, progressDidUpdate callback: @escaping (Success, Progress) -> ()) -> Result<Data,Error> {
+        flatMap { serialDevice in
+            serialDevice.sendTo(numberOfConfirmations: Int64(count)) {
                 callback(serialDevice, $0)
             }
         }
     }
     
-    func write(numberOfConfirmations count: Int, didUpdateData callback: @escaping (Success, Progress) -> ()) -> Result<Data,Error> {
-        flatMap { serialDevice in
-            serialDevice.write(numberOfConfirmations: Int64(count)) {
-                callback(serialDevice, $0)
-            }
-        }
-    }
-    
-    func sendAndWait(_ bytes: Data?, willStart startCallback: @escaping (Success) -> () = { _ in }, didFinish finishCallback: @escaping (Success) -> () = { _ in }) -> Result<Data,Failure> {
+    /**
+     *
+     */
+    internal func sendAndWait(
+        _ bytes                  :Data?,
+        packetByteSize           :UInt = 1,
+        isValidPacket dataCallback :@escaping (Success,Data?) -> Bool = { _,_ in true },
+        willStart startCallback  :@escaping (Success) -> () = { _ in },
+        didFinish finishCallback :@escaping (Success) -> () = { _ in }) -> Result<Data,Failure>
+    {
         flatMap { serialDevice in
             waitFor {
                 SerialPortRequest(
-                    controller      :serialDevice,
-                    unitCount       :1,
-                    maxPacketLength :1,
-                    perform         :{ progress in
+                    controller        :serialDevice,
+                    unitCount         :1,
+                    packetByteSize    :packetByteSize,
+                    responseEvaluator :{ dataCallback(serialDevice, $0) },
+                    perform           :{ progress in
                         if progress.completedUnitCount == 0 {
                             startCallback(serialDevice)
                             serialDevice.send(bytes, timeout: nil)
@@ -127,5 +168,27 @@ extension Result where Success: SerialPortController, Failure == Swift.Error {
                 ).start()
             }
         }
+    }
+    
+    /**
+     *
+     */
+    internal func sendAndWait(
+        _ bytes: Data?,
+        packetByteSize             :UInt = 1,
+        isValidPacket dataCallback :@escaping (Success,Data?) -> Bool = { _,_ in true },
+        willStart startCallback    :@escaping (Success) -> () = { _ in },
+        didFinish finishCallback   :@escaping (Success) -> () = { _ in }) -> Result<Success,Failure>
+    {
+        sendAndWait(bytes,
+                    packetByteSize :packetByteSize,
+                    isValidPacket  :dataCallback,
+                    willStart      :startCallback,
+                    didFinish      :finishCallback
+        ).flatMap { (_: Data) in self }
+    }
+    
+    public func erase<C: Chipset>(flashCartridge chipset: C.Type) -> Result<Success,Failure> {
+        C.erase(self)
     }
 }

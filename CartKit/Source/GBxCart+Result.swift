@@ -10,12 +10,15 @@ extension Result where Success == SerialDevice<GBxCart>, Failure == Swift.Error 
      */
     func flush<Platform: Gibby.Platform>(forPlatform platform: Platform.Type) -> Result<Success,Failure> {
         flatMap { serialDevice in
-            read(byteCount: 64) { serialDevice, _ in
+            read(byteCount: 64) { serialDevice, progress in
+                guard progress.isFinished == false else {
+                    serialDevice.send("0\0".bytes())
+                    return
+                }
                 serialDevice.seek(toAddress: 0)
                 serialDevice.startReading(forPlatform: platform)
             }
             .map { _ in serialDevice }
-            .command(sending: "0\0".bytes())
         }
     }
 }
@@ -44,7 +47,7 @@ extension Result where Success == SerialDevice<GBxCart>, Failure == Swift.Error 
                 serialDevice.seek(toAddress: bank > 0 ? 0x4000 : 0)
                 serialDevice.startReading(forPlatform: GameboyClassic.self)
             }
-            else if progress.isFinished || progress.isCancelled {
+            else if progress.isFinished {
                 serialDevice.send("0\0".bytes())
             }
             else {
@@ -120,7 +123,7 @@ extension Result where Success == SerialDevice<GBxCart>, Failure == Swift.Error 
                 // Start -------------------------------------------------------
                 serialDevice.startReading(forPlatform: GameboyClassic.self)
             }
-            else if progress.isFinished || progress.isCancelled {
+            else if progress.isFinished {
                 serialDevice.send("0\0".bytes())
                 
                 // SET: 'RAM' disabled -----------------------------------------
@@ -194,7 +197,7 @@ extension Result where Success == SerialDevice<GBxCart>, Failure == Swift.Error 
                 let dataToWrite = saveData[saveData.startIndex..<saveData.startIndex.advanced(by: 64)]
                 serialDevice.send("W".data(using: .ascii)! + dataToWrite)
             }
-            else if progress.isFinished || progress.isCancelled {
+            else if progress.isFinished {
                 serialDevice.send("0\0".bytes())
                 
                 // SET: 'RAM' disabled -----------------------------------------
@@ -251,15 +254,8 @@ extension Result where Success == SerialDevice<GBxCart>, Failure == Swift.Error 
     /**
      *
      */
-    internal func sendAndWait(_ bytes: Data?) -> Result<Data,Failure> {
-        sendAndWait(bytes, willStart: { $0.send("0\0".bytes()) })
-    }
-    
-    /**
-     *
-     */
     internal func setVoltage(_ voltage: Voltage) -> Result<Success,Failure> {
-        command(sending: voltage.bytes)
+        timeout(sending: voltage.bytes)
     }
     
     /**
