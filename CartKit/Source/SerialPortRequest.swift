@@ -12,13 +12,13 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
     required init(controller: Controller,
                    unitCount: Int64,
              timeoutInterval: TimeInterval = -1.0,
-             maxPacketLength: UInt = 64,
+              packetByteSize: UInt, /* '64' is recommended */
            responseEvaluator: @escaping ORSSerialPacketEvaluator = { _ in true},
                perform block: @escaping (Progress) -> (),
            response callback: @escaping (Result<Data,SerialPortRequestError>) -> ())
     {
         self.timeout = timeoutInterval
-        self.responseDescriptor = ORSSerialPacketDescriptor(maximumPacketLength: maxPacketLength, userInfo: nil, responseEvaluator: responseEvaluator)
+        self.responseDescriptor = ORSSerialPacketDescriptor(maximumPacketLength: packetByteSize, userInfo: nil, responseEvaluator: responseEvaluator)
         self.perform  = block
         self.progress = Progress(totalUnitCount: unitCount)
         self.callback = callback
@@ -45,9 +45,12 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
     
     private var packet: Data = .init() {
         didSet {
-            let packetLength = self.responseDescriptor.maximumPacketLength
-            if packetLength > 0, packet.count % Int(packetLength) == 0 {
-                response.append(packet)
+            let packetLength = Int(self.responseDescriptor.maximumPacketLength)
+            if packetLength > 0, packet.count % packetLength == 0 {
+                if self.responseDescriptor.dataIsValidPacket(packet) {
+                    let dataToAppend = packet[0..<packetLength]
+                    response.append(dataToAppend)
+                }
                 packet.removeAll()
             }
         }
@@ -112,7 +115,10 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
     //--------------------------------------------------------------------------
     override final func complete() {
         super.complete()
-        self.perform(self.progress)
+        /* Skip if calling `timeout(sending:)`. */
+        if self.progress.isIndeterminate == false {
+            self.perform(self.progress)
+        }
         self.callback(result)
     }
 
@@ -134,8 +140,7 @@ class SerialPortRequest<Controller: SerialPortController>: OpenPortOperation<Con
     // MARK: - Did Receive Data
     //--------------------------------------------------------------------------
     override func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
-        let isValidPacket = self.responseDescriptor.dataIsValidPacket(data)
-        (isValidPacket && self.isExecuting) ? self.packet.append(data) : ()
+        self.packet.append(data)
     }
 }
 

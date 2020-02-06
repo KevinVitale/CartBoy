@@ -36,7 +36,7 @@ extension BinaryInteger {
 }
 
 extension String {
-    func bytes(using encoding: String.Encoding = .ascii) -> Data? {
+    public func bytes(using encoding: String.Encoding = .ascii) -> Data? {
         guard let data = self.data(using: encoding) else {
             return nil
         }

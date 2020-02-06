@@ -28,14 +28,14 @@ extension ORSSerialPort {
 
 extension SerialDevice where Device == GBxCart {
     func seek<Address: FixedWidthInteger>(toAddress address: Address) {
-        send(.bytes(forCommand: "A", number: address, terminate: true), timeout: 250)
+        send(.bytes(forCommand: "A", number: address), timeout: 250)
     }
     
     @discardableResult
     func setBank<Number>(
-        _ bank         :Number,
-        at address     :Number,
-        timeout        :UInt32 = 250) -> Bool where Number: FixedWidthInteger
+        _ bank     :Number,
+        at address :Number,
+        timeout    :UInt32 = 250) -> Bool where Number: FixedWidthInteger
     {
         return ( send(.bytes(forCommand: "B", number: address, radix: 16), timeout: timeout)
             &&   send(.bytes(forCommand: "B", number:    bank, radix: 10), timeout: timeout))
@@ -51,6 +51,13 @@ extension SerialDevice where Device == GBxCart {
 }
 
 public extension Result where Success == SerialDevice<GBxCart>, Failure == Swift.Error {
+    /**
+     *
+     */
+    func readCartridgeMode() -> Result<UInt8,Failure> {
+        sendAndWait("0C\0".bytes()).map { UInt8($0.hexString()) ?? .min }
+    }
+    
     /**
      *
      */
@@ -73,7 +80,7 @@ public extension Result where Success == SerialDevice<GBxCart>, Failure == Swift
                     serialDevice.seek(toAddress: platform.headerRange.lowerBound)
                     serialDevice.startReading(forPlatform :platform)
                 }
-                else if progress.isFinished || progress.isCancelled {
+                else if progress.isFinished {
                     serialDevice.send("0\0".bytes())
                 }
                 else {

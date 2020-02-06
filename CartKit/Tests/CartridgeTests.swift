@@ -4,6 +4,18 @@ import Gibby
 import CartKit
 
 class CartridgeTests: XCTestCase {
+    func testSessionReadAdvanceHeader() {
+        let exp = expectation(description: "")
+        SerialDeviceSession<GBxCart>.open { serialDevice in
+            switch serialDevice.readHeader(forPlatform: GameboyAdvance.self) {
+            case .success(let header): print(header)
+            case .failure(let error):  XCTFail("\(error)")
+            }
+            exp.fulfill()
+        }
+        waitForExpectations(timeout: 20)
+    }
+    
     func testSessionReadClassicHeader() {
         let exp = expectation(description: "")
         SerialDeviceSession<GBxCart>.open { serialDevice in
@@ -83,6 +95,61 @@ class CartridgeTests: XCTestCase {
                 .map({ $0.md5 ?? .init() })
             {
             case .success(let results) :print(results.hexString(separator: ""))
+            case .failure(let error)   :XCTFail("\(error)")
+            }
+            exp.fulfill()
+        }
+        waitForExpectations(timeout: 300)
+    }
+    
+    func testSessionEraseClassicFlashCartridge() {
+        let exp = expectation(description: "")
+        SerialDeviceSession<GBxCart>.open { serialDevice in
+            switch serialDevice
+                .erase(flashCartridge: AM29F016B.self)
+                .readHeader(forPlatform: GameboyClassic.self)
+            {
+            case .success(let header) :print(header)
+            case .failure(let error)  :XCTFail("\(error)")
+            }
+            exp.fulfill()
+        }
+        waitForExpectations(timeout: 300)
+    }
+    
+    
+    func testDetectFlashCartridge() {
+        let exp = expectation(description: "")
+        SerialDeviceSession<GBxCart>.open { serialDevice in
+            ChipsetFlashProgram.allFlashPrograms.forEach {
+                switch serialDevice.detectFlashID(using: $0) {
+                case .success(let flashID) :print("\($0): \(flashID)")
+                case .failure(let error)   :XCTFail("\(error)")
+                }
+            }
+            
+            exp.fulfill()
+        }
+        waitForExpectations(timeout: 300)
+    }
+    
+    func testDetectCartridgeMode() {
+        let exp = expectation(description: "")
+        SerialDeviceSession<GBxCart>.open { serialDevice in
+            switch serialDevice.readCartridgeMode() {
+            case .success(let mode)  :print(mode)
+            case .failure(let error) :XCTFail("\(error)")
+            }
+            exp.fulfill()
+        }
+        waitForExpectations(timeout: 300)
+    }
+    
+    func testDetectPCBVersion() {
+        let exp = expectation(description: "")
+        SerialDeviceSession<GBxCart>.open { serialDevice in
+            switch serialDevice.readPCBVersion() {
+            case .success(let version) :print(version)
             case .failure(let error)   :XCTFail("\(error)")
             }
             exp.fulfill()
