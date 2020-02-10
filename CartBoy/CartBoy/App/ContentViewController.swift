@@ -26,26 +26,24 @@ class ContentViewController: ContextViewController {
     }
 
     @IBAction func read(_ sender: Any?) {
-        SerialDevice<GBxCart>
-            .connect()
-            .cartridge(forPlatform: GameboyClassic.self,
-                          progress: { self.readProgressBar.doubleValue = $0 })
-            {
-                switch $0 {
-                case .success(let cartridge):
-                    self.displaySavePanel(forCartridge: cartridge) { url in
-                        guard let url = url else {
-                            return
-                        }
-                        do {
-                            try cartridge.write(to: url)
-                        } catch {
-                            self.context.display(error: error, in: self)
-                        }
+        SerialDeviceSession<GBxCart>.open { serialDevice in
+            switch serialDevice.readClassicCartridge(progress: {
+                self.readProgressBar.doubleValue = $0.fractionCompleted
+            }) {
+            case .success(let cartridge):
+                self.displaySavePanel(forCartridge: cartridge) { url in
+                    guard let url = url else {
+                        return
                     }
-                case .failure(let error):
-                    self.context.display(error: error, in: self)
+                    do {
+                        try cartridge.write(to: url)
+                    } catch {
+                        self.context.display(error: error, in: self)
+                    }
                 }
+            case .failure(let error):
+                self.context.display(error: error, in: self)
+            }
         }
     }
     
@@ -64,31 +62,34 @@ class ContentViewController: ContextViewController {
             self.spinnerProgressBar.isHidden = false
             self.spinnerProgressBar.startAnimation(sender)
             
-            SerialDevice<GBxCart>
-                .connect()
-                .write(flashCartridge: AM29F016B.load(url),
-                       progress: {
+            SerialDeviceSession<GBxCart>.open { serialDevice in
+                let loadFile = Result {
+                    try FlashCartridge<AM29F016B>(url: url)
+                }
+                let performFlash = serialDevice
+                    .erase(flashCartridge: AM29F016B.self)
+                    .flash(cartridge: loadFile, progress: { progress in
                         if self.statusTextField.stringValue != "Flashing..." {
                             self.statusTextField.stringValue = "Flashing..."
                             self.spinnerProgressBar.isHidden = true
                             self.spinnerProgressBar.stopAnimation(sender)
                         }
-                        self.writeProgressBar.doubleValue = $0
-                }) {
-                    switch $0 {
-                    case .success:
-                        DispatchQueue.main.sync {
-                            self.statusView.isHidden = true
-                            self.context.update(progressBar: self.writeProgressBar, with: 0)
-                            if let appDelegate = NSApp.delegate as? AppDelegate,
-                                let cartInfo = appDelegate.cartInfoController
-                            {
-                                cartInfo.readHeader(sender)
-                            }
+                        self.writeProgressBar.doubleValue = progress.fractionCompleted
+                    })
+                switch performFlash {
+                case .success:
+                    DispatchQueue.main.sync {
+                        self.statusView.isHidden = true
+                        self.context.update(progressBar: self.writeProgressBar, with: 0)
+                        if let appDelegate = NSApp.delegate as? AppDelegate,
+                            let cartInfo = appDelegate.cartInfoController
+                        {
+                            cartInfo.readHeader(sender)
                         }
-                    case .failure(let error):
-                        self.context.display(error: error, in: self)
                     }
+                case .failure(let error):
+                    self.context.display(error: error, in: self)
+                }
             }
         }
     }

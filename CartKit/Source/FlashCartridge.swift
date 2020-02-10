@@ -1,9 +1,10 @@
 import Gibby
 
 public protocol Chipset {
-    associatedtype Platform: Gibby.Platform
+    associatedtype Platform: Gibby.Platform where Platform.Cartridge.Index == Int
     
     static func erase<SerialDevice: SerialPortController>(_ serialDevice: Result<SerialDevice,Swift.Error>) -> Result<SerialDevice,Swift.Error>
+    static func flash<SerialDevice>(_ serialDevice: Result<SerialDevice,Error>, cartridge: FlashCartridge<Self>, progress update: ((Progress) -> ())?) -> Result<SerialDevice,Error> where SerialDevice: SerialPortController
 }
 
 public enum ChipsetFlashProgram {
@@ -113,6 +114,7 @@ public struct FlashCartridge<C: Chipset>: Cartridge {
 }
 
 public struct AM29F016B: Chipset {
+    public typealias Platform = GameboyClassic
     public static func erase<SerialDevice>(_ serialDevice: Result<SerialDevice, Error>) -> Result<SerialDevice, Swift.Error> where SerialDevice: SerialPortController {
         serialDevice
             .sendAndWait("0F0\0F0\0".bytes())
@@ -139,5 +141,25 @@ public struct AM29F016B: Chipset {
             .sendAndWait("0F0\0F0\0".bytes())
     }
     
-    public typealias Platform = GameboyClassic
+    public static func flash<SerialDevice>(_ serialDevice: Result<SerialDevice,Error>, cartridge: FlashCartridge<AM29F016B>, progress update: ((Progress) -> ())?) -> Result<SerialDevice,Error> where SerialDevice: SerialPortController {
+        serialDevice
+            .timeout(sending:"G".bytes())
+            .timeout(sending:"PW".bytes())
+            .timeout(sending:"E".bytes())
+            .sendAndWait("555\0".bytes())
+            .sendAndWait("AA\0".bytes())
+            .sendAndWait("2AA\0".bytes())
+            .sendAndWait("55\0".bytes())
+            .sendAndWait("555\0".bytes())
+            .sendAndWait("A0\0".bytes())
+            .isTypeOf(CartKit.SerialDevice<GBxCart>.self) /* FIXME */
+            .flatMap {
+                flashGBxCart(.success($0), cartridge: cartridge, progress: update)
+            }
+            .map { $0 as! SerialDevice }
+    }
+    
+    private static func flashGBxCart(_ serialDevice: Result<SerialDevice<GBxCart>,Error>, cartridge: FlashCartridge<AM29F016B>, progress update: ((Progress) -> ())?) -> Result<SerialDevice<GBxCart>,Error> {
+        serialDevice.flashClassicCartridge(cartridge, progress: update)
+    }
 }

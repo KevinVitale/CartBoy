@@ -39,16 +39,22 @@ class ProductInfoViewController: ContextViewController {
     }
     
     @IBAction func readProductInfo(_ sender: Any?) {
-        DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
-            switch self.updateProductInfoResult()
-                .flatMap({ _       in SerialDevice<GBxCart>.connect().voltage() })
-                .flatMap({ voltage in SerialDevice<GBxCart>.connect().version().map { ($0, voltage.rawValue) } })
-                .flatMap({ self.updateProductInfoResult(firmware: $0.0, voltage: $0.1, website: "insideGadgets.com") })
-            {
-            case .success(): (/* no-op */)
+        SerialDeviceSession<GBxCart>.open { serialDevice in
+            switch serialDevice
+                .readVoltage()
+                .flatMap({ voltage in
+                    serialDevice.readPCBVersion().map { (voltage, $0) }
+                }) {
+            case .success(let voltage?, let version):
+                try? self.updateProductInfoResult(
+                    firmware :"\(version)",
+                    voltage  :voltage.debugDescription,
+                    website  :"insideGadgets.com"
+                ).get()
             case .failure(let error):
                 self.context.display(error: error, in: self)
                 self.clearProductInfo(nil)
+            default: ()
             }
         }
     }

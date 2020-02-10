@@ -117,6 +117,28 @@ class CartridgeTests: XCTestCase {
         waitForExpectations(timeout: 300)
     }
     
+    func testSessionClassicFlashCartridge() {
+        let exp = expectation(description: "")
+        SerialDeviceSession<GBxCart>.open { serialDevice in
+            let openFile = Result {
+                try FlashCartridge<AM29F016B>(filePath: "/Users/kevin/Desktop/POKEMON_SLV.gbc")
+            }
+            switch openFile
+                .flatMap({ cartridge in
+                    serialDevice
+                        .erase(flashCartridge: AM29F016B.self)
+                        .flash(cartridge: cartridge, progress: { print($0.fractionCompleted) })
+                })
+                .readHeader(forPlatform: GameboyClassic.self)
+            {
+            case .success(let header) :print(header)
+            case .failure(let error)  :XCTFail("\(error)")
+            }
+            exp.fulfill()
+        }
+        waitForExpectations(timeout: 300)
+    }
+    
     
     func testDetectFlashCartridge() {
         let exp = expectation(description: "")
