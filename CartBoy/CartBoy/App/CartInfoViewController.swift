@@ -109,14 +109,9 @@ class CartInfoViewController: ContextViewController {
     }
     
     @IBAction func readHeader(_ sender: Any?) {
-        DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
-            switch self
-                .clearGridViewDisplay
-                .flatMap({
-                    SerialDevice<GBxCart>
-                        .connect()
-                        .header(forPlatform: GameboyClassic.self)
-                })
+        SerialDeviceSession<GBxCart>.open { serialDevice in
+            switch serialDevice
+                .readHeader(forPlatform: GameboyClassic.self)
                 .flatMap({ self.updateClassicHeaderUI(with: $0) })
                 .flatMap({ self.updateClassicSaveUI(with: $0) })
             {
@@ -129,25 +124,22 @@ class CartInfoViewController: ContextViewController {
     }
     
     @IBAction func readSaveData(_ sender: Any?) {
-        DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
-            switch self
-                .showSaveProgressBar
+        SerialDeviceSession<GBxCart>.open { serialDevice in
+            switch self.showSaveProgressBar
                 .flatMap({
-                    SerialDevice<GBxCart>
-                        .connect()
-                        .header(forPlatform: GameboyClassic.self)
-                        .map { $0.title + ".sav" }
+                    serialDevice.readClassicSaveData {
+                        self.saveDataProgressBar.doubleValue = $0.fractionCompleted
+                    }
+                    .flatMap { data in
+                        self.hideSaveProgressBar.map { data }
+                    }
                 })
-                .flatMap({ fileName in
-                    SerialDevice<GBxCart>
-                        .connect()
-                        .backupSave(for: GameboyClassic.self, progress: {
-                            self.saveDataProgressBar.doubleValue = $0
-                        })
-                        .map { (fileName, $0) }
-                })
-                .flatMap({ result in
-                    self.hideSaveProgressBar.map { result }
+                .flatMap({ data in
+                    serialDevice
+                        .readHeader(forPlatform: GameboyClassic.self)
+                        .map { header in
+                            (header.title + ".sav", data)
+                    }
                 })
             {
             case .success(let fileName, let saveData):
@@ -198,19 +190,17 @@ class CartInfoViewController: ContextViewController {
                 return
             }
             
-            DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
+            SerialDeviceSession<GBxCart>.open { serialDevice in
                 switch self
                     .showSaveProgressBar
                     .flatMap({
-                        SerialDevice<GBxCart>
-                            .connect()
-                            .restoreSave(for: GameboyClassic.self, data: data, progress: {
-                                self.saveDataProgressBar.doubleValue = $0
-                            })
+                        serialDevice.restoreClassicSaveData(data, progress: {
+                            self.saveDataProgressBar.doubleValue = $0.fractionCompleted
+                        })
                     })
-                    .flatMap({ self.hideSaveProgressBar })
+                    .flatMap({ _ in self.hideSaveProgressBar })
                 {
-                case .success(): (/* no-op */)
+                case .success: (/* no-op */)
                 case .failure(let error): self.context.display(error: error, in: self)
                 }
             }
@@ -234,21 +224,18 @@ class CartInfoViewController: ContextViewController {
                 return
             }
             
-            DispatchQueue.global(qos: .userInitiated).async(flags: .barrier) {
+            SerialDeviceSession<GBxCart>.open { serialDevice in
                 switch self
                     .showSaveProgressBar
                     .flatMap({
-                        SerialDevice<GBxCart>
-                            .connect()
-                            .deleteSave(for: GameboyClassic.self, progress: {
-                                self.saveDataProgressBar.doubleValue = $0
-                            })
+                        serialDevice.deleteClassicSaveData {
+                            self.saveDataProgressBar.doubleValue = $0.fractionCompleted
+                        }
                     })
-                    .flatMap({ self.hideSaveProgressBar })
+                    .flatMap({ _ in self.hideSaveProgressBar })
                 {
                 case .success(): (/* no-op */)
-                case .failure(let error):
-                    self.context.display(error: error, in: self)
+                case .failure(let error): self.context.display(error: error, in: self)
                 }
             }
         }

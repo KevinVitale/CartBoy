@@ -187,8 +187,21 @@ extension Result where Success: SerialPortController, Failure == Swift.Error {
                     didFinish      :finishCallback
         ).flatMap { (_: Data) in self }
     }
+}
     
+extension Result where Success: SerialPortController, Failure == Swift.Error {
     public func erase<C: Chipset>(flashCartridge chipset: C.Type) -> Result<Success,Failure> {
         C.erase(self)
+    }
+    
+    
+    public func flash<C: Chipset>(cartridge: FlashCartridge<C>, progress update: ((Progress) -> ())? = nil) -> Result<Success,Failure> {
+        C.flash(self, cartridge: cartridge, progress: update)
+    }
+    
+    public func flash<C: Chipset>(cartridge: Result<FlashCartridge<C>,Failure>, progress update: ((Progress) -> ())? = nil) -> Result<Success,Failure> {
+        cartridge.flatMap {
+            C.flash(self, cartridge: $0, progress: update)
+        }
     }
 }

@@ -65,6 +65,12 @@ public extension Result where Success == SerialDevice<GBxCart>, Failure == Swift
         sendAndWait("h\0".bytes()).map { UInt8($0.hexString()) ?? .min }
     }
     
+    func readVoltage() -> Result<Voltage?,Failure> {
+        sendAndWait("C\0".bytes())
+            .map { UInt8($0.hexString()) ?? .min }
+            .map(Voltage.init)
+    }
+    
     /**
      *
      */

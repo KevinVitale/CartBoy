@@ -254,6 +254,78 @@ extension Result where Success == SerialDevice<GBxCart>, Failure == Swift.Error 
     /**
      *
      */
+    private func writeClassicCartridge<C: Chipset, Number: FixedWidthInteger>(
+        bank            :Number,
+        romData         :Slice<FlashCartridge<C>>,
+        header          :GameboyClassic.Header,
+        progress update :((Progress) -> ())? = nil
+    ) -> Result<(),Failure> {
+        write(numberOfConfirmations: romData.count / 64) { serialDevice, progress in
+            if progress.completedUnitCount == 0 {
+                serialDevice.send("0\0".bytes())
+                
+                // SET: start address ------------------------------------------
+                serialDevice.setBank(bank, at: 0x2100)
+                serialDevice.seek(toAddress: bank > 0 ? 0x4000 : 0x0000)
+                
+                let dataToWrite = romData[romData.startIndex..<romData.startIndex.advanced(by: 64)]
+                serialDevice.send("T".data(using: .ascii)! + dataToWrite)
+            }
+            else if progress.isFinished {
+                serialDevice.send("0\0".bytes())
+                
+                // SET: 'RAM' disabled -----------------------------------------
+                serialDevice.setBank(0x00, at: 0x0000)
+            }
+            else {
+                update?(progress)
+                let startAddress = Int(progress.completedUnitCount * 64).advanced(by: romData.startIndex)
+                let rangeOfBytes = startAddress..<Int(startAddress + 64)
+                let dataToWrite  = romData[rangeOfBytes]
+                serialDevice.send("T".data(using: .ascii)! + dataToWrite)
+            }
+        }
+        .map { _ in () }
+    }
+    
+    /**
+     *
+     */
+    internal func flashClassicCartridge<C: Chipset>(_ flashCartridge: FlashCartridge<C>, progress update: ((Progress) -> ())? = nil) -> Result<Success,Failure> where C.Platform == GameboyClassic {
+        let header = flashCartridge.header
+        let progress = Progress(totalUnitCount: Int64(flashCartridge.count))
+        for bank in 0..<header.romBanks {
+            let startIndex = bank * header.romBankSize
+            let endIndex   = startIndex.advanced(by: header.romBankSize)
+            //------------------------------------------------------------------
+            do {
+                // MB2 Fix -----------------------------------------------------
+                if case .two = header.configuration {
+                    let _ = try flush(forPlatform: GameboyClassic.self).get()
+                }
+                
+                // Begin Progress ----------------------------------------------
+                progress.becomeCurrent(withPendingUnitCount: Int64(header.romBankSize))
+                
+                // Read Bank Data ----------------------------------------------
+                try writeClassicCartridge(bank: bank, romData: flashCartridge[startIndex..<endIndex], header: header, progress: { _ in
+                    DispatchQueue.main.async { update?(progress) }
+                }).get()
+                
+                // End Progress ------------------------------------------------
+                progress.resignCurrent()
+            } catch {
+                return .failure(error)
+            }
+        }
+        return self
+    }
+}
+
+extension Result where Success == SerialDevice<GBxCart>, Failure == Swift.Error {
+    /**
+     *
+     */
     internal func setVoltage(_ voltage: Voltage) -> Result<Success,Failure> {
         timeout(sending: voltage.bytes)
     }
