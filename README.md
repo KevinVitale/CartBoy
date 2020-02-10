@@ -26,20 +26,20 @@ The `SerialDevice<GBxCart>` is the cart reader device from
  - erasing existing ROMs from compatrible cartridges.
 
 A `SerialDevice<GBxCart>` cannot be instantiated directly; instead
-use `connect` and call any of its appropriate functions.
+use `open` as `SerialDeviceSession` and call its functions.
 
 ##### Read cartridge header
-Simply `connect` to the `controller`, read the `header`, and
-check the `Result`:
+Simply `open` a `SerialDeviceSession`, then read the `header`
+(checking the `Result`):
 
 ```swift
-switch SerialDevice<GBxCart>
-    .connect()
-    .header(forPlatform: GameboyClassic.self)
-{
-case .success(let header): print(header)
-case .failure(let error): print(error)
+SerialDeviceSession<GBxCart>.open { serialDevice in
+  switch serialDevice.header(forPlatform: GameboyClassic.self) {
+  case .success(let header) :print(header)
+  case .failure(let error)  :print(error)
+  } 
 }
+
 ```
 
 ##### Copy a cartridge's ROM
@@ -51,22 +51,15 @@ If you omit providing a progress callback, the operation blocks the
 main thread; this maybe useful for a number of scenarios (such as unit
 tests).
 
-If you want the progress reported, then wrap the operation within a
-`DispatchQueue.async` call (not doing so results in a runtime exception
-being thrown):
-
 ```swift
-DispatchQueue.global(qos: .userInitiated).async {
-    switch SerialDevice<GBxCart>
-        .connect()
-        .cartridge(forPlatform: GameboyClassic.self, progress: { print($0) })
-    {
-    case .success(let cartridge): print(cartridge.header)
-    case .failure(let error):  print(error)
-    }
+SerialDeviceSession<GBxCart>.open { serialDevice in
+  switch serialDevice.readClassicCartridge(progress: { print($0) }) {
+  case .success(let cartridge) :print(cartridge.header)
+  case .failure(let error)     :print(error)
+  }
 }
-
 ```
+
 # Acknowledgements
 Special thanks to:
 - armadsen
