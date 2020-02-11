@@ -109,7 +109,7 @@ class CartInfoViewController: ContextViewController {
     }
     
     @IBAction func readHeader(_ sender: Any?) {
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice
                 .readHeader(forPlatform: GameboyClassic.self)
                 .flatMap({ self.updateClassicHeaderUI(with: $0) })
@@ -124,7 +124,7 @@ class CartInfoViewController: ContextViewController {
     }
     
     @IBAction func readSaveData(_ sender: Any?) {
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch self.showSaveProgressBar
                 .flatMap({
                     serialDevice.readClassicSaveData {
@@ -190,7 +190,7 @@ class CartInfoViewController: ContextViewController {
                 return
             }
             
-            SerialDeviceSession<GBxCart>.open { serialDevice in
+            GBxCart.open { serialDevice in
                 switch self
                     .showSaveProgressBar
                     .flatMap({
@@ -224,7 +224,7 @@ class CartInfoViewController: ContextViewController {
                 return
             }
             
-            SerialDeviceSession<GBxCart>.open { serialDevice in
+            GBxCart.open { serialDevice in
                 switch self
                     .showSaveProgressBar
                     .flatMap({

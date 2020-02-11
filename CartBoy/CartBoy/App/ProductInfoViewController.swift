@@ -3,16 +3,18 @@ import Gibby
 import CartKit
 
 class ProductInfoViewController: ContextViewController {
-    @IBOutlet weak var firmwareTextField: NSTextField!
-    @IBOutlet weak var voltageTextField: NSTextField!
-    @IBOutlet weak var websiteTextField: NSTextField!
+    @IBOutlet weak var firmwareTextField :NSTextField!
+    @IBOutlet weak var voltageTextField  :NSTextField!
+    @IBOutlet weak var websiteTextField  :NSTextField!
     
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        
-        if let appDelegate = NSApp.delegate as? AppDelegate {
-            appDelegate.productInfoController = self
+    override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
+        guard let contentViewController = segue.destinationController as? GBxCartViewController
+            , let appDelegate           = NSApp.delegate as? AppDelegate
+            else {
+                fatalError()
         }
+        contentViewController.setup(with: appDelegate, inside: self)
     }
     
     override func viewDidLoad() {
@@ -39,7 +41,7 @@ class ProductInfoViewController: ContextViewController {
     }
     
     @IBAction func readProductInfo(_ sender: Any?) {
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice
                 .readVoltage()
                 .flatMap({ voltage in

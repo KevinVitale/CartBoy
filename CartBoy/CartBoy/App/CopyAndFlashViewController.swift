@@ -2,7 +2,7 @@ import Cocoa
 import Gibby
 import CartKit
 
-class ContentViewController: ContextViewController {
+class CopyAndFlashViewController: ContextViewController {
     @IBOutlet weak var readProgressBar: NSProgressIndicator!
     @IBOutlet weak var writeProgressBar: NSProgressIndicator!
     @IBOutlet weak var spinnerProgressBar: NSProgressIndicator!
@@ -26,7 +26,7 @@ class ContentViewController: ContextViewController {
     }
 
     @IBAction func read(_ sender: Any?) {
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice.readClassicCartridge(progress: {
                 self.readProgressBar.doubleValue = $0.fractionCompleted
             }) {
@@ -62,7 +62,7 @@ class ContentViewController: ContextViewController {
             self.spinnerProgressBar.isHidden = false
             self.spinnerProgressBar.startAnimation(sender)
             
-            SerialDeviceSession<GBxCart>.open { serialDevice in
+            GBxCart.open { serialDevice in
                 let loadFile = Result {
                     try FlashCartridge<AM29F016B>(url: url)
                 }
@@ -81,6 +81,8 @@ class ContentViewController: ContextViewController {
                     DispatchQueue.main.sync {
                         self.statusView.isHidden = true
                         self.context.update(progressBar: self.writeProgressBar, with: 0)
+                        
+                        // FIXME -- remove this hard-coded requirement
                         if let appDelegate = NSApp.delegate as? AppDelegate,
                             let cartInfo = appDelegate.cartInfoController
                         {

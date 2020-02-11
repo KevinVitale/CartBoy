@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15702"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
         <capability name="System colors introduced in macOS 10.14" minToolsVersion="10.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -904,11 +904,11 @@
             </objects>
             <point key="canvasLocation" x="75" y="873"/>
         </scene>
-        <!--View Controller-->
+        <!--Bx Cart View Controller-->
         <scene sceneID="Fac-KX-T0z">
             <objects>
                 <customObject id="j7q-d2-8bC" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-                <viewController id="ShV-wS-kLN" sceneMemberID="viewController">
+                <viewController id="ShV-wS-kLN" customClass="GBxCartViewController" customModule="CartBoy" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="xRO-SN-Er8">
                         <rect key="frame" x="0.0" y="0.0" width="677" height="422"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -947,10 +947,10 @@
             </objects>
             <point key="canvasLocation" x="74.5" y="1471"/>
         </scene>
-        <!--Content View Controller-->
+        <!--Copy And Flash View Controller-->
         <scene sceneID="sFe-zu-mOg">
             <objects>
-                <viewController id="zJl-5I-umX" customClass="ContentViewController" customModule="CartBoy" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="zJl-5I-umX" customClass="CopyAndFlashViewController" customModule="CartBoy" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="V34-7O-fdd">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="301"/>
                         <autoresizingMask key="autoresizingMask"/>

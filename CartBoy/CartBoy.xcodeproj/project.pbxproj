@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A0A247D23F260F100F175D8 /* SerialDeviceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0A247C23F260F100F175D8 /* SerialDeviceViewController.swift */; };
 		0A1408B0228DB606009952CB /* Gibby.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5722557D050026A149 /* Gibby.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0A1408B1228DB606009952CB /* ORSSerial.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5922557D050026A149 /* ORSSerial.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0A1408B2228DB672009952CB /* CartKit.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0ABCB891226E40F600790192 /* CartKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -16,13 +17,15 @@
 		0A4B4AB422526228004BB0B0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A4B4AB322526228004BB0B0 /* Assets.xcassets */; };
 		0A4B4AB722526228004BB0B0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A4B4AB522526228004BB0B0 /* Main.storyboard */; };
 		0A4B4AC322526228004BB0B0 /* CartBoyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4B4AC222526228004BB0B0 /* CartBoyTests.swift */; };
+		0A94E6AC23F208C300BCC483 /* SerialDeviceListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A94E6AB23F208C300BCC483 /* SerialDeviceListener.swift */; };
+		0A94E6AE23F208D200BCC483 /* SerialDeviceObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A94E6AD23F208D200BCC483 /* SerialDeviceObserver.swift */; };
 		0AAA0F3D228A5BF1006B78D6 /* ContextViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AAA0F3C228A5BF1006B78D6 /* ContextViewController.swift */; };
 		0AAA0F40228A62CD006B78D6 /* ProductInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AAA0F3F228A62CD006B78D6 /* ProductInfoViewController.swift */; };
 		0AF31F5822557D050026A149 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5722557D050026A149 /* Gibby.framework */; };
 		0AF31F5A22557D050026A149 /* ORSSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5922557D050026A149 /* ORSSerial.framework */; };
 		0AFF6853228905E3006E37EE /* CartInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF6852228905E3006E37EE /* CartInfoViewController.swift */; };
 		0AFF685622890603006E37EE /* ControllerContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF685522890603006E37EE /* ControllerContext.swift */; };
-		0AFF685822890B43006E37EE /* ContentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF685722890B43006E37EE /* ContentViewController.swift */; };
+		0AFF685822890B43006E37EE /* CopyAndFlashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF685722890B43006E37EE /* CopyAndFlashViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +76,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0A0A247C23F260F100F175D8 /* SerialDeviceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialDeviceViewController.swift; sourceTree = "<group>"; };
 		0A4B4AA822526227004BB0B0 /* CartBoy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CartBoy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A4B4AAA22526227004BB0B0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0A4B4AAE22526227004BB0B0 /* Document.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Document.swift; sourceTree = "<group>"; };
@@ -83,6 +87,8 @@
 		0A4B4ABE22526228004BB0B0 /* CartBoyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CartBoyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A4B4AC222526228004BB0B0 /* CartBoyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartBoyTests.swift; sourceTree = "<group>"; };
 		0A4B4AC422526228004BB0B0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0A94E6AB23F208C300BCC483 /* SerialDeviceListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialDeviceListener.swift; sourceTree = "<group>"; };
+		0A94E6AD23F208D200BCC483 /* SerialDeviceObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialDeviceObserver.swift; sourceTree = "<group>"; };
 		0AAA0F3C228A5BF1006B78D6 /* ContextViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextViewController.swift; sourceTree = "<group>"; };
 		0AAA0F3F228A62CD006B78D6 /* ProductInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInfoViewController.swift; sourceTree = "<group>"; };
 		0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CartKit.xcodeproj; path = ../CartKit/CartKit.xcodeproj; sourceTree = "<group>"; };
@@ -90,7 +96,7 @@
 		0AF31F5922557D050026A149 /* ORSSerial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ORSSerial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AFF6852228905E3006E37EE /* CartInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartInfoViewController.swift; sourceTree = "<group>"; };
 		0AFF685522890603006E37EE /* ControllerContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerContext.swift; sourceTree = "<group>"; };
-		0AFF685722890B43006E37EE /* ContentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewController.swift; sourceTree = "<group>"; };
+		0AFF685722890B43006E37EE /* CopyAndFlashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyAndFlashViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +131,7 @@
 		0A4B4AA922526227004BB0B0 /* CartBoy */ = {
 			isa = PBXGroup;
 			children = (
+				0A94E6A923F208A500BCC483 /* Utility */,
 				0AC841202285C17C00E719D5 /* App */,
 				0A639D2F225293BC006C7CAA /* Core Data */,
 				0A4B4AB322526228004BB0B0 /* Assets.xcassets */,
@@ -150,6 +157,15 @@
 			path = "Core Data";
 			sourceTree = "<group>";
 		};
+		0A94E6A923F208A500BCC483 /* Utility */ = {
+			isa = PBXGroup;
+			children = (
+				0A94E6AB23F208C300BCC483 /* SerialDeviceListener.swift */,
+				0A94E6AD23F208D200BCC483 /* SerialDeviceObserver.swift */,
+			);
+			path = Utility;
+			sourceTree = "<group>";
+		};
 		0ABCB88A226E40F600790192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -166,9 +182,10 @@
 				0A4B4AAE22526227004BB0B0 /* Document.swift */,
 				0AAA0F3C228A5BF1006B78D6 /* ContextViewController.swift */,
 				0AFF6852228905E3006E37EE /* CartInfoViewController.swift */,
-				0AFF685722890B43006E37EE /* ContentViewController.swift */,
 				0AFF685522890603006E37EE /* ControllerContext.swift */,
+				0AFF685722890B43006E37EE /* CopyAndFlashViewController.swift */,
 				0AAA0F3F228A62CD006B78D6 /* ProductInfoViewController.swift */,
+				0A0A247C23F260F100F175D8 /* SerialDeviceViewController.swift */,
 				0A4B4AB522526228004BB0B0 /* Main.storyboard */,
 			);
 			path = App;
@@ -323,14 +340,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A94E6AC23F208C300BCC483 /* SerialDeviceListener.swift in Sources */,
 				0A4B4AB222526227004BB0B0 /* Document.xcdatamodeld in Sources */,
 				0AFF685622890603006E37EE /* ControllerContext.swift in Sources */,
 				0AAA0F3D228A5BF1006B78D6 /* ContextViewController.swift in Sources */,
 				0AFF6853228905E3006E37EE /* CartInfoViewController.swift in Sources */,
+				0A94E6AE23F208D200BCC483 /* SerialDeviceObserver.swift in Sources */,
 				0A4B4AAB22526227004BB0B0 /* AppDelegate.swift in Sources */,
 				0A4B4AAF22526227004BB0B0 /* Document.swift in Sources */,
+				0A0A247D23F260F100F175D8 /* SerialDeviceViewController.swift in Sources */,
 				0AAA0F40228A62CD006B78D6 /* ProductInfoViewController.swift in Sources */,
-				0AFF685822890B43006E37EE /* ContentViewController.swift in Sources */,
+				0AFF685822890B43006E37EE /* CopyAndFlashViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
