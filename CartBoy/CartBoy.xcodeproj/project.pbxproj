@@ -16,6 +16,8 @@
 		0A4B4AB422526228004BB0B0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A4B4AB322526228004BB0B0 /* Assets.xcassets */; };
 		0A4B4AB722526228004BB0B0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A4B4AB522526228004BB0B0 /* Main.storyboard */; };
 		0A4B4AC322526228004BB0B0 /* CartBoyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4B4AC222526228004BB0B0 /* CartBoyTests.swift */; };
+		0A94E6AC23F208C300BCC483 /* SerialDeviceListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A94E6AB23F208C300BCC483 /* SerialDeviceListener.swift */; };
+		0A94E6AE23F208D200BCC483 /* SerialDeviceObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A94E6AD23F208D200BCC483 /* SerialDeviceObserver.swift */; };
 		0AAA0F3D228A5BF1006B78D6 /* ContextViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AAA0F3C228A5BF1006B78D6 /* ContextViewController.swift */; };
 		0AAA0F40228A62CD006B78D6 /* ProductInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AAA0F3F228A62CD006B78D6 /* ProductInfoViewController.swift */; };
 		0AF31F5822557D050026A149 /* Gibby.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AF31F5722557D050026A149 /* Gibby.framework */; };
@@ -83,6 +85,8 @@
 		0A4B4ABE22526228004BB0B0 /* CartBoyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CartBoyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A4B4AC222526228004BB0B0 /* CartBoyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartBoyTests.swift; sourceTree = "<group>"; };
 		0A4B4AC422526228004BB0B0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0A94E6AB23F208C300BCC483 /* SerialDeviceListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialDeviceListener.swift; sourceTree = "<group>"; };
+		0A94E6AD23F208D200BCC483 /* SerialDeviceObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialDeviceObserver.swift; sourceTree = "<group>"; };
 		0AAA0F3C228A5BF1006B78D6 /* ContextViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextViewController.swift; sourceTree = "<group>"; };
 		0AAA0F3F228A62CD006B78D6 /* ProductInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInfoViewController.swift; sourceTree = "<group>"; };
 		0ADA13FB223AC30000333E3A /* CartKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CartKit.xcodeproj; path = ../CartKit/CartKit.xcodeproj; sourceTree = "<group>"; };
@@ -125,6 +129,7 @@
 		0A4B4AA922526227004BB0B0 /* CartBoy */ = {
 			isa = PBXGroup;
 			children = (
+				0A94E6A923F208A500BCC483 /* Utility */,
 				0AC841202285C17C00E719D5 /* App */,
 				0A639D2F225293BC006C7CAA /* Core Data */,
 				0A4B4AB322526228004BB0B0 /* Assets.xcassets */,
@@ -148,6 +153,15 @@
 				0A4B4AB022526227004BB0B0 /* Document.xcdatamodeld */,
 			);
 			path = "Core Data";
+			sourceTree = "<group>";
+		};
+		0A94E6A923F208A500BCC483 /* Utility */ = {
+			isa = PBXGroup;
+			children = (
+				0A94E6AB23F208C300BCC483 /* SerialDeviceListener.swift */,
+				0A94E6AD23F208D200BCC483 /* SerialDeviceObserver.swift */,
+			);
+			path = Utility;
 			sourceTree = "<group>";
 		};
 		0ABCB88A226E40F600790192 /* Products */ = {
@@ -323,10 +337,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A94E6AC23F208C300BCC483 /* SerialDeviceListener.swift in Sources */,
 				0A4B4AB222526227004BB0B0 /* Document.xcdatamodeld in Sources */,
 				0AFF685622890603006E37EE /* ControllerContext.swift in Sources */,
 				0AAA0F3D228A5BF1006B78D6 /* ContextViewController.swift in Sources */,
 				0AFF6853228905E3006E37EE /* CartInfoViewController.swift in Sources */,
+				0A94E6AE23F208D200BCC483 /* SerialDeviceObserver.swift in Sources */,
 				0A4B4AAB22526227004BB0B0 /* AppDelegate.swift in Sources */,
 				0A4B4AAF22526227004BB0B0 /* Document.swift in Sources */,
 				0AAA0F40228A62CD006B78D6 /* ProductInfoViewController.swift in Sources */,
