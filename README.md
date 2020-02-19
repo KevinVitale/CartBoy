@@ -26,14 +26,14 @@ The `SerialDevice<GBxCart>` is the cart reader device from
  - erasing existing ROMs from compatrible cartridges.
 
 A `SerialDevice<GBxCart>` cannot be instantiated directly; instead
-use `open` as `SerialDeviceSession` and call its functions.
+use `open` on `GBxCart` and you'll receive an isntance.
 
 ##### Read cartridge header
 Simply `open` a `SerialDeviceSession`, then read the `header`
 (checking the `Result`):
 
 ```swift
-SerialDeviceSession<GBxCart>.open { serialDevice in
+GBxCart.open { serialDevice in
   switch serialDevice.header(forPlatform: GameboyClassic.self) {
   case .success(let header) :print(header)
   case .failure(let error)  :print(error)
@@ -52,7 +52,7 @@ main thread; this maybe useful for a number of scenarios (such as unit
 tests).
 
 ```swift
-SerialDeviceSession<GBxCart>.open { serialDevice in
+GBxCart.open { serialDevice in
   switch serialDevice.readClassicCartridge(progress: { print($0) }) {
   case .success(let cartridge) :print(cartridge.header)
   case .failure(let error)     :print(error)
