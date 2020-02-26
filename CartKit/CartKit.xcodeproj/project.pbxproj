@@ -84,7 +84,6 @@
 		0AC92F7F21F95F8D00605C82 /* Gibby.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gibby.xcodeproj; path = ../Dependencies/Gibby/Gibby.xcodeproj; sourceTree = "<group>"; };
 		0ACE711023DDF92F0079EDC8 /* SerialDeviceSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialDeviceSession.swift; sourceTree = "<group>"; };
 		0AD9F40B23E0B4C100F4D606 /* GBxCart+Result.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GBxCart+Result.swift"; sourceTree = "<group>"; };
-		0ADE2860224846FE00BD4E6A /* AM29F016B.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AM29F016B.swift; sourceTree = "<group>"; };
 		0AE7F26F221D942A00D86827 /* NSCondition+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSCondition+Ext.swift"; sourceTree = "<group>"; };
 		0AF9224023B6E79100B5A03F /* SerialDeviceError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialDeviceError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -162,7 +161,6 @@
 			children = (
 				0AAD810721F381AF00D548C8 /* CartKit.h */,
 				0A973E77225A72AD000D3555 /* Await.swift */,
-				0ADE2860224846FE00BD4E6A /* AM29F016B.swift */,
 				0A11DB6122127E1600C7DD13 /* Data+Ext.swift */,
 				0A58A73123B6C6AD00D90347 /* DeviceProfile.swift */,
 				0A32C6BE23E8BE8D00094175 /* FlashCartridge.swift */,

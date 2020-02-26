@@ -18,4 +18,8 @@ public protocol DeviceProfile {
     static func configure(serialPort: ORSSerialPort) -> ORSSerialPort
 }
 
-
+extension DeviceProfile {
+    public static func open(_ callback: @escaping (Result<(SerialDevice<Self>),Error>) -> ()) {
+        SerialDeviceSession<Self>.open(callback)
+    }
+}
