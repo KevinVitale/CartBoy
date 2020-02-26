@@ -24,31 +24,31 @@ public enum ChipsetFlashProgram {
     
     internal var addressAndBytes: [(address: UInt16, byte: UInt16)] {
         switch self {
-        case ._555            :
+        case ._555:
             return [
                 (0x555,0xAA),
                 (0x2AA,0x55),
                 (0x555,0x90),
             ]
-        case ._AAA            :
+        case ._AAA:
             return [
                 (0xAAA,0xAA),
                 (0x555,0x55),
                 (0xAAA,0x90),
             ]
-        case ._555_BitSwapped :
+        case ._555_BitSwapped:
             return [
                 (0x555,0xA9),
                 (0x2AA,0x56),
                 (0x555,0x90),
             ]
-        case ._AAA_BitSwapped :
+        case ._AAA_BitSwapped:
             return [
                 (0xAAA,0xA9),
                 (0x555,0x56),
                 (0xAAA,0x90),
             ]
-        case ._5555           :
+        case ._5555:
             return [
                 (0x5555,0xAA),
                 (0x2AAA,0x55),

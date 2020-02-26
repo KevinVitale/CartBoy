@@ -12,9 +12,3 @@ struct SerialDeviceSession<Device: DeviceProfile> {
     
     let serialDevice: SerialDevice<Device>
 }
-
-extension DeviceProfile {
-    public static func open(_ callback: @escaping (Result<(SerialDevice<Self>),Error>) -> ()) {
-        SerialDeviceSession<Self>.open(callback)
-    }
-}

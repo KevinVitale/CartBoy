@@ -27,13 +27,7 @@ public class SerialDevice<Device: DeviceProfile>: ThreadSafeSerialPortController
      - returns: A `Result` which can be mapped to requests that reads and writes
                 to the serial port.
      */
-    public static func connect() -> Result<SerialDevice<Device>,Error> {
+    static func connect() -> Result<SerialDevice<Device>,Error> {
         Result { try SerialDevice(matching: Device.portProfile) }
     }
 }
-
-/*
-public enum CartridgeFlashError<FlashCartridge: CartKit.FlashCartridge>: Error {
-    case unsupportedChipset(FlashCartridge.Type)
-}
- */

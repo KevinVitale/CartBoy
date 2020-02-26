@@ -6,7 +6,7 @@ import CartKit
 class CartridgeTests: XCTestCase {
     func testSessionReadAdvanceHeader() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice.readHeader(forPlatform: GameboyAdvance.self) {
             case .success(let header): print(header)
             case .failure(let error):  XCTFail("\(error)")
@@ -18,7 +18,7 @@ class CartridgeTests: XCTestCase {
     
     func testSessionReadClassicHeader() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice.readHeader(forPlatform: GameboyClassic.self) {
             case .success(let header): print(header)
             case .failure(let error):  XCTFail("\(error)")
@@ -31,7 +31,7 @@ class CartridgeTests: XCTestCase {
     @available(OSX 10.15, *)
     func testSessionReadClassicCartridge() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice
                 .readClassicCartridge (progress: { print($0.fractionCompleted) })
                 .write                (toDirectoryPath: "/Users/kevin/Desktop")
@@ -48,7 +48,7 @@ class CartridgeTests: XCTestCase {
     
     func testSessionReadClassicSaveFile() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice
                 .readClassicSaveData (progress: { print($0.fractionCompleted) })
                 .write               (toDirectoryPath: "/Users/kevin/Desktop",
@@ -66,7 +66,7 @@ class CartridgeTests: XCTestCase {
     @available(OSX 10.15, *)
     func testSessionRestoreClassicSaveFile() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch Result(catching: {
                 try Data(contentsOf: URL(fileURLWithPath: "/Users/kevin/Desktop/POKEMON YELLOW.sav"))
             })
@@ -88,7 +88,7 @@ class CartridgeTests: XCTestCase {
     @available(OSX 10.15, *)
     func testSessionDeleteClassicSaveFile() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice
                 .deleteClassicSaveData(progress: { print($0.fractionCompleted) })
                 .readClassicSaveData  (progress: { print($0.fractionCompleted) })
@@ -104,7 +104,7 @@ class CartridgeTests: XCTestCase {
     
     func testSessionEraseClassicFlashCartridge() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice
                 .erase(flashCartridge: AM29F016B.self)
                 .readHeader(forPlatform: GameboyClassic.self)
@@ -119,7 +119,7 @@ class CartridgeTests: XCTestCase {
     
     func testSessionClassicFlashCartridge() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             let openFile = Result {
                 try FlashCartridge<AM29F016B>(filePath: "/Users/kevin/Desktop/POKEMON_SLV.gbc")
             }
@@ -142,7 +142,7 @@ class CartridgeTests: XCTestCase {
     
     func testDetectFlashCartridge() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             ChipsetFlashProgram.allFlashPrograms.forEach {
                 switch serialDevice.detectFlashID(using: $0) {
                 case .success(let flashID) :print("\($0): \(flashID)")
@@ -157,7 +157,7 @@ class CartridgeTests: XCTestCase {
     
     func testDetectCartridgeMode() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice.readCartridgeMode() {
             case .success(let mode)  :print(mode)
             case .failure(let error) :XCTFail("\(error)")
@@ -169,7 +169,7 @@ class CartridgeTests: XCTestCase {
     
     func testDetectPCBVersion() {
         let exp = expectation(description: "")
-        SerialDeviceSession<GBxCart>.open { serialDevice in
+        GBxCart.open { serialDevice in
             switch serialDevice.readPCBVersion() {
             case .success(let version) :print(version)
             case .failure(let error)   :XCTFail("\(error)")
