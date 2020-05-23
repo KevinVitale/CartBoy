@@ -176,6 +176,44 @@ class CartridgeTests: XCTestCase {
         }
         waitForExpectations(timeout: 300)
     }
+	
+	
+    func testSessionEraseClassicFlashCartridgeES29LV160() {
+        let exp = expectation(description: "")
+        GBxCart.open { serialDevice in
+            switch serialDevice
+                .erase(flashCartridge: ES29LV160.self)
+               // .readHeader(forPlatform: GameboyClassic.self) <-- Header will be blank, so readHeader Result is probably error!
+            {
+            case .success(let header) :print(header)
+            case .failure(let error)  :XCTFail("\(error)")
+            }
+            exp.fulfill()
+        }
+        waitForExpectations(timeout: 300)
+    }
+    
+    func testSessionClassicFlashCartridgeES29LV160() {
+        let exp = expectation(description: "")
+        GBxCart.open { serialDevice in
+            let openFile = Result {
+                try FlashCartridge<ES29LV160>(filePath: "/Users/bbsan/Desktop/POKEMON_YEL.gbc")
+            }
+            switch openFile
+                .flatMap({ cartridge in
+                    serialDevice
+                        .erase(flashCartridge: ES29LV160.self)
+                        .flash(cartridge: cartridge, progress: { print($0.fractionCompleted) })
+                })
+                .readHeader(forPlatform: GameboyClassic.self)
+            {
+            case .success(let header) :print(header)
+            case .failure(let error)  :XCTFail("\(error)")
+            }
+            exp.fulfill()
+        }
+        waitForExpectations(timeout: 300)
+    }
     
     
     func testDetectFlashCartridge() {
