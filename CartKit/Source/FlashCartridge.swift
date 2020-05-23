@@ -163,3 +163,106 @@ public struct AM29F016B: Chipset {
         serialDevice.flashClassicCartridge(cartridge, progress: update)
     }
 }
+
+
+public struct AM29LV160DB: Chipset {
+    public typealias Platform = GameboyClassic
+    public static func erase<SerialDevice>(_ serialDevice: Result<SerialDevice, Error>) -> Result<SerialDevice, Swift.Error> where SerialDevice: SerialPortController {
+        serialDevice
+            .sendAndWait("0F0\0F0\0".bytes())
+            .timeout(sending:"G".bytes())
+            .timeout(sending:"PW".bytes())
+            .sendAndWait("0FAAA\0AA\0".bytes())
+            .sendAndWait("0F555\055\0".bytes())
+            .sendAndWait("0FAAA\080\0".bytes())
+            .sendAndWait("0FAAA\0AA\0".bytes())
+            .sendAndWait("0F555\055\0".bytes())
+            .sendAndWait("0FAAA\010\0".bytes())
+            .sendAndWait("0A0\0R".bytes(),
+                 packetByteSize :64,
+                 isValidPacket  :{ serialDevice, data in
+                    guard data!.starts(with: [0xFF]) else {
+                        serialDevice.send("1".bytes(), timeout: 250)
+                        return false
+                    }
+                    return true
+            })
+            .flatMap { (_: Data) in
+                serialDevice
+            }
+            .sendAndWait("0F0\0F0\0".bytes())
+    }
+    
+    public static func flash<SerialDevice>(_ serialDevice: Result<SerialDevice,Error>, cartridge: FlashCartridge<AM29LV160DB>, progress update: ((Progress) -> ())?) -> Result<SerialDevice,Error> where SerialDevice: SerialPortController {
+        serialDevice
+            .timeout(sending:"G".bytes())
+            .timeout(sending:"PW".bytes())
+            .timeout(sending:"E".bytes())
+            .sendAndWait("AAA\0".bytes())
+            .sendAndWait("AA\0".bytes())
+            .sendAndWait("555\0".bytes())
+            .sendAndWait("55\0".bytes())
+            .sendAndWait("AAA\0".bytes())
+            .sendAndWait("A0\0".bytes())
+            .isTypeOf(CartKit.SerialDevice<GBxCart>.self) /* FIXME */
+            .flatMap {
+                flashGBxCart(.success($0), cartridge: cartridge, progress: update)
+            }
+            .map { $0 as! SerialDevice }
+    }
+    
+    private static func flashGBxCart(_ serialDevice: Result<SerialDevice<GBxCart>,Error>, cartridge: FlashCartridge<AM29LV160DB>, progress update: ((Progress) -> ())?) -> Result<SerialDevice<GBxCart>,Error> {
+        serialDevice.flashClassicCartridge(cartridge, progress: update)
+    }
+}
+
+public struct ES29LV160: Chipset {
+    public typealias Platform = GameboyClassic
+    public static func erase<SerialDevice>(_ serialDevice: Result<SerialDevice, Error>) -> Result<SerialDevice, Swift.Error> where SerialDevice: SerialPortController {
+        serialDevice
+            .sendAndWait("0F0\0F0\0".bytes())
+            .timeout(sending:"G".bytes())
+            .timeout(sending:"PW".bytes())
+            .sendAndWait("0F555\0A9\0".bytes())
+            .sendAndWait("0F2AA\056\0".bytes())
+            .sendAndWait("0F555\080\0".bytes())
+            .sendAndWait("0F555\0A9\0".bytes())
+            .sendAndWait("0F2AA\056\0".bytes())
+            .sendAndWait("0F555\010\0".bytes())
+            .sendAndWait("0A0\0R".bytes(),
+                 packetByteSize :64,
+                 isValidPacket  :{ serialDevice, data in
+                    guard data!.starts(with: [0xFF]) else {
+                        serialDevice.send("1".bytes(), timeout: 250)
+                        return false
+                    }
+                    return true
+            })
+            .flatMap { (_: Data) in
+                serialDevice
+            }
+            .sendAndWait("0F0\0F0\0".bytes())
+    }
+    
+    public static func flash<SerialDevice>(_ serialDevice: Result<SerialDevice,Error>, cartridge: FlashCartridge<ES29LV160>, progress update: ((Progress) -> ())?) -> Result<SerialDevice,Error> where SerialDevice: SerialPortController {
+        serialDevice
+            .timeout(sending:"G".bytes())
+            .timeout(sending:"PW".bytes())
+            .timeout(sending:"E".bytes())
+            .sendAndWait("555\0".bytes())
+            .sendAndWait("A9\0".bytes())
+            .sendAndWait("2AA\0".bytes())
+            .sendAndWait("56\0".bytes())
+            .sendAndWait("555\0".bytes())
+            .sendAndWait("A0\0".bytes())
+            .isTypeOf(CartKit.SerialDevice<GBxCart>.self) /* FIXME */
+            .flatMap {
+                flashGBxCart(.success($0), cartridge: cartridge, progress: update)
+            }
+            .map { $0 as! SerialDevice }
+    }
+    
+    private static func flashGBxCart(_ serialDevice: Result<SerialDevice<GBxCart>,Error>, cartridge: FlashCartridge<ES29LV160>, progress update: ((Progress) -> ())?) -> Result<SerialDevice<GBxCart>,Error> {
+        serialDevice.flashClassicCartridge(cartridge, progress: update)
+    }
+}
