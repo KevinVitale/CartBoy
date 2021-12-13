@@ -12,12 +12,12 @@
 ///                   should be passed to the async method's completion handler.
 /// - Returns: The value wrapped by the async method's result.
 /// - Throws: The error wrapped by the async method's result
-public func await<T, ErrorType>(_ body: (@escaping (Result<T, ErrorType>) -> Void) -> Void) throws -> T {
-    return try await(body).get()
+public func await_<T, ErrorType>(_ body: (@escaping (Result<T, ErrorType>) -> Void) -> Void) throws -> T {
+    return try await_(body).get()
 }
 
 import Foundation
-public func await<T>(_ body: (@escaping (T) -> Void) -> Void) -> T {
+public func await_<T>(_ body: (@escaping (T) -> Void) -> Void) -> T {
     let condition = NSCondition()
     var result: T? = nil
     body { theResult in
@@ -35,5 +35,5 @@ public func await<T>(_ body: (@escaping (T) -> Void) -> Void) -> T {
 }
 
 public func waitFor<T,ErrorType>(_ body: (@escaping (Result<T,ErrorType>) -> Void) -> Void) -> Result<T,Swift.Error> {
-    Result { try await(body) }
+    Result { try await_(body) }
 }
