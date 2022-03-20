@@ -53,9 +53,15 @@ tests).
 
 ```swift
 GBxCart.open { serialDevice in
-  switch serialDevice.readClassicCartridge(progress: { print($0) }) {
-  case .success(let cartridge) :print(cartridge.header)
-  case .failure(let error)     :print(error)
+  try {
+    let cartridge = serialDevice
+       .readClassicCartridge (progress: { print($0.fractionCompleted) })
+       .write                (toDirectoryPath: "/Users/kevin/Desktop")
+       .check                (MD5: "b259feb41811c7e4e1dc20167985c84") /* Super Mario Land? */
+       .get()
+     print(cartridge)
+  } catch {
+     print("\(error)")
   }
 }
 ```
