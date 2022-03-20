@@ -47,7 +47,7 @@ class ProductInfoViewController: ContextViewController {
                 .flatMap({ voltage in
                     serialDevice.readPCBVersion().map { (voltage, $0) }
                 }) {
-            case .success(let voltage?, let version):
+            case .success((let voltage?, let version)):
                 try? self.updateProductInfoResult(
                     firmware :"\(version)",
                     voltage  :voltage.debugDescription,

@@ -142,7 +142,7 @@ class CartInfoViewController: ContextViewController {
                     }
                 })
             {
-            case .success(let fileName, let saveData):
+            case .success((let fileName, let saveData)):
                 DispatchQueue.main.async {
                     // Create the 'Save Panel' ---------------------------------
                     let savePanel: NSSavePanel = {
