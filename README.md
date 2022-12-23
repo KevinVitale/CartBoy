@@ -1,3 +1,8 @@
+CartBoy [is no longer under active development](https://discord.com/channels/513663955562921984/586059097925746719/1055884526527713280). I'd recommend using [FlashGBX](https://github.com/lesserkuma/FlashGBX).
+
+Thanks for all the support.
+
+<hr />
 # Features
 
 - [x] Native macOS 🎉
